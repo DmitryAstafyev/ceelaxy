@@ -1,0 +1,20 @@
+[
+    {
+        "arguments": [
+            "/usr/bin/gcc",
+            "-c",
+            "-Wall",
+            "-Wextra",
+            "-g",
+            "-I/usr/include/SDL2",
+            "-D_GNU_SOURCE=1",
+            "-D_REENTRANT",
+            "-o",
+            "galaxy",
+            "src/main.c"
+        ],
+        "directory": "./ceelaxy",
+        "file": "./src/main.c",
+        "output": "./galaxy"
+    }
+]
