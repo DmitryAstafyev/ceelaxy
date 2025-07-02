@@ -1,8 +1,10 @@
 #ifndef UNIT_H
 #define UNIT_H
 
+#include "../models/models.h"
 #include "../movement/movement.h"
-#include <SDL.h>
+#include "raylib.h" // For Model, Texture2D, Shader
+#include <stddef.h>
 #include <stdint.h>
 
 typedef enum UnitType {
@@ -16,8 +18,9 @@ typedef struct UnitState {
 } UnitState;
 
 typedef struct UnitPosition {
-  uint16_t x;
-  uint16_t y;
+  float x;
+  float y;
+  float z;
   uint16_t ln;
   uint16_t col;
 } UnitPosition;
@@ -38,17 +41,18 @@ typedef struct Unit {
   UnitType type;
   UnitState state;
   UnitRender render;
+  ShipModel *model;
 } Unit;
 
-UnitSize UnitSize_new();
+UnitSize newUnitSize();
 
-UnitPosition UnitPosition_new();
+UnitPosition newUnitPosition();
 
-UnitRender UnitRender_new(UnitPosition position);
+UnitRender newUnitRender(UnitPosition position);
 
-UnitState UnitState_new();
+UnitState newUnitState();
 
-Unit Unit_new(UnitType ty);
+Unit newUnit(UnitType ty, ShipModel *model);
 
 typedef struct UnitNode {
   struct UnitNode *prev;
@@ -59,19 +63,19 @@ typedef struct UnitNode {
 typedef struct {
   UnitNode *head;
   UnitNode *tail;
-  size_t length;
+  uint16_t length;
 } UnitList;
 
-UnitNode *UnitNode_new(UnitNode *prev, Unit unit, int window_width);
+UnitNode *newUnitNode(UnitNode *prev, Unit unit, int window_width);
 
-void Unit_render(SDL_Renderer *renderer, Unit *unit);
+Matrix getMatrixUnit(Unit *unit);
 
-UnitList *UnitList_new(int count, int width);
+UnitList *newUnitList(int count, int width, ShipModel *model);
 
-void UnitList_destroy(UnitList *list);
+void destroyUnitList(UnitList *list);
 
-void UnitList_insert(UnitList *list, Unit unit, int window_width);
+void insertToUnitList(UnitList *list, Unit unit, int window_width);
 
-void UnitList_render(SDL_Renderer *renderer, UnitList *list);
+Matrix *getMatrixFromUnitList(UnitList *list);
 
 #endif

@@ -1,9 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "SDL_stdinc.h"
 #include "unit.h"
-#include <SDL.h>
+#include <raylib.h>
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -21,14 +20,14 @@ typedef struct Player {
   PlayerRender render;
 } Player;
 
-PlayerRender PlayerRender_new(UnitPosition position, int height, int width);
+PlayerRender newPlayerRender(UnitPosition position, int height, int width);
 
-Player *Player_new(int height, int width);
+Player *newPlayer(int height, int width);
 
-void Player_destroy(Player *player);
+void destroyPlayer(Player *player);
 
-void Player_render(SDL_Renderer *renderer, Player *player);
+Matrix getPlayerMatrix(Player *player);
 
-void Player_events(Player *player, SDL_Keycode sym);
+void eventsPlayer(Player *player);
 
 #endif

@@ -1,83 +1,102 @@
 #include "game.h"
+#include "../models/models.h"
+#include "../raylib/rlights.h"
 #include "../units/player.h"
 #include "../units/unit.h"
-#include <SDL.h>
+#include "raylib.h" // For Model, Texture2D, Shader
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
 
-Game *Game_new(int height, int width) {
+Game *newGame(int height, int width) {
   Game *game = malloc(sizeof(Game));
   if (!game) {
     return NULL;
   }
-  UnitList *units = UnitList_new(20, width);
+  // Load models
+  ShipModelList *models = newShipModelList();
+  if (!models || models->length == 0) {
+    return NULL;
+  }
+  UnitList *units = newUnitList(20, width, models->head->self);
   if (!units) {
     return NULL;
   }
-  game->units = units;
-  Player *player = Player_new(height, width);
+  Player *player = newPlayer(height, width);
   if (!player) {
-    UnitList_destroy(game->units);
+    destroyUnitList(game->units);
     return NULL;
   }
   game->player = player;
+  game->models = models;
+  game->units = units;
+  Camera3D camera = {.position = (Vector3){0.0f, 40.0f, 0.01f},
+                     .target = (Vector3){0.0f, 0.0f, 0.0f},
+                     .up = (Vector3){0.0f, 0.0f, -1.0f},
+                     .fovy = 45.0f,
+                     .projection = CAMERA_PERSPECTIVE};
+  game->camera = camera;
+  Light light = CreateLight(LIGHT_DIRECTIONAL, (Vector3){2, 4, 4},
+                            (Vector3){0, -1, 0}, WHITE, game->models->shader);
+  game->light = light;
+  // float ambient[4] = {0.3f, 0.3f, 0.3f, 1.0f};
+  // for (int i = 0; i < game->units->head->self.model->model.materialCount;
+  // i++) {
+  //   int loc = GetShaderLocation(
+  //       game->units->head->self.model->model.materials[i].shader, "ambient");
+  //   SetShaderValue(game->units->head->self.model->model.materials[i].shader,
+  //                  loc, ambient, SHADER_UNIFORM_VEC4);
+  // }
+  int ambientLoc = GetShaderLocation(game->models->shader, "ambient");
+  float ambient[4] = {0.3f, 0.3f, 0.3f, 1.0f};
+  SetShaderValue(game->models->shader, ambientLoc, ambient,
+                 SHADER_UNIFORM_VEC4);
+
+  printf("[game] Game has been created\n");
   return game;
 }
 
-bool Game_render(SDL_Renderer *renderer, Game *game) {
+bool renderGame(Game *game) {
   if (!game) {
     return false;
   }
-  SDL_SetRenderDrawColor(renderer, 0, 0, 32, 255);
-  SDL_RenderClear(renderer);
-
-  UnitList_render(renderer, game->units);
-  Player_render(renderer, game->player);
-
-  SDL_RenderPresent(renderer);
 
   return true;
 }
 
-void Game_destroy(Game *game) {
+void destroyGame(Game *game) {
   if (!game) {
     return;
   }
-  UnitList_destroy(game->units);
-  Player_destroy(game->player);
+  destroyUnitList(game->units);
+  destroyPlayer(game->player);
+  destroyShipModelList(game->models);
   free(game);
 }
 
-void Game_run(SDL_Renderer *renderer, Game *game) {
-  bool running = true;
-  SDL_Event event;
-  uint32_t prev = SDL_GetTicks();
-  while (running) {
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
-        running = false;
-      } else if (event.type == SDL_KEYDOWN) {
-        // printf("keydown %i (%i)\n", event.type, event.key.keysym.sym);
-        if (event.key.keysym.sym == SDLK_q) {
-          running = false;
-        } else {
-          Player_events(game->player, event.key.keysym.sym);
-        }
-      }
+void runGame(Game *game) {
+  printf("[game] starting\n");
+  while (!WindowShouldClose()) {
+    Matrix *units = getMatrixFromUnitList(game->units);
+    if (!game->units->head) {
+      printf("[game] ooops\n");
+      return;
     }
-    if (!running) {
-      break;
-    }
-    uint32_t tick = SDL_GetTicks();
-    if (tick > prev && tick - prev < 30) {
-      continue;
-    }
-    prev = tick;
+    Model *model = &game->units->head->self.model->model;
+    BeginDrawing();
+    ClearBackground(BLACK);
 
-    running = Game_render(renderer, game);
+    BeginMode3D(game->camera);
 
-    // SDL_Delay(20);
+    // DrawGrid(20, 1.0f);
+    DrawMeshInstanced(model->meshes[0], model->materials[0], units,
+                      (int)game->units->length);
+    EndMode3D();
+
+    EndDrawing();
+
+    free(units);
   }
+  printf("[game] finished\n");
 }

@@ -1,23 +1,28 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "../models/models.h"
+#include "../raylib/rlights.h"
 #include "../units/player.h"
 #include "../units/unit.h"
-#include <SDL.h>
+#include "raylib.h" // For Model, Texture2D, Shader
 #include <stdbool.h>
 #include <stdlib.h>
 
 typedef struct Game {
   UnitList *units;
   Player *player;
+  ShipModelList *models;
+  Camera3D camera;
+  Light light;
 } Game;
 
-Game *Game_new(int height, int width);
+Game *newGame(int height, int width);
 
-bool Game_render(SDL_Renderer *renderer, Game *game);
+bool renderGame(Game *game);
 
-void Game_destroy(Game *game);
+void destroyGame(Game *game);
 
-void Game_run(SDL_Renderer *renderer, Game *game);
+void runGame(Game *game);
 
 #endif

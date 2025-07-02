@@ -12,7 +12,7 @@ const uint16_t MOVEMENT_MAX_Y = 20;
 
 #define MOVEMENT_VERTICAL_MASK (MOVEMENT_DIRECTION_UP | MOVEMENT_DIRECTION_DOWN)
 
-MovementAction *MovementAction_new() {
+MovementAction *newMovementAction() {
   MovementAction *action = malloc(sizeof(MovementAction));
   if (!action) {
     return NULL;
@@ -24,11 +24,11 @@ MovementAction *MovementAction_new() {
   action->max_y = MOVEMENT_MAX_Y;
   action->x = 0;
   action->y = 0;
-  MovementAction_rand_speed(action);
+  randSpeedMovementAction(action);
   return action;
 }
 
-void MovementAction_rand_speed(MovementAction *action) {
+void randSpeedMovementAction(MovementAction *action) {
   if (!action) {
     return;
   }
@@ -36,7 +36,7 @@ void MovementAction_rand_speed(MovementAction *action) {
   action->step_y = rand() % 2 ? MOVEMENT_STEP_Y : MOVEMENT_STEP_Y + 1;
 }
 
-void MovementAction_iterate(MovementAction *action) {
+void iterateMovementAction(MovementAction *action) {
   if (!action) {
     return;
   }
@@ -53,7 +53,7 @@ void MovementAction_iterate(MovementAction *action) {
         action->direction &= ~MOVEMENT_DIRECTION_RIGHT;
         action->direction |= MOVEMENT_DIRECTION_LEFT;
       }
-      MovementAction_rand_speed(action);
+      randSpeedMovementAction(action);
     }
   }
   if (action->direction & MOVEMENT_VERTICAL_MASK) {
@@ -69,12 +69,12 @@ void MovementAction_iterate(MovementAction *action) {
         action->direction &= ~MOVEMENT_DIRECTION_DOWN;
         action->direction |= MOVEMENT_DIRECTION_UP;
       }
-      MovementAction_rand_speed(action);
+      randSpeedMovementAction(action);
     }
   }
 }
 
-void MovementAction_destroy(MovementAction *action) {
+void destroyMovementAction(MovementAction *action) {
   if (action) {
     free(action);
   }

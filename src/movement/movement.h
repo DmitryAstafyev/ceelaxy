@@ -2,7 +2,6 @@
 #define MOVEMENT_H
 
 #include <stdint.h>
-#include <stdlib.h>
 
 typedef enum MovementDirection {
   MOVEMENT_DIRECTION_NONE = 0x00,
@@ -22,12 +21,12 @@ typedef struct MovementAction {
   int16_t y;
 } MovementAction;
 
-MovementAction *MovementAction_new();
+MovementAction *newMovementAction();
 
-void MovementAction_iterate(MovementAction *action);
+void iterateMovementAction(MovementAction *action);
 
-void MovementAction_destroy(MovementAction *action);
+void destroyMovementAction(MovementAction *action);
 
-void MovementAction_rand_speed(MovementAction *action);
+void randSpeedMovementAction(MovementAction *action);
 
 #endif
