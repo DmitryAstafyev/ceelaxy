@@ -8,11 +8,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const uint16_t DEFAULT_UNIT_WIDTH = 64;
-const uint16_t DEFAULT_UNIT_HEIGHT = 64;
+const float DEFAULT_UNIT_WIDTH = 6.0;
+const float DEFAULT_UNIT_HEIGHT = 6.0;
 
-const uint16_t UNIT_SPACE_VERTICAL = 42;
-const uint16_t UNIT_SPACE_HORIZONTAL = 42;
+const float UNIT_SPACE_VERTICAL = 3.0;
+const float UNIT_SPACE_HORIZONTAL = 3.0;
 
 const uint8_t DEFAULT_UNIT_HEALTH = 100;
 const uint8_t DEFAULT_UNIT_ENERGY = 100;
@@ -26,9 +26,9 @@ UnitSize newUnitSize() {
 
 UnitPosition newUnitPosition() {
   UnitPosition position;
-  position.x = 0;
-  position.y = 0;
-  position.z = 10;
+  position.x = 0.0f;
+  position.y = 0.0f;
+  position.z = 0.0f;
   position.ln = 0;
   position.col = 0;
   return position;
@@ -59,33 +59,33 @@ Unit newUnit(UnitType ty, ShipModel *model) {
   return unit;
 }
 
-UnitNode *newUnitNode(UnitNode *prev, Unit unit, int window_width) {
+UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
+                      float mid_x, float mid_y) {
   UnitNode *node = malloc(sizeof(UnitNode));
   if (!node) {
     return NULL;
   }
+  int prev_col, prev_ln;
   if (prev) {
-    float prev_x = prev->self.render.position.x;
-    float prev_y = prev->self.render.position.y;
-    if (prev_x + DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL < window_width) {
-      unit.render.position.x =
-          prev_x + prev->self.render.size.width + UNIT_SPACE_HORIZONTAL;
-      unit.render.position.y = prev_y;
-      unit.render.position.col = prev->self.render.position.col + 1;
-      unit.render.position.ln = prev->self.render.position.ln;
-    } else {
-      unit.render.position.x = UNIT_SPACE_HORIZONTAL;
-      unit.render.position.y =
-          prev_y + prev->self.render.size.height + UNIT_SPACE_VERTICAL;
-      unit.render.position.col = 0;
-      unit.render.position.ln = prev->self.render.position.ln + 1;
-    }
+    unit.render.position.col = prev->self.render.position.col + 1;
+    prev_ln = prev->self.render.position.ln;
   } else {
-    unit.render.position.x = UNIT_SPACE_HORIZONTAL;
-    unit.render.position.y = UNIT_SPACE_VERTICAL;
     unit.render.position.col = 0;
-    unit.render.position.ln = 0;
+    prev_ln = 0;
   }
+  if (unit.render.position.col == max_col) {
+    unit.render.position.ln = prev_ln + 1;
+    unit.render.position.col = 0;
+  } else {
+    unit.render.position.ln = prev_ln;
+  }
+  unit.render.position.x =
+      (DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL) * unit.render.position.col -
+      mid_x;
+  unit.render.position.y =
+      (DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL) * unit.render.position.ln -
+      mid_y;
+  unit.render.position.z = 0.0f;
   node->next = NULL;
   node->prev = prev;
   node->self = unit;
@@ -99,7 +99,10 @@ void destroyUnitNode(UnitNode *node) {
   }
 }
 
-Matrix getMatrixUnit(Unit *unit) {
+void drawUnit(Unit *unit) {
+  if (!unit) {
+    return;
+  }
   // double current_time = GetTime();
   // MovementAction *action = unit->render.action;
   // if (unit->render.last_frame < current_time &&
@@ -107,16 +110,20 @@ Matrix getMatrixUnit(Unit *unit) {
   //   iterateMovementAction(action);
   //   unit->render.last_frame = current_time;
   // }
-  printf("%f,%f,%f\n", unit->render.position.x, unit->render.position.y,
-         unit->render.position.z);
-  return MatrixTranslate(unit->render.position.x, unit->render.position.y,
-                         unit->render.position.z);
-  // return MatrixTranslate(unit->render.position.x + action->x,
-  //                        unit->render.position.y + action->y,
-  //                        unit->render.position.z);
+  // iterateMovementAction(action);
+
+  // DrawModelEx(unit->model->model,
+  //             (Vector3){unit->render.position.x + action->x,
+  //                       unit->render.position.y + action->y,
+  //                       unit->render.position.z},
+  //             (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, WHITE);
+  DrawModelEx(unit->model->model,
+              (Vector3){unit->render.position.x, unit->render.position.y,
+                        unit->render.position.z},
+              (Vector3){0, 0, 0}, 0.0f, (Vector3){1, 1, 1}, WHITE);
 }
 
-UnitList *newUnitList(int count, int width, ShipModel *model) {
+UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln) {
   UnitList *units = malloc(sizeof(UnitList));
   if (!units) {
     return NULL;
@@ -124,8 +131,15 @@ UnitList *newUnitList(int count, int width, ShipModel *model) {
   units->length = 0;
   units->head = NULL;
   units->tail = NULL;
+  float mid_x = ((DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL) * max_col -
+                 UNIT_SPACE_HORIZONTAL) /
+                2;
+  float mid_y = ((DEFAULT_UNIT_HEIGHT + UNIT_SPACE_VERTICAL) * max_ln -
+                 UNIT_SPACE_VERTICAL) /
+                2;
   for (int i = count - 1; i >= 0; i -= 1) {
-    insertToUnitList(units, newUnit(UNIT_TYPE_ENEMY, model), width);
+    insertToUnitList(units, newUnit(UNIT_TYPE_ENEMY, model), max_col, max_ln,
+                     mid_x, mid_x);
     printf("Added unit %i\n", i);
   }
   return units;
@@ -142,8 +156,9 @@ void destroyUnitList(UnitList *list) {
   list->length = 0;
 }
 
-void insertToUnitList(UnitList *list, Unit unit, int window_width) {
-  UnitNode *node = newUnitNode(list->tail, unit, window_width);
+void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
+                      float mid_x, float mid_y) {
+  UnitNode *node = newUnitNode(list->tail, unit, max_col, max_ln, mid_x, mid_y);
   if (!node) {
     return;
   }
@@ -157,25 +172,13 @@ void insertToUnitList(UnitList *list, Unit unit, int window_width) {
   list->length += 1;
 }
 
-Matrix *getMatrixFromUnitList(UnitList *list) {
+void drawUnits(UnitList *list) {
   UnitNode *node = list->head;
-  Matrix *matrices = malloc(sizeof(Matrix) * list->length);
-  int added = 0;
   for (int i = 0; i < list->length; i += 1) {
     if (!node) {
       break;
     }
-    matrices[i] = getMatrixUnit(&node->self);
+    drawUnit(&node->self);
     node = node->next;
-    added += 1;
   }
-  if (added != list->length) {
-    fprintf(stderr,
-            "[Units] Fail to get list of Matrix for all units; expected %i "
-            "units, but added %i\n",
-            list->length, added);
-    exit(EXIT_FAILURE);
-    free(matrices);
-  }
-  return matrices;
 }

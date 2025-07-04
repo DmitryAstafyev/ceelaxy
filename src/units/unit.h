@@ -66,16 +66,18 @@ typedef struct {
   uint16_t length;
 } UnitList;
 
-UnitNode *newUnitNode(UnitNode *prev, Unit unit, int window_width);
+UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
+                      float mid_x, float mid_y);
 
-Matrix getMatrixUnit(Unit *unit);
+void drawUnit(Unit *unit);
 
-UnitList *newUnitList(int count, int width, ShipModel *model);
+UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln);
 
 void destroyUnitList(UnitList *list);
 
-void insertToUnitList(UnitList *list, Unit unit, int window_width);
+void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
+                      float mid_x, float mid_y);
 
-Matrix *getMatrixFromUnitList(UnitList *list);
+void drawUnits(UnitList *list);
 
 #endif

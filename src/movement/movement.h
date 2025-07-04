@@ -13,12 +13,12 @@ typedef enum MovementDirection {
 
 typedef struct MovementAction {
   uint8_t direction;
-  uint16_t step_x;
-  uint16_t step_y;
-  uint16_t max_x;
-  uint16_t max_y;
-  int16_t x;
-  int16_t y;
+  float step_x;
+  float step_y;
+  float max_x;
+  float max_y;
+  float x;
+  float y;
 } MovementAction;
 
 MovementAction *newMovementAction();

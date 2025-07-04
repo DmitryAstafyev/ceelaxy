@@ -2,10 +2,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-const uint16_t MOVEMENT_STEP_X = 1;
-const uint16_t MOVEMENT_STEP_Y = 1;
-const uint16_t MOVEMENT_MAX_X = 20;
-const uint16_t MOVEMENT_MAX_Y = 20;
+const float MOVEMENT_STEP_X = 0.1f;
+const float MOVEMENT_STEP_Y = 0.1f;
+const float MOVEMENT_MAX_X = 3.0f;
+const float MOVEMENT_MAX_Y = 3.0f;
 
 #define MOVEMENT_HORIZONTAL_MASK                                               \
   (MOVEMENT_DIRECTION_LEFT | MOVEMENT_DIRECTION_RIGHT)
