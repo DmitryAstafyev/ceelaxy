@@ -11,7 +11,7 @@
 const float DEFAULT_UNIT_WIDTH = 6.0;
 const float DEFAULT_UNIT_HEIGHT = 6.0;
 
-const float UNIT_SPACE_VERTICAL = 3.0;
+const float UNIT_SPACE_VERTICAL = 12.0;
 const float UNIT_SPACE_HORIZONTAL = 3.0;
 
 const uint8_t DEFAULT_UNIT_HEALTH = 100;
@@ -83,8 +83,7 @@ UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
       (DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL) * unit.render.position.col -
       mid_x;
   unit.render.position.y =
-      (DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL) * unit.render.position.ln -
-      mid_y;
+      (DEFAULT_UNIT_HEIGHT + UNIT_SPACE_VERTICAL) * unit.render.position.ln;
   unit.render.position.z = 0.0f;
   node->next = NULL;
   node->prev = prev;
@@ -104,23 +103,23 @@ void drawUnit(Unit *unit) {
     return;
   }
   // double current_time = GetTime();
-  // MovementAction *action = unit->render.action;
+  MovementAction *action = unit->render.action;
   // if (unit->render.last_frame < current_time &&
   //     current_time - unit->render.last_frame > 50) {
   //   iterateMovementAction(action);
   //   unit->render.last_frame = current_time;
   // }
-  // iterateMovementAction(action);
+  iterateMovementAction(action);
 
-  // DrawModelEx(unit->model->model,
-  //             (Vector3){unit->render.position.x + action->x,
-  //                       unit->render.position.y + action->y,
-  //                       unit->render.position.z},
-  //             (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, WHITE);
   DrawModelEx(unit->model->model,
-              (Vector3){unit->render.position.x, unit->render.position.y,
+              (Vector3){unit->render.position.x + action->x,
+                        unit->render.position.y + action->y,
                         unit->render.position.z},
-              (Vector3){0, 0, 0}, 0.0f, (Vector3){1, 1, 1}, WHITE);
+              (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, WHITE);
+  // DrawModelEx(unit->model->model,
+  //             (Vector3){unit->render.position.x, unit->render.position.y,
+  //                       unit->render.position.z},
+  //             (Vector3){0, 0, 0}, 0.0f, (Vector3){1, 1, 1}, WHITE);
 }
 
 UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln) {
@@ -131,12 +130,11 @@ UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln) {
   units->length = 0;
   units->head = NULL;
   units->tail = NULL;
-  float mid_x = ((DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL) * max_col -
-                 UNIT_SPACE_HORIZONTAL) /
-                2;
-  float mid_y = ((DEFAULT_UNIT_HEIGHT + UNIT_SPACE_VERTICAL) * max_ln -
-                 UNIT_SPACE_VERTICAL) /
-                2;
+  float unit_full_width = DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL;
+  float unit_full_height = DEFAULT_UNIT_HEIGHT + UNIT_SPACE_VERTICAL;
+
+  float mid_x = (unit_full_width * max_col) / 2.0f - unit_full_width / 2.0f;
+  float mid_y = (unit_full_height * max_ln) / 2.0f - unit_full_height / 2.0f;
   for (int i = count - 1; i >= 0; i -= 1) {
     insertToUnitList(units, newUnit(UNIT_TYPE_ENEMY, model), max_col, max_ln,
                      mid_x, mid_x);

@@ -31,7 +31,7 @@ Game *newGame(int height, int width) {
   game->player = player;
   game->models = models;
   game->units = units;
-  Camera3D camera = {.position = (Vector3){0.0f, 70.0f, 40.0f},
+  Camera3D camera = {.position = (Vector3){0.0f, 90.0f, 40.0f},
                      .target = (Vector3){0.0f, 0.0f, 0.0f},
                      .up = (Vector3){0.0f, 1.0f, 0.0f},
                      .fovy = 45.0f,
