@@ -6,31 +6,30 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-typedef struct PlayerPosition {
-  float x;
-  float y;
-  float z;
-  float max_x;
-  float max_y;
-  float max_z;
+typedef struct {
+  float x, y, z;
+  float max_x, max_y, max_z;
   float offset_z;
-  float rotate_x;
-  float rotate_y;
-  float rotate_z;
-  float max_rotate_x;
-  float max_rotate_y;
-  float max_rotate_z;
-  float max_angle;
-  float angle;
 } PlayerPosition;
+
+typedef struct {
+  float acceleration;
+  int direction_x_key;
+  int direction_z_key;
+  double last_key_press;
+} PlayerMovement;
+
+typedef struct {
+  float rotate_x, rotate_y, rotate_z;
+  float angle, max_angle;
+  float max_rotate_x, max_rotate_y, max_rotate_z;
+} PlayerVisualState;
 
 typedef struct PlayerRender {
   PlayerPosition position;
   UnitSize size;
-  double last_key_press;
-  int direction_x_key;
-  int direction_z_key;
-  float acceleration;
+  PlayerMovement movement;
+  PlayerVisualState state;
 } PlayerRender;
 
 typedef struct Player {
@@ -40,7 +39,8 @@ typedef struct Player {
   ShipModel *model;
 } Player;
 
-PlayerRender newPlayerRender(PlayerPosition position);
+PlayerRender newPlayerRender(float max_x, float max_y, float max_z,
+                             float offset_z);
 
 Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
                   ShipModel *model);
