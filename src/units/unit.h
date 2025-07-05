@@ -3,7 +3,6 @@
 
 #include "../models/models.h"
 #include "../movement/movement.h"
-#include "raylib.h" // For Model, Texture2D, Shader
 #include <stddef.h>
 #include <stdint.h>
 

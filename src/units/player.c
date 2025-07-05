@@ -8,6 +8,11 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
+#define ACCELERATION_DEALY 0.2f
+#define ACCELERATION_INIT 0.1f
+#define ACCELERATION_STEP 0.05f
+#define ACCELERATION_MAX 1.0f
+
 PlayerPosition newPlayerPosition(float max_x, float max_y, float max_z,
                                  float offset_z) {
   PlayerPosition position;
@@ -65,7 +70,7 @@ void updatePlayer(Player *player) {
   double current_time = GetTime();
   double elapsed = current_time - player->render.last_key_press;
   player->render.last_key_press = current_time;
-  bool drop_acceleration = elapsed > 0.2;
+  bool drop_acceleration = elapsed > ACCELERATION_DEALY;
   if (IsKeyDown(KEY_LEFT) && player->render.direction_x_key != KEY_LEFT ||
       IsKeyDown(KEY_RIGHT) && player->render.direction_x_key != KEY_RIGHT ||
       IsKeyDown(KEY_UP) && player->render.direction_z_key != KEY_UP ||
@@ -73,12 +78,12 @@ void updatePlayer(Player *player) {
     drop_acceleration = true;
   }
   if (drop_acceleration) {
-    player->render.acceleration = 0.1f;
+    player->render.acceleration = ACCELERATION_INIT;
   } else {
-    player->render.acceleration += 0.05f;
+    player->render.acceleration += ACCELERATION_STEP;
   }
-  if (player->render.acceleration > 1.0f) {
-    player->render.acceleration = 1.0f;
+  if (player->render.acceleration > ACCELERATION_MAX) {
+    player->render.acceleration = ACCELERATION_MAX;
   }
   float speed = 0.1f;
 
