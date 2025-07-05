@@ -33,21 +33,6 @@
 #define LIGHTS "assets/lights"
 
 /**
- * @def MODEL_<Name>
- * @brief Identifiers for each built-in model (used during loading).
- */
-#define MODEL_CamoStellarJet "CamoStellarJet"
-#define MODEL_DualStriker "DualStriker"
-#define MODEL_GalactixRacer "GalactixRacer"
-#define MODEL_InterstellarRunner "InterstellarRunner"
-#define MODEL_MeteorSlicer "MeteorSlicer"
-#define MODEL_RedFighter "RedFighter"
-#define MODEL_StarMarineTrooper "StarMarineTrooper"
-#define MODEL_Transtellar "Transtellar"
-#define MODEL_UltravioletIntruder "UltravioletIntruder"
-#define MODEL_Warship "Warship"
-
-/**
  * @def MODEL_OBJ_EXT
  * @brief File extension for model geometry files.
  */
@@ -241,6 +226,31 @@ ShipModelList *newShipModelList() {
   }
   models->shader = shader;
   return models;
+}
+
+/**
+ * @brief Finds a ship model in the list by its name.
+ *
+ * Iterates through the linked list of ship models and returns a pointer
+ * to the first model whose `model_name` matches the given `name`.
+ * The comparison is case-sensitive.
+ *
+ * @param list Pointer to the ShipModelList to search.
+ * @param name Name of the model to find.
+ * @return Pointer to the matching ShipModel, or NULL if not found.
+ */
+ShipModel *findModelInList(ShipModelList *list, char *name) {
+  ShipModelNode *node = list->head;
+  if (!node) {
+    return NULL;
+  }
+  while (node) {
+    if (strcmp(node->self->model_name, name) == 0) {
+      return node->self;
+    }
+    node = node->next;
+  }
+  return NULL;
 }
 
 /**

@@ -19,18 +19,26 @@ Game *newGame(int height, int width) {
   if (!models || models->length == 0) {
     return NULL;
   }
-  UnitList *units = newUnitList(20, models->head->self, 10, 3, 40.0f);
-  if (!units) {
+  ShipModel *enemy_model = findModelInList(models, MODEL_CamoStellarJet);
+  if (!enemy_model) {
     return NULL;
   }
-  Player *player = newPlayer(height, width);
+  UnitList *enemies = newUnitList(20, enemy_model, 10, 3, 40.0f);
+  if (!enemies) {
+    return NULL;
+  }
+  ShipModel *player_model = findModelInList(models, MODEL_Transtellar);
+  if (!player_model) {
+    return NULL;
+  }
+  Player *player = newPlayer(20.0f, 0.0f, 20.0f, 30.0f, player_model);
   if (!player) {
-    destroyUnitList(game->units);
+    destroyUnitList(game->enemies);
     return NULL;
   }
   game->player = player;
   game->models = models;
-  game->units = units;
+  game->enemies = enemies;
   Camera3D camera = {.position = (Vector3){0.0f, 80.0f, 40.0f},
                      .target = (Vector3){0.0f, 0.0f, 0.0f},
                      .up = (Vector3){0.0f, 1.0f, 0.0f},
@@ -62,7 +70,7 @@ void destroyGame(Game *game) {
   if (!game) {
     return;
   }
-  destroyUnitList(game->units);
+  destroyUnitList(game->enemies);
   destroyPlayer(game->player);
   destroyShipModelList(game->models);
   free(game);
@@ -71,21 +79,18 @@ void destroyGame(Game *game) {
 void runGame(Game *game) {
   printf("[game] starting\n");
   while (!WindowShouldClose()) {
-    if (!game->units->head) {
+    if (!game->enemies->head) {
       printf("[game] ooops\n");
       return;
     }
-    // Model *model = &game->units->head->self.model->model;
     BeginDrawing();
     ClearBackground(BLACK);
 
     BeginMode3D(game->camera);
     DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
-
-    // DrawModelEx(*model, (Vector3){0.0f, 0.0f, 0.0f}, (Vector3){0, 0, 0},
-    // 0.0f,
-    //             (Vector3){1, 1, 1}, WHITE);
-    drawUnits(game->units);
+    drawUnits(game->enemies);
+    drawPlayer(game->player);
+    updatePlayer(game->player);
     EndMode3D();
 
     EndDrawing();

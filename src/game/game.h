@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 typedef struct Game {
-  UnitList *units;
+  UnitList *enemies;
   Player *player;
   ShipModelList *models;
   Camera3D camera;
