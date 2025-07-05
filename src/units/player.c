@@ -136,10 +136,6 @@ void updatePlayer(Player *player) {
     movement->acceleration = ACCELERATION_MAX;
   }
 
-  float rate = movement->acceleration / ACCELERATION_MAX;
-  float tilt_x = state->max_rotate_x * rate;
-  float tilt_z = state->max_rotate_z * rate;
-
   if (IsKeyDown(KEY_LEFT)) {
     position->x -= movement->acceleration;
     movement->direction_x_key = KEY_LEFT;
