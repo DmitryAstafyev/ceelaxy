@@ -19,7 +19,7 @@ Game *newGame(int height, int width) {
   if (!models || models->length == 0) {
     return NULL;
   }
-  UnitList *units = newUnitList(20, models->head->self, 10, 3);
+  UnitList *units = newUnitList(20, models->head->self, 10, 3, 40.0f);
   if (!units) {
     return NULL;
   }
@@ -31,7 +31,7 @@ Game *newGame(int height, int width) {
   game->player = player;
   game->models = models;
   game->units = units;
-  Camera3D camera = {.position = (Vector3){0.0f, 90.0f, 40.0f},
+  Camera3D camera = {.position = (Vector3){0.0f, 80.0f, 40.0f},
                      .target = (Vector3){0.0f, 0.0f, 0.0f},
                      .up = (Vector3){0.0f, 1.0f, 0.0f},
                      .fovy = 45.0f,

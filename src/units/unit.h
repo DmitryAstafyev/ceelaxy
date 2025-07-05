@@ -67,16 +67,17 @@ typedef struct {
 } UnitList;
 
 UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
-                      float mid_x, float mid_y);
+                      float mid_x, float z_offset);
 
 void drawUnit(Unit *unit);
 
-UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln);
+UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
+                      float z_offset);
 
 void destroyUnitList(UnitList *list);
 
 void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
-                      float mid_x, float mid_y);
+                      float mid_x, float z_offset);
 
 void drawUnits(UnitList *list);
 
