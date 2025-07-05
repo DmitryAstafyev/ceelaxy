@@ -12,9 +12,12 @@ static const float ACCELERATION_DEALY = 0.2f;
 static const float ACCELERATION_INIT = 0.1f;
 static const float ACCELERATION_STEP = 0.05f;
 static const float ACCELERATION_MAX = 1.0f;
-static const float MAX_ROTATE_X = 10.0f;
+static const float MAX_ROTATE_X = 15.0f;
 static const float MAX_ROTATE_Y = 0.0f;
-static const float MAX_ROTATE_Z = 15.0f;
+static const float MAX_ROTATE_Z = 35.0f;
+static const float STEP_ROTATE_X = 1.0f;
+static const float STEP_ROTATE_Y = 0.0f;
+static const float STEP_ROTATE_Z = 2.0f;
 
 PlayerPosition newPlayerPosition(float max_x, float max_y, float max_z,
                                  float offset_z) {
@@ -37,6 +40,9 @@ PlayerVisualState newPlayerVisualState(float offset_z) {
   state.rotate_x = 0.0f;
   state.rotate_y = 0.0f;
   state.rotate_z = 0.0f;
+  state.rotate_step_x = STEP_ROTATE_X;
+  state.rotate_step_y = STEP_ROTATE_Y;
+  state.rotate_step_z = STEP_ROTATE_Z;
   state.max_angle = 15.0f;
   state.angle = 0.0f;
   return state;
@@ -92,60 +98,103 @@ void updatePlayer(Player *player) {
   if (!player) {
     return;
   }
+
+  PlayerMovement *movement = &player->render.movement;
+  PlayerVisualState *state = &player->render.state;
+  PlayerPosition *position = &player->render.position;
+
   if (!(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_UP) ||
         IsKeyDown(KEY_DOWN))) {
+    if (state->rotate_x != 0) {
+      if (state->rotate_x < 0) {
+        state->rotate_x += state->rotate_step_x;
+      } else {
+        state->rotate_x -= state->rotate_step_x;
+      }
+    }
+    if (state->rotate_z != 0) {
+      if (state->rotate_z < 0) {
+        state->rotate_z += state->rotate_step_z;
+      } else {
+        state->rotate_z -= state->rotate_step_z;
+      }
+    }
     return;
   }
+
   double current_time = GetTime();
-  double elapsed = current_time - player->render.movement.last_key_press;
-  player->render.movement.last_key_press = current_time;
+  double elapsed = current_time - movement->last_key_press;
+  movement->last_key_press = current_time;
+
   if (elapsed > ACCELERATION_DEALY || directionChanged(player)) {
-    player->render.movement.acceleration = ACCELERATION_INIT;
+    movement->acceleration = ACCELERATION_INIT;
   } else {
-    player->render.movement.acceleration += ACCELERATION_STEP;
+    movement->acceleration += ACCELERATION_STEP;
   }
 
-  if (player->render.movement.acceleration > ACCELERATION_MAX) {
-    player->render.movement.acceleration = ACCELERATION_MAX;
+  if (movement->acceleration > ACCELERATION_MAX) {
+    movement->acceleration = ACCELERATION_MAX;
   }
+
+  float rate = movement->acceleration / ACCELERATION_MAX;
+  float tilt_x = state->max_rotate_x * rate;
+  float tilt_z = state->max_rotate_z * rate;
 
   if (IsKeyDown(KEY_LEFT)) {
-    player->render.position.x -= player->render.movement.acceleration;
-    player->render.movement.direction_x_key = KEY_LEFT;
+    position->x -= movement->acceleration;
+    movement->direction_x_key = KEY_LEFT;
+    state->rotate_z -= state->rotate_step_z;
+    state->rotate_z = fabsf(state->rotate_z) >= state->max_rotate_z
+                          ? -state->max_rotate_z
+                          : state->rotate_z;
   }
   if (IsKeyDown(KEY_RIGHT)) {
-    player->render.position.x += player->render.movement.acceleration;
-    player->render.movement.direction_x_key = KEY_RIGHT;
+    position->x += movement->acceleration;
+    movement->direction_x_key = KEY_RIGHT;
+    state->rotate_z += state->rotate_step_z;
+    state->rotate_z = fabsf(state->rotate_z) >= state->max_rotate_z
+                          ? state->max_rotate_z
+                          : state->rotate_z;
   }
   if (IsKeyDown(KEY_UP)) {
-    player->render.position.z -= player->render.movement.acceleration;
-    player->render.movement.direction_z_key = KEY_UP;
+    position->z -= movement->acceleration;
+    movement->direction_z_key = KEY_UP;
+    state->rotate_x += state->rotate_step_x;
+    state->rotate_x = fabsf(state->rotate_x) >= state->max_rotate_x
+                          ? state->max_rotate_x
+                          : state->rotate_x;
   }
   if (IsKeyDown(KEY_DOWN)) {
-    player->render.position.z += player->render.movement.acceleration;
-    player->render.movement.direction_z_key = KEY_DOWN;
+    position->z += movement->acceleration;
+    movement->direction_z_key = KEY_DOWN;
+    state->rotate_x -= state->rotate_step_x;
+    state->rotate_x = fabsf(state->rotate_x) >= state->max_rotate_x
+                          ? -state->max_rotate_x
+                          : state->rotate_x;
   }
 }
 
 void drawPlayer(Player *player) {
-  if (!player) {
+  if (!player)
     return;
-  }
 
-  DrawModelEx(
-      player->model->model,
-      (Vector3){player->render.position.x, player->render.position.y,
-                player->render.position.z + player->render.position.offset_z},
-      (Vector3){0, 1, 0}, 180.0f, (Vector3){1, 1, 1}, WHITE);
-  // DrawModelEx(
-  //     player->model->model,
-  //     (Vector3){player->render.position.x, player->render.position.y,
-  //               player->render.position.z +
-  //               player->render.position.offset_z},
-  //     (Vector3){player->render.position.rotate_x,
-  //               player->render.position.rotate_y,
-  //               player->render.position.rotate_z},
-  //     player->render.position.angle, (Vector3){1, 1, 1}, WHITE);
+  Vector3 pos = {player->render.position.x, player->render.position.y,
+                 player->render.position.z + player->render.position.offset_z};
+
+  Matrix transform = MatrixTranslate(pos.x, pos.y, pos.z);
+
+  Matrix rotX = MatrixRotateX(DEG2RAD * player->render.state.rotate_x);
+
+  Matrix rotZ = MatrixRotateZ(DEG2RAD * player->render.state.rotate_z);
+
+  Matrix rotY = MatrixRotateY(DEG2RAD * 180.0f);
+
+  Matrix result = MatrixMultiply(rotX, rotZ);
+  result = MatrixMultiply(result, rotY);
+  result = MatrixMultiply(result, transform);
+  Model model = player->model->model;
+  model.transform = result;
+  DrawModel(model, (Vector3){0, 0, 0}, 1.0f, WHITE);
 }
 
 void destroyPlayer(Player *player) {

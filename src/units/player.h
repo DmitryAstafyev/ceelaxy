@@ -21,6 +21,7 @@ typedef struct {
 
 typedef struct {
   float rotate_x, rotate_y, rotate_z;
+  float rotate_step_x, rotate_step_y, rotate_step_z;
   float angle, max_angle;
   float max_rotate_x, max_rotate_y, max_rotate_z;
 } PlayerVisualState;
