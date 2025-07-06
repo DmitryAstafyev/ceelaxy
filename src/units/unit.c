@@ -32,6 +32,7 @@ UnitPosition newUnitPosition() {
   position.x = 0.0f;
   position.y = 0.0f;
   position.z = 0.0f;
+  position.z_max_area = 300.0f;
   position.ln = 0;
   position.col = 0;
   return position;
@@ -43,6 +44,7 @@ UnitRender newUnitRender(UnitPosition position) {
   render.size = newUnitSize();
   render.action = newMovementAction();
   render.last_frame = 0;
+  render.visible = true;
   return render;
 }
 
@@ -103,19 +105,51 @@ void destroyUnitNode(UnitNode *node) {
   }
 }
 
+void updateDestroyedUnitFall(Unit *unit, float deltaTime) {
+  if (!unit || unit->state.health > 0)
+    return;
+
+  MovementAction *action = unit->render.action;
+  UnitPosition *position = &unit->render.position;
+
+  position->y -= 40.0f * deltaTime;
+
+  position->z -= 50.0f * deltaTime;
+
+  action->x = 2.5f * sinf(GetTime() * 5.0f);
+
+  action->rotate_x = 0.0f;
+  action->rotate_y = 10.0f;
+  action->rotate_z = 0.0f;
+
+  action->angle += 360.0f * deltaTime;
+
+  if (action->angle > 360.0f) {
+    action->angle -= 360.0f;
+  }
+  if (fabsf(position->z + action->z) > fabsf(position->z_max_area)) {
+    unit->render.visible = false;
+  }
+}
+
 void drawUnit(Unit *unit) {
   if (!unit) {
     return;
   }
   MovementAction *action = unit->render.action;
-  iterateMovementAction(action);
+  if (unit->state.health > 0) {
+    iterateMovementAction(action);
+  }
 
   UnitPosition *position = &unit->render.position;
   double current = GetTime();
   bool hit = current > BULLET_HIT_SEN_TIME &&
              current - unit->state.hit_time < BULLET_HIT_SEN_TIME;
   if (hit) {
-    removeShipModelTexture(unit->model, RED);
+    setShipModelColor(unit->model, RED);
+  }
+  if (unit->state.health == 0) {
+    updateDestroyedUnitFall(unit, GetFrameTime());
   }
   DrawModelEx(unit->model->model,
               (Vector3){position->x + action->x, position->y + action->y,
@@ -123,7 +157,7 @@ void drawUnit(Unit *unit) {
               (Vector3){action->rotate_x, action->rotate_y, action->rotate_z},
               action->angle, (Vector3){1, 1, 1}, hit ? RED : WHITE);
   if (hit) {
-    restoreShipModelTexture(unit->model);
+    setShipModelColor(unit->model, WHITE);
   }
   if (is_debug_mode && unit->model->box_model) {
     DrawModelEx(*unit->model->box_model,
@@ -201,6 +235,37 @@ UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
   return units;
 }
 
+void removeUnits(UnitList *list) {
+  UnitNode *node = list->head;
+  while (node) {
+    UnitNode *next = node->next;
+
+    if (!node->self.render.visible) {
+      if (node == list->head) {
+        list->head = node->next;
+      }
+
+      if (node == list->tail) {
+        list->tail = node->prev;
+      }
+
+      if (node->prev) {
+        node->prev->next = node->next;
+      }
+      if (node->next) {
+        node->next->prev = node->prev;
+      }
+
+      destroyUnitNode(node);
+      list->length--;
+
+      printf("[Units] in list: %i\n", list->length);
+    }
+
+    node = next;
+  }
+}
+
 void destroyUnitList(UnitList *list) {
   UnitNode *node = list->head;
   while (node) {
@@ -238,4 +303,5 @@ void drawUnits(UnitList *list) {
     drawUnit(&node->self);
     node = node->next;
   }
+  removeUnits(list);
 }

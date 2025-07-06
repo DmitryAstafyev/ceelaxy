@@ -3,6 +3,7 @@
 
 #include "../models/models.h"
 #include "../movement/movement.h"
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -21,6 +22,7 @@ typedef struct UnitPosition {
   float x;
   float y;
   float z;
+  float z_max_area;
   uint16_t ln;
   uint16_t col;
 } UnitPosition;
@@ -35,6 +37,7 @@ typedef struct UnitRender {
   UnitSize size;
   MovementAction *action;
   uint32_t last_frame;
+  bool visible;
 } UnitRender;
 
 typedef struct Unit {
@@ -82,5 +85,7 @@ void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
                       float mid_x, float z_offset);
 
 void drawUnits(UnitList *list);
+
+void removeUnits(UnitList *list);
 
 #endif

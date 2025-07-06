@@ -98,7 +98,8 @@ ShipModel *loadShipModel(const char *filename, Shader *shader) {
   Texture2D texture = LoadTexture(path_texture);
   free(path_texture);
   model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;
-  model.materials[0].shader = *shader;
+  Material defaultMaterial = LoadMaterialDefault();
+  model.materials[0].shader = defaultMaterial.shader;
   ShipModel *ship = malloc(sizeof(ShipModel));
   if (!ship) {
     UnloadModel(model);
@@ -127,26 +128,16 @@ ShipModel *loadShipModel(const char *filename, Shader *shader) {
   ship->texture = texture;
   ship->model_name = filename;
   ship->box = box;
+  ship->shader = shader;
   return ship;
 }
 
-void removeShipModelTexture(ShipModel *model, Color color) {
+void setShipModelColor(ShipModel *model, Color color) {
   if (!model) {
     return;
   }
   Material *material = &model->model.materials[0];
   material->maps[MATERIAL_MAP_DIFFUSE].color = color;
-  Material defaultMaterial = LoadMaterialDefault();
-  material->shader = defaultMaterial.shader;
-}
-
-void restoreShipModelTexture(ShipModel *model) {
-  if (!model) {
-    return;
-  }
-  Material *material = &model->model.materials[0];
-  material->maps[MATERIAL_MAP_DIFFUSE].color = WHITE;
-  material->maps[MATERIAL_MAP_DIFFUSE].value = 1.0f;
 }
 
 /**

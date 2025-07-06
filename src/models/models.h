@@ -34,6 +34,7 @@ typedef struct ShipModel {
   const char *model_name; ///< Name of the model (without extension or path).
   ShipBoundingBox box;
   Model *box_model;
+  Shader *shader;
 } ShipModel;
 
 /**
@@ -56,9 +57,7 @@ typedef struct {
   size_t length;       ///< Number of models in the list.
 } ShipModelList;
 
-void removeShipModelTexture(ShipModel *model, Color color);
-
-void restoreShipModelTexture(ShipModel *model);
+void setShipModelColor(ShipModel *model, Color color);
 
 /**
  * @brief Frees a ShipModelNode and its associated model.
