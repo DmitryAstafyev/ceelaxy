@@ -1,7 +1,7 @@
 #ifndef MODELS_H
 #define MODELS_H
 
-#include "raylib.h" // For Model, Texture2D, Shader
+#include "raylib.h"
 #include <stddef.h> // For size_t
 
 /**

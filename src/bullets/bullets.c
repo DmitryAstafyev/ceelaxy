@@ -5,7 +5,7 @@
  */
 #include "bullets.h"
 #include "../units/unit.h"
-#include "raylib.h" // For Model, Texture2D, Shader
+#include "raylib.h"
 #include <raymath.h>
 #include <stdbool.h>
 #include <stddef.h>

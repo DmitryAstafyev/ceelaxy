@@ -7,10 +7,11 @@
 #include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../raylib/rlights.h"
+#include "../units/explosion.h"
 #include "../units/player.h"
 #include "../units/unit.h"
 #include "../utils/debug.h"
-#include "raylib.h" // For Model, Texture2D, Shader
+#include "raylib.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,10 +46,16 @@ Game *newGame(int height, int width) {
   if (!enemies) {
     return NULL;
   }
+  // Load explosions
+  ExplosionModelList *explosions = loadExplosionModelList();
+  if (!explosions) {
+    destroyUnitList(enemies);
+    return NULL;
+  }
   // Create bullets storage
   BulletList *bullets = newBulletList();
   if (!bullets) {
-    destroyUnitList(game->enemies);
+    destroyUnitList(enemies);
     return NULL;
   }
   // Create a player
@@ -66,6 +73,7 @@ Game *newGame(int height, int width) {
   game->player = player;
   game->models = models;
   game->enemies = enemies;
+  game->explosions = explosions;
   Camera3D camera = {.position = (Vector3){0.0f, 80.0f, 40.0f},
                      .target = (Vector3){0.0f, 0.0f, 0.0f},
                      .up = (Vector3){0.0f, 1.0f, 0.0f},
@@ -100,6 +108,7 @@ void destroyGame(Game *game) {
   destroyPlayer(game->player);
   destroyShipModelList(game->models);
   destroyBulletList(game->bullets);
+  destroyExplosionModelList(game->explosions);
   free(game);
 }
 
@@ -130,7 +139,7 @@ void runGame(Game *game) {
       DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
     }
     checkBulletHitsUnits(game->enemies, game->bullets);
-    drawUnits(game->enemies);
+    drawUnits(game->enemies, &game->camera, game->explosions);
     drawPlayer(game->player);
     drawBullets(game->bullets);
     EndMode3D();

@@ -9,9 +9,10 @@
 #include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../raylib/rlights.h"
+#include "../units/explosion.h"
 #include "../units/player.h"
 #include "../units/unit.h"
-#include "raylib.h" // For Model, Texture2D, Shader
+#include "raylib.h"
 #include <stdbool.h>
 
 /**
@@ -25,8 +26,10 @@ typedef struct Game {
   Player *player;      ///< Pointer to the player instance.
   BulletList *bullets; ///< Shared bullet registry for both player and enemies.
   ShipModelList *models; ///< List of loaded 3D models used by the game.
-  Camera3D camera;       ///< Active 3D camera used for rendering the scene.
-  Light light;           ///< Scene lighting setup for shading.
+  ExplosionModelList
+      *explosions; /// < List of loaded explosions textures/models
+  Camera3D camera; ///< Active 3D camera used for rendering the scene.
+  Light light;     ///< Scene lighting setup for shading.
 } Game;
 
 /**

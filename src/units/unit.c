@@ -7,8 +7,9 @@
 #include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../movement/movement.h"
+#include "../units/explosion.h"
 #include "../utils/debug.h"
-#include "raylib.h" // For Model, Texture2D, Shader
+#include "raylib.h"
 #include <math.h>
 #include <raymath.h>
 #include <stddef.h>
@@ -110,6 +111,7 @@ Unit newUnit(UnitType ty, ShipModel *model) {
   unit.state = newUnitState();
   unit.render = newUnitRender(newUnitPosition());
   unit.model = model;
+  unit.explosion = NULL;
   return unit;
 }
 
@@ -168,6 +170,9 @@ UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
 void destroyUnitNode(UnitNode *node) {
   if (node != NULL) {
     destroyMovementAction(node->self.render.action);
+    if (node->self.explosion) {
+      destroyExplosionState(node->self.explosion);
+    }
     free(node);
   }
 }
@@ -220,7 +225,7 @@ void updateDestroyedUnitFall(Unit *unit, float deltaTime) {
  *
  * @param unit Pointer to the unit to draw.
  */
-void drawUnit(Unit *unit) {
+void drawUnit(Unit *unit, Camera3D *camera, ExplosionModelList *explosions) {
   if (!unit) {
     return;
   }
@@ -237,6 +242,15 @@ void drawUnit(Unit *unit) {
 
   if (unit->state.health == 0) {
     updateDestroyedUnitFall(unit, GetFrameTime());
+    if (!unit->explosion) {
+      unit->explosion = newExplosionState(&explosions->head->self);
+    }
+    if (unit->explosion) {
+      drawExplosionState(unit->explosion, *camera,
+                         (Vector3){position->x + action->x,
+                                   position->y + action->y,
+                                   position->z + action->z});
+    }
   } else {
     iterateMovementAction(action);
   }
@@ -442,13 +456,14 @@ void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
  *
  * @param list Pointer to the UnitList.
  */
-void drawUnits(UnitList *list) {
+void drawUnits(UnitList *list, Camera3D *camera,
+               ExplosionModelList *explosions) {
   UnitNode *node = list->head;
   for (int i = 0; i < list->length; i += 1) {
     if (!node) {
       break;
     }
-    drawUnit(&node->self);
+    drawUnit(&node->self, camera, explosions);
     node = node->next;
   }
   removeUnits(list);
