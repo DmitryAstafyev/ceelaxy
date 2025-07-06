@@ -56,6 +56,10 @@ typedef struct {
   size_t length;       ///< Number of models in the list.
 } ShipModelList;
 
+void removeShipModelTexture(ShipModel *model, Color color);
+
+void restoreShipModelTexture(ShipModel *model);
+
 /**
  * @brief Frees a ShipModelNode and its associated model.
  *

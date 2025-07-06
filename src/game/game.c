@@ -99,6 +99,7 @@ void runGame(Game *game) {
 
     BeginMode3D(game->camera);
     DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
+    checkBulletHitsUnits(game->enemies, game->bullets);
     drawUnits(game->enemies);
     drawPlayer(game->player);
     drawBullets(game->bullets);

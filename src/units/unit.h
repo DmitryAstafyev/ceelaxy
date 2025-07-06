@@ -14,6 +14,7 @@ typedef enum UnitType {
 typedef struct UnitState {
   uint8_t health;
   uint8_t energy;
+  double hit_time;
 } UnitState;
 
 typedef struct UnitPosition {
@@ -52,6 +53,8 @@ UnitRender newUnitRender(UnitPosition position);
 UnitState newUnitState();
 
 Unit newUnit(UnitType ty, ShipModel *model);
+
+BoundingBox getUnitBoundingBox(Unit *unit);
 
 typedef struct UnitNode {
   struct UnitNode *prev;

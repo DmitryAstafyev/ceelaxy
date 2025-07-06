@@ -1,14 +1,22 @@
 #ifndef BULLETS_H
 #define BULLETS_H
 
+#include "../units/unit.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+static const double BULLET_HIT_SEN_TIME = 0.1f;
 
 typedef enum {
   BULLET_MOVEMENT_DIRECTION_UP = 1,
   BULLET_MOVEMENT_DIRECTION_DOWN = 2
 } BulletMovementDirection;
+
+typedef struct {
+  uint8_t health;
+  uint8_t energy;
+} BulletParameters;
 
 typedef struct {
   float x, y, z;
@@ -31,6 +39,7 @@ typedef struct {
   BulletMovement movement;
   BulletPosition position;
   BulletSize size;
+  BulletParameters params;
   bool alive;
 } Bullet;
 
@@ -59,14 +68,18 @@ BulletPosition newBulletPosition(float x, float y, float z);
 
 BulletSize newBulletSize(float by_x, float by_y, float by_z);
 
+BulletParameters newBulletParameters(uint8_t health, uint8_t energy);
+
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
-                 BulletSize size);
+                 BulletSize size, BulletParameters params);
 
 BulletList *newBulletList();
 
 void insertBulletIntoList(BulletList *list, Bullet bullet);
 
 void drawBullets(BulletList *list);
+
+void checkBulletHitsUnits(UnitList *units, BulletList *bullets);
 
 void destroyBulletList(BulletList *list);
 #endif

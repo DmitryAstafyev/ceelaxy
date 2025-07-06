@@ -1,4 +1,5 @@
 #include "bullets.h"
+#include "../units/unit.h"
 #include "raylib.h" // For Model, Texture2D, Shader
 #include <raymath.h>
 #include <stdbool.h>
@@ -41,11 +42,19 @@ BulletSize newBulletSize(float by_x, float by_y, float by_z) {
   return size;
 }
 
+BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
+  BulletParameters params;
+  params.energy = energy;
+  params.health = health;
+  return params;
+}
+
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
-                 BulletSize size) {
+                 BulletSize size, BulletParameters params) {
   Bullet bullet;
   bullet.movement = newBulletMovement(direction);
   bullet.position = position;
+  bullet.params = params;
   bullet.size = size;
   bullet.alive = true;
   return bullet;
@@ -75,6 +84,15 @@ void drawBullet(Bullet *bullet, BulletAreaFrame *frame) {
       (Vector3){bullet->position.x, bullet->position.y, bullet->position.z},
       bullet->size.radius_top, bullet->size.radius_bottom, bullet->size.by_y,
       bullet->size.slices, RED);
+}
+
+BoundingBox getBulletBoundingBox(Bullet *bullet) {
+  return (BoundingBox){.min = {bullet->position.x - bullet->size.by_x / 2,
+                               bullet->position.y - bullet->size.by_y / 2,
+                               bullet->position.z - bullet->size.by_z / 2},
+                       .max = {bullet->position.x + bullet->size.by_x / 2,
+                               bullet->position.y + bullet->size.by_y / 2,
+                               bullet->position.z + bullet->size.by_z / 2}};
 }
 
 BulletNode *newBulletNode(BulletNode *prev, Bullet bullet, size_t idx) {
@@ -172,6 +190,50 @@ void drawBullets(BulletList *list) {
   }
   // Cleanup
   removeBullets(list);
+}
+
+void checkBulletHitsUnit(Unit *unit, BulletList *bullets) {
+  if (!unit || !bullets)
+    return;
+
+  BoundingBox unitBox = getUnitBoundingBox(unit);
+
+  BulletNode *node = bullets->head;
+  while (node) {
+    Bullet *bullet = &node->self;
+    if (!bullet->alive) {
+      node = node->next;
+      continue;
+    }
+
+    BoundingBox bulletBox = getBulletBoundingBox(bullet);
+
+    if (CheckCollisionBoxes(unitBox, bulletBox)) {
+      bullet->alive = false;
+      if (unit->state.health > 0) {
+        unit->state.health -= bullet->params.health;
+      }
+      if (unit->state.energy > 0) {
+        unit->state.energy -= bullet->params.energy;
+      }
+      unit->state.hit_time = GetTime();
+      printf("[Bullets] HIT! health = %u\n", unit->state.health);
+    }
+
+    node = node->next;
+  }
+}
+
+void checkBulletHitsUnits(UnitList *units, BulletList *bullets) {
+  if (!units || !bullets) {
+    return;
+  }
+  UnitNode *node = units->head;
+  while (node) {
+    checkBulletHitsUnit(&node->self, bullets);
+    node = node->next;
+  }
+  removeBullets(bullets);
 }
 
 void destroyBulletList(BulletList *list) {

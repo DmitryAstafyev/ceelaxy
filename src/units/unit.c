@@ -1,8 +1,10 @@
 #include "unit.h"
+#include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../movement/movement.h"
 #include "../utils/debug.h"
 #include "raylib.h" // For Model, Texture2D, Shader
+#include <math.h>
 #include <raymath.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -48,6 +50,7 @@ UnitState newUnitState() {
   UnitState state;
   state.health = DEFAULT_UNIT_HEALTH;
   state.energy = DEFAULT_UNIT_ENERGY;
+  state.hit_time = 0.0f;
   return state;
 }
 
@@ -108,12 +111,20 @@ void drawUnit(Unit *unit) {
   iterateMovementAction(action);
 
   UnitPosition *position = &unit->render.position;
-
+  double current = GetTime();
+  bool hit = current > BULLET_HIT_SEN_TIME &&
+             current - unit->state.hit_time < BULLET_HIT_SEN_TIME;
+  if (hit) {
+    removeShipModelTexture(unit->model, RED);
+  }
   DrawModelEx(unit->model->model,
               (Vector3){position->x + action->x, position->y + action->y,
                         position->z + action->z},
               (Vector3){action->rotate_x, action->rotate_y, action->rotate_z},
-              action->angle, (Vector3){1, 1, 1}, WHITE);
+              action->angle, (Vector3){1, 1, 1}, hit ? RED : WHITE);
+  if (hit) {
+    restoreShipModelTexture(unit->model);
+  }
   if (is_debug_mode && unit->model->box_model) {
     DrawModelEx(*unit->model->box_model,
                 (Vector3){position->x + action->x, position->y + action->y,
@@ -121,6 +132,52 @@ void drawUnit(Unit *unit) {
                 (Vector3){action->rotate_x, action->rotate_y, action->rotate_z},
                 action->angle, (Vector3){1, 1, 1}, RED);
   }
+}
+
+BoundingBox getUnitBoundingBox(Unit *unit) {
+  ShipBoundingBox *box = &unit->model->box;
+  UnitRender *render = &unit->render;
+  MovementAction *action = render->action;
+
+  float x = render->position.x + (action ? action->x : 0);
+  float y = render->position.y + (action ? action->y : 0);
+  float z = render->position.z + (action ? action->z : 0);
+
+  Vector3 position = {x, y, z};
+
+  BoundingBox local = {.min = {-box->by_x / 2, -box->by_y / 2, -box->by_z / 2},
+                       .max = {box->by_x / 2, box->by_y / 2, box->by_z / 2}};
+
+  Matrix transform = MatrixTranslate(position.x, position.y, position.z);
+  if (action) {
+    Matrix rotX = MatrixRotateX(DEG2RAD * action->rotate_x);
+    Matrix rotZ = MatrixRotateZ(DEG2RAD * action->rotate_z);
+    Matrix rotY = MatrixRotateY(DEG2RAD * action->rotate_y);
+    Matrix rotAll = MatrixMultiply(MatrixMultiply(rotX, rotZ), rotY);
+    transform = MatrixMultiply(rotAll, transform);
+  }
+
+  Vector3 corners[8] = {
+      {local.min.x, local.min.y, local.min.z},
+      {local.min.x, local.min.y, local.max.z},
+      {local.min.x, local.max.y, local.min.z},
+      {local.min.x, local.max.y, local.max.z},
+      {local.max.x, local.min.y, local.min.z},
+      {local.max.x, local.min.y, local.max.z},
+      {local.max.x, local.max.y, local.min.z},
+      {local.max.x, local.max.y, local.max.z},
+  };
+
+  BoundingBox world = {.min = Vector3Transform(corners[0], transform),
+                       .max = Vector3Transform(corners[0], transform)};
+
+  for (int i = 1; i < 8; i++) {
+    Vector3 transformed = Vector3Transform(corners[i], transform);
+    world.min = Vector3Min(world.min, transformed);
+    world.max = Vector3Max(world.max, transformed);
+  }
+
+  return world;
 }
 
 UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,

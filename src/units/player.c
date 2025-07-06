@@ -115,7 +115,7 @@ void updatePlayer(Player *player) {
         newBullet(BULLET_MOVEMENT_DIRECTION_UP,
                   newBulletPosition(position->x, position->y,
                                     position->z + position->offset_z),
-                  newBulletSize(1.0f, 1.0f, 1.0f));
+                  newBulletSize(1.0f, 1.0f, 1.0f), newBulletParameters(10, 10));
     insertBulletIntoList(player->bullets, bullet);
     bullets->last_spawn = current_time;
   }

@@ -130,6 +130,25 @@ ShipModel *loadShipModel(const char *filename, Shader *shader) {
   return ship;
 }
 
+void removeShipModelTexture(ShipModel *model, Color color) {
+  if (!model) {
+    return;
+  }
+  Material *material = &model->model.materials[0];
+  material->maps[MATERIAL_MAP_DIFFUSE].color = color;
+  Material defaultMaterial = LoadMaterialDefault();
+  material->shader = defaultMaterial.shader;
+}
+
+void restoreShipModelTexture(ShipModel *model) {
+  if (!model) {
+    return;
+  }
+  Material *material = &model->model.materials[0];
+  material->maps[MATERIAL_MAP_DIFFUSE].color = WHITE;
+  material->maps[MATERIAL_MAP_DIFFUSE].value = 1.0f;
+}
+
 /**
  * @brief Frees all memory and GPU resources associated with a ShipModel.
  *
