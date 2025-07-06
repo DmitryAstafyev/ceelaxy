@@ -11,7 +11,7 @@ This is an educational project aimed at exploring the `C` programming language a
 - Support for player shooting (spacebar key)
 - Projectile trajectory computation and hit detection (taking into account not only the enemy ship’s position but also its rotation)
 
-The engine is built on top of raylib, though it should be noted that `DrawMeshInstanced` was deliberately not used—even though it would have significantly improved enemy rendering performance—due to compatibility issues on Linux systems.
+The engine is built on top of `raylib`, though it should be noted that `DrawMeshInstanced` was deliberately not used-even though it would have significantly improved enemy rendering performance-due to compatibility issues on Linux systems.
 
 Debug mode can be enabled using the `--debug` flag. When enabled, model bounding containers are rendered to simplify visual debugging.
 
