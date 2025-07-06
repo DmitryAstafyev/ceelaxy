@@ -1,3 +1,8 @@
+/**
+ * @file bullets.c
+ * @brief Implements bullet behavior, including creation, movement, rendering,
+ * collision detection, and lifecycle management.
+ */
 #include "bullets.h"
 #include "../units/unit.h"
 #include "raylib.h" // For Model, Texture2D, Shader
@@ -7,6 +12,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * @brief Creates a new bullet area frame defining valid Z boundaries for
+ * bullets.
+ *
+ * @return BulletAreaFrame with default top/bottom Z range.
+ */
 BulletAreaFrame newBulletAreaFrame() {
   BulletAreaFrame frame;
   frame.top = -60.0f;
@@ -14,6 +25,13 @@ BulletAreaFrame newBulletAreaFrame() {
   return frame;
 }
 
+/**
+ * @brief Initializes a BulletMovement struct with default speed and
+ * acceleration.
+ *
+ * @param direction Direction of bullet travel (up or down).
+ * @return A new BulletMovement object.
+ */
 BulletMovement newBulletMovement(BulletMovementDirection direction) {
   BulletMovement movement;
   movement.acceleration = 0.1f;
@@ -23,6 +41,14 @@ BulletMovement newBulletMovement(BulletMovementDirection direction) {
   return movement;
 }
 
+/**
+ * @brief Creates a new BulletPosition with specified coordinates.
+ *
+ * @param x X coordinate.
+ * @param y Y coordinate.
+ * @param z Z coordinate.
+ * @return A BulletPosition struct.
+ */
 BulletPosition newBulletPosition(float x, float y, float z) {
   BulletPosition position;
   position.x = x;
@@ -31,6 +57,14 @@ BulletPosition newBulletPosition(float x, float y, float z) {
   return position;
 }
 
+/**
+ * @brief Creates a new BulletSize with default shape parameters.
+ *
+ * @param by_x Width of the bullet.
+ * @param by_y Height of the bullet.
+ * @param by_z Depth of the bullet.
+ * @return A BulletSize struct with top/bottom radii and slices set.
+ */
 BulletSize newBulletSize(float by_x, float by_y, float by_z) {
   BulletSize size;
   size.by_x = by_x;
@@ -42,6 +76,13 @@ BulletSize newBulletSize(float by_x, float by_y, float by_z) {
   return size;
 }
 
+/**
+ * @brief Creates bullet parameters that define its effect on health and energy.
+ *
+ * @param health Health impact on hit.
+ * @param energy Energy impact on hit.
+ * @return A BulletParameters struct.
+ */
 BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
   BulletParameters params;
   params.energy = energy;
@@ -49,6 +90,15 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
   return params;
 }
 
+/**
+ * @brief Creates a fully initialized Bullet object.
+ *
+ * @param direction Movement direction.
+ * @param position Starting position.
+ * @param size Physical size of the bullet.
+ * @param params Damage and energy properties.
+ * @return A Bullet instance.
+ */
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
                  BulletSize size, BulletParameters params) {
   Bullet bullet;
@@ -60,6 +110,12 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
   return bullet;
 }
 
+/**
+ * @brief Updates bullet position and checks whether it exited the valid frame.
+ *
+ * @param bullet Pointer to the bullet.
+ * @param frame Pointer to the frame defining allowed Z range.
+ */
 void updateBullet(Bullet *bullet, BulletAreaFrame *frame) {
   if (!bullet) {
     return;
@@ -75,6 +131,12 @@ void updateBullet(Bullet *bullet, BulletAreaFrame *frame) {
   }
 }
 
+/**
+ * @brief Draws a bullet as a 3D cylinder and updates its position.
+ *
+ * @param bullet Pointer to the bullet.
+ * @param frame Pointer to the bullet area frame.
+ */
 void drawBullet(Bullet *bullet, BulletAreaFrame *frame) {
   if (!bullet) {
     return;
@@ -86,6 +148,14 @@ void drawBullet(Bullet *bullet, BulletAreaFrame *frame) {
       bullet->size.slices, RED);
 }
 
+/**
+ * @brief Computes the bounding box for a given bullet.
+ *
+ * Used for collision detection with units.
+ *
+ * @param bullet Pointer to the bullet.
+ * @return BoundingBox struct in world space.
+ */
 BoundingBox getBulletBoundingBox(Bullet *bullet) {
   return (BoundingBox){.min = {bullet->position.x - bullet->size.by_x / 2,
                                bullet->position.y - bullet->size.by_y / 2,
@@ -95,6 +165,14 @@ BoundingBox getBulletBoundingBox(Bullet *bullet) {
                                bullet->position.z + bullet->size.by_z / 2}};
 }
 
+/**
+ * @brief Creates and initializes a new BulletNode.
+ *
+ * @param prev Pointer to the previous node.
+ * @param bullet Bullet to be stored in the node.
+ * @param idx Unique index or identifier.
+ * @return Pointer to the new BulletNode or NULL on failure.
+ */
 BulletNode *newBulletNode(BulletNode *prev, Bullet bullet, size_t idx) {
   BulletNode *node = malloc(sizeof(BulletNode));
   if (!node) {
@@ -107,6 +185,11 @@ BulletNode *newBulletNode(BulletNode *prev, Bullet bullet, size_t idx) {
   return node;
 }
 
+/**
+ * @brief Frees memory allocated for a single BulletNode.
+ *
+ * @param node Pointer to the node to free.
+ */
 void destroyBulletNode(BulletNode *node) {
   if (!node) {
     return;
@@ -114,6 +197,11 @@ void destroyBulletNode(BulletNode *node) {
   free(node);
 }
 
+/**
+ * @brief Allocates and initializes a new BulletList.
+ *
+ * @return Pointer to the new BulletList.
+ */
 BulletList *newBulletList() {
   BulletList *list = malloc(sizeof(BulletList));
   if (!list) {
@@ -128,6 +216,12 @@ BulletList *newBulletList() {
   return list;
 }
 
+/**
+ * @brief Inserts a new bullet into the bullet list.
+ *
+ * @param list Pointer to the bullet list.
+ * @param bullet Bullet to insert.
+ */
 void insertBulletIntoList(BulletList *list, Bullet bullet) {
   if (!list) {
     return;
@@ -150,6 +244,13 @@ void insertBulletIntoList(BulletList *list, Bullet bullet) {
          bullet.position.y, bullet.position.z);
 }
 
+/**
+ * @brief Removes all inactive (dead) bullets from the list.
+ *
+ * Updates list links and decrements length accordingly.
+ *
+ * @param list Pointer to the bullet list.
+ */
 void removeBullets(BulletList *list) {
   BulletNode *node = list->head;
   while (node) {
@@ -181,6 +282,13 @@ void removeBullets(BulletList *list) {
   }
 }
 
+/**
+ * @brief Draws all bullets in the list and updates their positions.
+ *
+ * Also removes any bullets that have become inactive.
+ *
+ * @param list Pointer to the bullet list.
+ */
 void drawBullets(BulletList *list) {
   BulletNode *node = list->head;
   // Process and draw bullets
@@ -192,6 +300,14 @@ void drawBullets(BulletList *list) {
   removeBullets(list);
 }
 
+/**
+ * @brief Checks if any bullet in the list has collided with the given unit.
+ *
+ * On collision, bullet is deactivated and unit health/energy is reduced.
+ *
+ * @param unit Pointer to the target unit.
+ * @param bullets Pointer to the bullet list.
+ */
 void checkBulletHitsUnit(Unit *unit, BulletList *bullets) {
   if (!unit || !bullets)
     return;
@@ -224,6 +340,12 @@ void checkBulletHitsUnit(Unit *unit, BulletList *bullets) {
   }
 }
 
+/**
+ * @brief Applies bullet collision checks to all units in the list.
+ *
+ * @param units Pointer to the unit list.
+ * @param bullets Pointer to the bullet list.
+ */
 void checkBulletHitsUnits(UnitList *units, BulletList *bullets) {
   if (!units || !bullets) {
     return;
@@ -236,6 +358,11 @@ void checkBulletHitsUnits(UnitList *units, BulletList *bullets) {
   removeBullets(bullets);
 }
 
+/**
+ * @brief Frees all memory used by the bullet list and its nodes.
+ *
+ * @param list Pointer to the bullet list.
+ */
 void destroyBulletList(BulletList *list) {
   BulletNode *node = list->head;
   while (node) {

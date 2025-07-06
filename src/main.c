@@ -7,6 +7,7 @@
 #include <time.h>
 
 int main(int argc, char *argv[]) {
+  // Check debug flag --debug
   checkDebugFlag(argc, argv);
 
   if (is_debug_mode) {
@@ -15,6 +16,7 @@ int main(int argc, char *argv[]) {
 
   srand(time(NULL));
   printf("Starting\n");
+
   InitWindow(800, 600, "Ceelaxy");
   SetTargetFPS(60);
 
@@ -27,6 +29,7 @@ int main(int argc, char *argv[]) {
   runGame(game);
 
   destroyGame(game);
+
   CloseWindow();
 
   return 0;

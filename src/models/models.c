@@ -128,10 +128,18 @@ ShipModel *loadShipModel(const char *filename, Shader *shader) {
   ship->texture = texture;
   ship->model_name = filename;
   ship->box = box;
-  ship->shader = shader;
   return ship;
 }
 
+/**
+ * @brief Sets the diffuse color of the ship model's material.
+ *
+ * Updates the base color (diffuse map) of the first material in the model.
+ * If the model pointer is NULL, the function does nothing.
+ *
+ * @param model Pointer to the ShipModel to modify.
+ * @param color The new color to apply to the model's diffuse map.
+ */
 void setShipModelColor(ShipModel *model, Color color) {
   if (!model) {
     return;

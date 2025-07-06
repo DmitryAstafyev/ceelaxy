@@ -1,3 +1,8 @@
+/**
+ * @file unit.c
+ * @brief Implements unit-related creation and initialization logic,
+ * including size, position, state, and rendering configuration.
+ */
 #include "unit.h"
 #include "../bullets/bullets.h"
 #include "../models/models.h"
@@ -11,15 +16,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/// Default width (in world units) assigned to all units.
 const float DEFAULT_UNIT_WIDTH = 6.0;
+
+/// Default height (in world units) assigned to all units.
 const float DEFAULT_UNIT_HEIGHT = 6.0;
 
+/// Vertical spacing between units when placed in formation.
 const float UNIT_SPACE_VERTICAL = 6.0;
+
+/// Horizontal spacing between units when placed in formation.
 const float UNIT_SPACE_HORIZONTAL = 3.0;
 
+/// Default health value for any newly created unit.
 const uint8_t DEFAULT_UNIT_HEALTH = 100;
+
+/// Default energy value for any newly created unit.
 const uint8_t DEFAULT_UNIT_ENERGY = 100;
 
+/**
+ * @brief Initializes and returns a UnitSize structure with default dimensions.
+ *
+ * @return A UnitSize structure with predefined width and height.
+ */
 UnitSize newUnitSize() {
   UnitSize size;
   size.width = DEFAULT_UNIT_WIDTH;
@@ -27,6 +46,12 @@ UnitSize newUnitSize() {
   return size;
 };
 
+/**
+ * @brief Initializes and returns a UnitPosition structure with origin
+ * coordinates and default grid mapping values.
+ *
+ * @return A UnitPosition structure with zeroed coordinates and grid indices.
+ */
 UnitPosition newUnitPosition() {
   UnitPosition position;
   position.x = 0.0f;
@@ -38,6 +63,13 @@ UnitPosition newUnitPosition() {
   return position;
 };
 
+/**
+ * @brief Creates a UnitRender structure with default visibility, size, and
+ * movement action, based on a given position.
+ *
+ * @param position Initial world position of the unit.
+ * @return A fully initialized UnitRender structure.
+ */
 UnitRender newUnitRender(UnitPosition position) {
   UnitRender render;
   render.position = position;
@@ -48,6 +80,12 @@ UnitRender newUnitRender(UnitPosition position) {
   return render;
 }
 
+/**
+ * @brief Initializes and returns a UnitState with full health and energy.
+ *
+ * @return A UnitState structure with default health, energy, and zeroed hit
+ * time.
+ */
 UnitState newUnitState() {
   UnitState state;
   state.health = DEFAULT_UNIT_HEALTH;
@@ -56,6 +94,16 @@ UnitState newUnitState() {
   return state;
 }
 
+/**
+ * @brief Constructs a new Unit object with specified type and model.
+ *
+ * Initializes the internal state, position, and render configuration using
+ * default values.
+ *
+ * @param ty Type of the unit (e.g., player or enemy).
+ * @param model Pointer to the ship model used for rendering this unit.
+ * @return A fully constructed Unit structure.
+ */
 Unit newUnit(UnitType ty, ShipModel *model) {
   Unit unit;
   unit.type = ty;
@@ -65,6 +113,20 @@ Unit newUnit(UnitType ty, ShipModel *model) {
   return unit;
 }
 
+/**
+ * @brief Creates a new UnitNode with proper grid-based positioning.
+ *
+ * Automatically assigns column and line (ln) indices based on the previous node
+ * and positions the unit accordingly in a grid layout.
+ *
+ * @param prev Pointer to the previous node in the list, or NULL if first.
+ * @param unit The Unit instance to store.
+ * @param max_col Maximum number of columns in the grid.
+ * @param max_ln Maximum number of rows (lines) in the grid.
+ * @param mid_x Horizontal center for centering the grid.
+ * @param z_offset Offset to apply to the Z position of the unit.
+ * @return Pointer to the allocated UnitNode, or NULL on failure.
+ */
 UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
                       float mid_x, float z_offset) {
   UnitNode *node = malloc(sizeof(UnitNode));
@@ -98,6 +160,11 @@ UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
   return node;
 }
 
+/**
+ * @brief Destroys a single UnitNode, including its movement action.
+ *
+ * @param node Pointer to the node to destroy.
+ */
 void destroyUnitNode(UnitNode *node) {
   if (node != NULL) {
     destroyMovementAction(node->self.render.action);
@@ -105,6 +172,16 @@ void destroyUnitNode(UnitNode *node) {
   }
 }
 
+/**
+ * @brief Updates the falling animation of a destroyed unit.
+ *
+ * If the unit's health is zero, its Y and Z positions are adjusted to simulate
+ * falling. Rotation and oscillation are also applied. When it falls out of
+ * range, it's marked invisible.
+ *
+ * @param unit Pointer to the unit to update.
+ * @param deltaTime Time elapsed since last frame.
+ */
 void updateDestroyedUnitFall(Unit *unit, float deltaTime) {
   if (!unit || unit->state.health > 0)
     return;
@@ -132,13 +209,20 @@ void updateDestroyedUnitFall(Unit *unit, float deltaTime) {
   }
 }
 
+/**
+ * @brief Draws a single unit, applying animation, movement, hit indication, and
+ * transformations.
+ *
+ * If the unit was recently hit, it's rendered red temporarily. If health is
+ * zero, the falling animation is applied.
+ *
+ * In debug mode, the bounding box model is also rendered.
+ *
+ * @param unit Pointer to the unit to draw.
+ */
 void drawUnit(Unit *unit) {
   if (!unit) {
     return;
-  }
-  MovementAction *action = unit->render.action;
-  if (unit->state.health > 0) {
-    iterateMovementAction(action);
   }
 
   UnitPosition *position = &unit->render.position;
@@ -148,8 +232,13 @@ void drawUnit(Unit *unit) {
   if (hit) {
     setShipModelColor(unit->model, RED);
   }
+
+  MovementAction *action = unit->render.action;
+
   if (unit->state.health == 0) {
     updateDestroyedUnitFall(unit, GetFrameTime());
+  } else {
+    iterateMovementAction(action);
   }
   DrawModelEx(unit->model->model,
               (Vector3){position->x + action->x, position->y + action->y,
@@ -168,6 +257,16 @@ void drawUnit(Unit *unit) {
   }
 }
 
+/**
+ * @brief Calculates the world-space bounding box of the unit model, including
+ * rotation.
+ *
+ * Applies the unit's movement offset and rotation to compute the transformed
+ * box.
+ *
+ * @param unit Pointer to the unit.
+ * @return A BoundingBox in world coordinates.
+ */
 BoundingBox getUnitBoundingBox(Unit *unit) {
   ShipBoundingBox *box = &unit->model->box;
   UnitRender *render = &unit->render;
@@ -214,6 +313,20 @@ BoundingBox getUnitBoundingBox(Unit *unit) {
   return world;
 }
 
+/**
+ * @brief Allocates and initializes a UnitList with a given number of enemy
+ * units.
+ *
+ * Positions the units in a grid based on the column and row count.
+ *
+ * @param count Number of enemy units to spawn.
+ * @param model Shared model used for all units.
+ * @param max_col Maximum columns per row.
+ * @param max_ln Maximum number of rows.
+ * @param z_offset Z offset for spacing the grid vertically.
+ * @return Pointer to the newly allocated UnitList, or NULL on allocation
+ * failure.
+ */
 UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
                       float z_offset) {
   UnitList *units = malloc(sizeof(UnitList));
@@ -235,6 +348,14 @@ UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
   return units;
 }
 
+/**
+ * @brief Removes units from the list that are no longer visible (e.g.,
+ * destroyed and fallen).
+ *
+ * Frees memory for removed nodes and updates list pointers and length.
+ *
+ * @param list Pointer to the UnitList to modify.
+ */
 void removeUnits(UnitList *list) {
   UnitNode *node = list->head;
   while (node) {
@@ -266,6 +387,13 @@ void removeUnits(UnitList *list) {
   }
 }
 
+/**
+ * @brief Frees all memory used by the UnitList and its nodes.
+ *
+ * Resets head, tail, and length to initial state.
+ *
+ * @param list Pointer to the UnitList to destroy.
+ */
 void destroyUnitList(UnitList *list) {
   UnitNode *node = list->head;
   while (node) {
@@ -277,6 +405,17 @@ void destroyUnitList(UnitList *list) {
   list->length = 0;
 }
 
+/**
+ * @brief Inserts a new unit into the UnitList, assigning grid position and
+ * links.
+ *
+ * @param list Pointer to the list.
+ * @param unit Unit instance to insert.
+ * @param max_col Grid column limit.
+ * @param max_ln Grid row limit.
+ * @param mid_x Center offset for positioning units horizontally.
+ * @param z_offset Vertical placement offset along Z.
+ */
 void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
                       float mid_x, float z_offset) {
   UnitNode *node =
@@ -294,6 +433,15 @@ void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
   list->length += 1;
 }
 
+/**
+ * @brief Renders all units in the list and removes invisible units after
+ * drawing.
+ *
+ * Iterates through each node in the UnitList, draws it, and cleans up destroyed
+ * units.
+ *
+ * @param list Pointer to the UnitList.
+ */
 void drawUnits(UnitList *list) {
   UnitNode *node = list->head;
   for (int i = 0; i < list->length; i += 1) {

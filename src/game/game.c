@@ -1,15 +1,32 @@
+/**
+ * @file game.c
+ * @brief Implements the core game logic, including initialization, main loop,
+ * rendering, and resource cleanup.
+ */
 #include "game.h"
 #include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../raylib/rlights.h"
 #include "../units/player.h"
 #include "../units/unit.h"
+#include "../utils/debug.h"
 #include "raylib.h" // For Model, Texture2D, Shader
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
 
+/**
+ * @brief Initializes a new Game instance, loading models, creating player,
+ * enemies, and bullets.
+ *
+ * Also sets up the 3D camera and lighting. If any step fails, previously
+ * allocated resources are freed and NULL is returned.
+ *
+ * @param height The height of the game window or viewport (currently unused).
+ * @param width The width of the game window or viewport (currently unused).
+ * @return Pointer to a fully initialized Game structure, or NULL on failure.
+ */
 Game *newGame(int height, int width) {
   Game *game = malloc(sizeof(Game));
   if (!game) {
@@ -68,14 +85,13 @@ Game *newGame(int height, int width) {
   return game;
 }
 
-bool renderGame(Game *game) {
-  if (!game) {
-    return false;
-  }
-
-  return true;
-}
-
+/**
+ * @brief Frees all memory and resources associated with a Game instance.
+ *
+ * Properly destroys the enemies, player, bullet list, and model list.
+ *
+ * @param game Pointer to the Game to destroy.
+ */
 void destroyGame(Game *game) {
   if (!game) {
     return;
@@ -87,6 +103,18 @@ void destroyGame(Game *game) {
   free(game);
 }
 
+/**
+ * @brief Runs the main game loop until the window is closed.
+ *
+ * The loop performs:
+ * - Bullet hit checks
+ * - Drawing of units, player, and bullets
+ * - Handling debug rendering
+ *
+ * If the enemy list becomes empty, the loop exits early.
+ *
+ * @param game Pointer to the initialized Game instance.
+ */
 void runGame(Game *game) {
   printf("[game] starting\n");
   while (!WindowShouldClose()) {
@@ -98,7 +126,9 @@ void runGame(Game *game) {
     ClearBackground(BLACK);
 
     BeginMode3D(game->camera);
-    DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
+    if (is_debug_mode) {
+      DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
+    }
     checkBulletHitsUnits(game->enemies, game->bullets);
     drawUnits(game->enemies);
     drawPlayer(game->player);
