@@ -13,9 +13,11 @@
  * Example model set includes "CamoStellarJet", "RedFighter", etc.
  */
 #include "models.h"
+#include "../utils/debug.h"
 #include "../utils/path.h"
 #include "raylib.h"
 #include "rlgl.h"
+#include <raymath.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -103,9 +105,28 @@ ShipModel *loadShipModel(const char *filename, Shader *shader) {
     UnloadTexture(texture);
     return NULL;
   }
+  ShipBoundingBox box;
+  BoundingBox combined = GetMeshBoundingBox(model.meshes[0]);
+  for (int i = 1; i < model.meshCount; i++) {
+    BoundingBox b = GetMeshBoundingBox(model.meshes[i]);
+    combined.min = Vector3Min(combined.min, b.min);
+    combined.max = Vector3Max(combined.max, b.max);
+  }
+  box.by_x = combined.max.x - combined.min.x;
+  box.by_y = combined.max.y - combined.min.y;
+  box.by_z = combined.max.z - combined.min.z;
+  if (is_debug_mode) {
+    Mesh box_mesh = GenMeshCube(box.by_x, box.by_y, box.by_z);
+    Model box_model = LoadModelFromMesh(box_mesh);
+    ship->box_model = malloc(sizeof(Model));
+    *ship->box_model = box_model;
+  } else {
+    ship->box_model = NULL;
+  };
   ship->model = model;
   ship->texture = texture;
   ship->model_name = filename;
+  ship->box = box;
   return ship;
 }
 
@@ -119,6 +140,10 @@ ShipModel *loadShipModel(const char *filename, Shader *shader) {
 void destroyShipModel(ShipModel *ship) {
   printf("[Models] model will be unload \"%s\"\n", ship->model_name);
   UnloadModel(ship->model);
+  if (ship->box_model) {
+    UnloadModel(*ship->box_model);
+    free(ship->box_model);
+  }
   UnloadTexture(ship->texture);
   printf("[Models] model \"%s\" has been unload\n", ship->model_name);
   free(ship);

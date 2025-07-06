@@ -1,5 +1,6 @@
 #include "player.h"
 #include "../bullets/bullets.h"
+#include "../utils/debug.h"
 #include "unit.h"
 #include <raylib.h>
 #include <raymath.h>
@@ -204,6 +205,13 @@ void drawPlayer(Player *player) {
   Model model = player->model->model;
   model.transform = result;
   DrawModel(model, (Vector3){0, 0, 0}, 1.0f, WHITE);
+  if (is_debug_mode) {
+    if (is_debug_mode && player->model->box_model) {
+      Model box_model = *player->model->box_model;
+      box_model.transform = result;
+      DrawModel(box_model, (Vector3){0, 0, 0}, 1.0f, RED);
+    }
+  }
 }
 
 void destroyPlayer(Player *player) {

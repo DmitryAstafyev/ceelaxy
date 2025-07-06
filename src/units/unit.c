@@ -1,6 +1,7 @@
 #include "unit.h"
 #include "../models/models.h"
 #include "../movement/movement.h"
+#include "../utils/debug.h"
 #include "raylib.h" // For Model, Texture2D, Shader
 #include <raymath.h>
 #include <stddef.h>
@@ -106,12 +107,20 @@ void drawUnit(Unit *unit) {
   MovementAction *action = unit->render.action;
   iterateMovementAction(action);
 
+  UnitPosition *position = &unit->render.position;
+
   DrawModelEx(unit->model->model,
-              (Vector3){unit->render.position.x + action->x,
-                        unit->render.position.y + action->y,
-                        unit->render.position.z + action->z},
+              (Vector3){position->x + action->x, position->y + action->y,
+                        position->z + action->z},
               (Vector3){action->rotate_x, action->rotate_y, action->rotate_z},
               action->angle, (Vector3){1, 1, 1}, WHITE);
+  if (is_debug_mode && unit->model->box_model) {
+    DrawModelEx(*unit->model->box_model,
+                (Vector3){position->x + action->x, position->y + action->y,
+                          position->z + action->z},
+                (Vector3){action->rotate_x, action->rotate_y, action->rotate_z},
+                action->angle, (Vector3){1, 1, 1}, RED);
+  }
 }
 
 UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,

@@ -12,6 +12,7 @@ SRC = \
 	src/models/models.c \
 	src/movement/movement.c \
 	src/utils/path.c \
+	src/utils/debug.c \
 	src/game/game.c
 
 TARGET = ceelaxy

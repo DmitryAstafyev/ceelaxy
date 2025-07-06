@@ -19,6 +19,12 @@
 #define MODEL_UltravioletIntruder "UltravioletIntruder"
 #define MODEL_Warship "Warship"
 
+typedef struct ShipBoundingBox {
+  float by_x;
+  float by_y;
+  float by_z;
+} ShipBoundingBox;
+
 /**
  * @brief Represents a loaded 3D ship model with its texture and name.
  */
@@ -26,6 +32,8 @@ typedef struct ShipModel {
   Model model;            ///< Geometry of the model loaded via raylib.
   Texture2D texture;      ///< Texture applied to the model.
   const char *model_name; ///< Name of the model (without extension or path).
+  ShipBoundingBox box;
+  Model *box_model;
 } ShipModel;
 
 /**

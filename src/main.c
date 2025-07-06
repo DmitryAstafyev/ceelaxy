@@ -1,13 +1,18 @@
 #include "./game/game.h"
-#include "./raylib/rlights.h"
+#include "./utils/debug.h"
 #include "raylib.h"
-#include "raymath.h"
 #include "rlgl.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 int main(int argc, char *argv[]) {
+  checkDebugFlag(argc, argv);
+
+  if (is_debug_mode) {
+    printf("[DEBUG] Debug mode is ON\n");
+  }
+
   srand(time(NULL));
   printf("Starting\n");
   InitWindow(800, 600, "Ceelaxy");
