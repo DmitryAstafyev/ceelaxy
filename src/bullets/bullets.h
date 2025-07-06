@@ -1,6 +1,7 @@
 #ifndef BULLETS_H
 #define BULLETS_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -15,6 +16,8 @@ typedef struct {
 
 typedef struct {
   float by_x, by_y, by_z;
+  float radius_top, radius_bottom;
+  float slices;
 } BulletSize;
 
 typedef struct {
@@ -28,6 +31,7 @@ typedef struct {
   BulletMovement movement;
   BulletPosition position;
   BulletSize size;
+  bool alive;
 } Bullet;
 
 typedef struct BulletNode {
@@ -37,12 +41,18 @@ typedef struct BulletNode {
   size_t idx;
 } BulletNode;
 
+typedef struct BulletAreaFrame {
+  float top;
+  float bottom;
+} BulletAreaFrame;
+
 typedef struct {
   BulletNode *head;
   BulletNode *tail;
   uint16_t length;
   size_t idx;
   double last_spawn;
+  BulletAreaFrame frame;
 } BulletList;
 
 BulletPosition newBulletPosition(float x, float y, float z);
