@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "../bullets/bullets.h"
 #include "unit.h"
 #include <raylib.h>
 #include <stdint.h>
@@ -38,17 +39,16 @@ typedef struct Player {
   UnitState state;
   PlayerRender render;
   ShipModel *model;
+  BulletList *bullets;
 } Player;
 
 PlayerRender newPlayerRender(float max_x, float max_y, float max_z,
                              float offset_z);
 
 Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
-                  ShipModel *model);
+                  ShipModel *model, BulletList *bullets);
 
 void drawPlayer(Player *player);
-
-void updatePlayer(Player *player);
 
 void destroyPlayer(Player *player);
 

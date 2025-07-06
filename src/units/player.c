@@ -1,4 +1,5 @@
 #include "player.h"
+#include "../bullets/bullets.h"
 #include "unit.h"
 #include <raylib.h>
 #include <raymath.h>
@@ -68,7 +69,7 @@ PlayerRender newPlayerRender(float max_x, float max_y, float max_z,
 }
 
 Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
-                  ShipModel *model) {
+                  ShipModel *model, BulletList *bullets) {
   if (!model) {
     return NULL;
   }
@@ -80,6 +81,7 @@ Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
   player->state = newUnitState();
   player->render = newPlayerRender(max_x, max_y, max_z, offset_z);
   player->model = model;
+  player->bullets = bullets;
   return player;
 }
 
@@ -102,7 +104,20 @@ void updatePlayer(Player *player) {
   PlayerMovement *movement = &player->render.movement;
   PlayerVisualState *state = &player->render.state;
   PlayerPosition *position = &player->render.position;
+  BulletList *bullets = player->bullets;
 
+  double current_time = GetTime();
+  double elapsed_last_bullet_spawn = current_time - bullets->last_spawn;
+
+  if (IsKeyDown(KEY_SPACE) && elapsed_last_bullet_spawn > 0.2f) {
+    Bullet bullet =
+        newBullet(BULLET_MOVEMENT_DIRECTION_UP,
+                  newBulletPosition(position->x, position->y,
+                                    position->z + position->offset_z),
+                  newBulletSize(1.0f, 1.0f, 1.0f));
+    insertBulletIntoList(player->bullets, bullet);
+    bullets->last_spawn = current_time;
+  }
   if (!(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_UP) ||
         IsKeyDown(KEY_DOWN))) {
     if (state->rotate_x != 0) {
@@ -121,11 +136,8 @@ void updatePlayer(Player *player) {
     }
     return;
   }
-
-  double current_time = GetTime();
   double elapsed = current_time - movement->last_key_press;
   movement->last_key_press = current_time;
-
   if (elapsed > ACCELERATION_DEALY || directionChanged(player)) {
     movement->acceleration = ACCELERATION_INIT;
   } else {
@@ -173,6 +185,7 @@ void updatePlayer(Player *player) {
 void drawPlayer(Player *player) {
   if (!player)
     return;
+  updatePlayer(player);
 
   Vector3 pos = {player->render.position.x, player->render.position.y,
                  player->render.position.z + player->render.position.offset_z};

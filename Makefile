@@ -8,6 +8,7 @@ SRC = \
 	src/raylib/rlights.c \
 	src/units/unit.c \
 	src/units/player.c \
+	src/bullets/bullets.c \
 	src/models/models.c \
 	src/movement/movement.c \
 	src/utils/path.c \

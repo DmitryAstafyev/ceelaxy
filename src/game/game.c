@@ -1,4 +1,5 @@
 #include "game.h"
+#include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../raylib/rlights.h"
 #include "../units/player.h"
@@ -27,15 +28,24 @@ Game *newGame(int height, int width) {
   if (!enemies) {
     return NULL;
   }
+  // Create bullets storage
+  BulletList *bullets = newBulletList();
+  if (!bullets) {
+    destroyUnitList(game->enemies);
+    return NULL;
+  }
+  // Create a player
   ShipModel *player_model = findModelInList(models, MODEL_Transtellar);
   if (!player_model) {
     return NULL;
   }
-  Player *player = newPlayer(20.0f, 0.0f, 20.0f, 30.0f, player_model);
+  Player *player = newPlayer(20.0f, 0.0f, 20.0f, 30.0f, player_model, bullets);
   if (!player) {
     destroyUnitList(game->enemies);
+    destroyBulletList(bullets);
     return NULL;
   }
+  game->bullets = bullets;
   game->player = player;
   game->models = models;
   game->enemies = enemies;
@@ -73,6 +83,7 @@ void destroyGame(Game *game) {
   destroyUnitList(game->enemies);
   destroyPlayer(game->player);
   destroyShipModelList(game->models);
+  destroyBulletList(game->bullets);
   free(game);
 }
 
@@ -90,7 +101,7 @@ void runGame(Game *game) {
     DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
     drawUnits(game->enemies);
     drawPlayer(game->player);
-    updatePlayer(game->player);
+    drawBullets(game->bullets);
     EndMode3D();
 
     EndDrawing();
