@@ -7,6 +7,7 @@
 #include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../raylib/rlights.h"
+#include "../units/bars.h"
 #include "../units/explosion.h"
 #include "../units/player.h"
 #include "../units/unit.h"
@@ -143,7 +144,7 @@ void runGame(Game *game) {
     drawPlayer(game->player);
     drawBullets(game->bullets);
     EndMode3D();
-
+    drawUnitsStateBars(game->enemies, &game->camera);
     EndDrawing();
   }
   printf("[game] finished\n");

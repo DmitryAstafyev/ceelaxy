@@ -70,9 +70,9 @@ BulletSize newBulletSize(float by_x, float by_y, float by_z) {
   size.by_x = by_x;
   size.by_y = by_y;
   size.by_z = by_z;
-  size.radius_top = 0.1f;
-  size.radius_bottom = 0.5f;
-  size.slices = 5;
+  size.radius_top = 0.25f;
+  size.radius_bottom = 0.25f;
+  size.slices = 15;
   return size;
 }
 
@@ -141,11 +141,28 @@ void drawBullet(Bullet *bullet, BulletAreaFrame *frame) {
   if (!bullet) {
     return;
   }
+
   updateBullet(bullet, frame);
-  DrawCylinder(
-      (Vector3){bullet->position.x, bullet->position.y, bullet->position.z},
-      bullet->size.radius_top, bullet->size.radius_bottom, bullet->size.by_y,
-      bullet->size.slices, RED);
+
+  float sgn = (bullet->movement.direction == BULLET_MOVEMENT_DIRECTION_UP)
+                  ? -1.0f
+                  : 1.0f;
+
+  float len = bullet->size.by_z;
+  float half = len * 0.5f;
+
+  Vector3 center = {bullet->position.x, bullet->position.y, bullet->position.z};
+  Vector3 axis = {0.0f, 0.0f, sgn};
+
+  Vector3 start = {center.x, center.y, center.z - axis.z * half};
+  Vector3 end = {center.x, center.y, center.z + axis.z * half};
+
+  DrawCylinderEx(start, end, bullet->size.radius_bottom,
+                 bullet->size.radius_bottom, bullet->size.slices, RED);
+  float nose = len * 0.35f;
+  Vector3 nose_end = {end.x, end.y, end.z + axis.z * nose};
+  DrawCylinderEx(end, nose_end, bullet->size.radius_top, 0.0f,
+                 bullet->size.slices, RED);
 }
 
 /**

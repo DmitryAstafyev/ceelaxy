@@ -219,11 +219,11 @@ void updatePlayer(Player *player) {
   double elapsed_last_bullet_spawn = current_time - bullets->last_spawn;
 
   if (IsKeyDown(KEY_SPACE) && elapsed_last_bullet_spawn > 0.2f) {
-    Bullet bullet =
-        newBullet(BULLET_MOVEMENT_DIRECTION_UP,
-                  newBulletPosition(position->x, position->y,
-                                    position->z + position->offset_z),
-                  newBulletSize(1.0f, 1.0f, 1.0f), newBulletParameters(10, 10));
+    Bullet bullet = newBullet(
+        BULLET_MOVEMENT_DIRECTION_UP,
+        newBulletPosition(position->x, position->y,
+                          position->z + position->offset_z),
+        newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10));
     insertBulletIntoList(player->bullets, bullet);
     bullets->last_spawn = current_time;
   }

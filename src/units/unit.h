@@ -26,9 +26,11 @@ typedef enum UnitType {
  * @brief Holds state information for a unit, including health and energy.
  */
 typedef struct UnitState {
-  uint8_t health;  ///< Current health value.
-  uint8_t energy;  ///< Current energy or stamina.
-  double hit_time; ///< Timestamp of the last hit taken.
+  uint8_t health;      ///< Current health value.
+  uint8_t energy;      ///< Current energy or stamina.
+  uint8_t init_health; ///< Initianal health value.
+  uint8_t init_energy; ///< Initianal energy or stamina.
+  double hit_time;     ///< Timestamp of the last hit taken.
 } UnitState;
 
 /**

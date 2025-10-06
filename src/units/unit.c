@@ -91,6 +91,8 @@ UnitState newUnitState() {
   UnitState state;
   state.health = DEFAULT_UNIT_HEALTH;
   state.energy = DEFAULT_UNIT_ENERGY;
+  state.init_health = DEFAULT_UNIT_HEALTH;
+  state.init_energy = DEFAULT_UNIT_ENERGY;
   state.hit_time = 0.0f;
   return state;
 }
@@ -252,7 +254,8 @@ void drawUnit(Unit *unit, Camera3D *camera, ExplosionModelList *explosions) {
                                    position->z + action->z});
     }
   } else {
-    iterateMovementAction(action);
+    iterateMovementAction(action, (float)unit->state.energy /
+                                      (float)unit->state.init_energy);
   }
   DrawModelEx(unit->model->model,
               (Vector3){position->x + action->x, position->y + action->y,

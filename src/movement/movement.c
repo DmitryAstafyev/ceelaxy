@@ -69,7 +69,7 @@ MovementAction *newMovementAction() {
   action->rotate_z = 0.0f;
   action->max_angle = 15.0f;
   action->angle = 0.0f;
-  randSpeedMovementAction(action);
+  randSpeedMovementAction(action, 1.0f);
   return action;
 }
 
@@ -92,13 +92,15 @@ float randomFloatInRange(float min, float max) {
  *
  * @param action Pointer to the MovementAction to modify.
  */
-void randSpeedMovementAction(MovementAction *action) {
+void randSpeedMovementAction(MovementAction *action, float slow_factor) {
   if (!action) {
     return;
   }
-  action->step_x = randomFloatInRange(0.01f, 0.05f);
-  action->step_y = randomFloatInRange(0.01f, 0.05f);
-  action->step_z = randomFloatInRange(0.01f, 0.05f);
+  float max = MAX_SPEED_MOVEMENT_ACTION * slow_factor;
+  float min = MIN_SPEED_MOVEMENT_ACTION * slow_factor;
+  action->step_x = randomFloatInRange(min, max);
+  action->step_y = randomFloatInRange(min, max);
+  action->step_z = randomFloatInRange(min, max);
 }
 
 /**
@@ -112,7 +114,7 @@ void randSpeedMovementAction(MovementAction *action) {
  *
  * @param action Pointer to the MovementAction to iterate.
  */
-void iterateMovementAction(MovementAction *action) {
+void iterateMovementAction(MovementAction *action, float slow_factor) {
   if (!action) {
     return;
   }
@@ -129,7 +131,7 @@ void iterateMovementAction(MovementAction *action) {
         action->direction &= ~MOVEMENT_DIRECTION_RIGHT;
         action->direction |= MOVEMENT_DIRECTION_LEFT;
       }
-      randSpeedMovementAction(action);
+      randSpeedMovementAction(action, slow_factor);
     }
     action->rotate_z = -action->max_rotate_z * (action->x / action->max_x);
     action->angle = action->max_angle *
@@ -150,7 +152,7 @@ void iterateMovementAction(MovementAction *action) {
         action->direction &= ~MOVEMENT_DIRECTION_DOWN;
         action->direction |= MOVEMENT_DIRECTION_UP;
       }
-      randSpeedMovementAction(action);
+      randSpeedMovementAction(action, slow_factor);
     }
   }
   if (action->direction & MOVEMENT_Z_MASK) {
@@ -166,7 +168,7 @@ void iterateMovementAction(MovementAction *action) {
         action->direction &= ~MOVEMENT_DIRECTION_BACKWARD;
         action->direction |= MOVEMENT_DIRECTION_FORWARD;
       }
-      randSpeedMovementAction(action);
+      randSpeedMovementAction(action, slow_factor);
     }
     action->rotate_x = action->max_rotate_x * (action->z / action->max_z);
     action->angle = action->max_angle *

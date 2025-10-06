@@ -7,6 +7,7 @@ SRC = \
 	src/main.c \
 	src/raylib/rlights.c \
 	src/units/unit.c \
+	src/units/bars.c \
 	src/units/player.c \
 	src/units/explosion.c \
 	src/bullets/bullets.c \

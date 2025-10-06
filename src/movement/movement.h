@@ -8,6 +8,9 @@
 
 #include <stdint.h>
 
+static float MAX_SPEED_MOVEMENT_ACTION = 0.05f;
+static float MIN_SPEED_MOVEMENT_ACTION = 0.01f;
+
 /**
  * @brief Bitmask enum defining movement directions in 3D space.
  *
@@ -66,7 +69,7 @@ MovementAction *newMovementAction();
  *
  * @param action Pointer to the MovementAction to update.
  */
-void iterateMovementAction(MovementAction *action);
+void iterateMovementAction(MovementAction *action, float slow_factor);
 
 /**
  * @brief Frees memory used by a MovementAction.
@@ -82,6 +85,6 @@ void destroyMovementAction(MovementAction *action);
  *
  * @param action Pointer to the MovementAction to modify.
  */
-void randSpeedMovementAction(MovementAction *action);
+void randSpeedMovementAction(MovementAction *action, float slow_factor);
 
 #endif
