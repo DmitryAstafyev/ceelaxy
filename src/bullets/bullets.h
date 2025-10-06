@@ -6,7 +6,9 @@
 #ifndef BULLETS_H
 #define BULLETS_H
 
+#include "../textures/textures.h"
 #include "../units/unit.h"
+#include "trail.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -73,6 +75,7 @@ typedef struct {
   BulletSize size;         ///< Shape and dimensions.
   BulletParameters params; ///< Damage and energy parameters.
   bool alive;              ///< Status flag: false if bullet is inactive.
+  TrailEmitter trail;
 } Bullet;
 
 /**
@@ -146,7 +149,8 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy);
  * @return Fully initialized Bullet object.
  */
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
-                 BulletSize size, BulletParameters params);
+                 BulletSize size, BulletParameters params,
+                 GameTextures *textures);
 
 /**
  * @brief Creates a new empty BulletList with default frame bounds.
@@ -168,7 +172,7 @@ void insertBulletIntoList(BulletList *list, Bullet bullet);
  *
  * @param list Pointer to the BulletList.
  */
-void drawBullets(BulletList *list);
+void drawBullets(BulletList *list, Camera3D *camera);
 
 /**
  * @brief Checks for collisions between bullets and enemy units.

@@ -5,13 +5,13 @@
  */
 #include "player.h"
 #include "../bullets/bullets.h"
+#include "../textures/textures.h"
 #include "../utils/debug.h"
 #include "unit.h"
 #include <raylib.h>
 #include <raymath.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
@@ -205,7 +205,7 @@ bool directionChanged(Player *player) {
  *
  * @param player Pointer to the player instance to update.
  */
-void updatePlayer(Player *player) {
+void updatePlayer(Player *player, GameTextures *textures) {
   if (!player) {
     return;
   }
@@ -219,11 +219,12 @@ void updatePlayer(Player *player) {
   double elapsed_last_bullet_spawn = current_time - bullets->last_spawn;
 
   if (IsKeyDown(KEY_SPACE) && elapsed_last_bullet_spawn > 0.2f) {
-    Bullet bullet = newBullet(
-        BULLET_MOVEMENT_DIRECTION_UP,
-        newBulletPosition(position->x, position->y,
-                          position->z + position->offset_z),
-        newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10));
+    Bullet bullet =
+        newBullet(BULLET_MOVEMENT_DIRECTION_UP,
+                  newBulletPosition(position->x, position->y,
+                                    position->z + position->offset_z),
+                  newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10),
+                  textures);
     insertBulletIntoList(player->bullets, bullet);
     bullets->last_spawn = current_time;
   }
@@ -300,10 +301,10 @@ void updatePlayer(Player *player) {
  *
  * @param player Pointer to the player instance to draw.
  */
-void drawPlayer(Player *player) {
+void drawPlayer(Player *player, GameTextures *textures) {
   if (!player)
     return;
-  updatePlayer(player);
+  updatePlayer(player, textures);
 
   Vector3 pos = {player->render.position.x, player->render.position.y,
                  player->render.position.z + player->render.position.offset_z};

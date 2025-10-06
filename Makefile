@@ -11,7 +11,9 @@ SRC = \
 	src/units/player.c \
 	src/units/explosion.c \
 	src/bullets/bullets.c \
+	src/bullets/trail.c \
 	src/models/models.c \
+	src/textures/textures.c \
 	src/movement/movement.c \
 	src/utils/path.c \
 	src/utils/debug.c \

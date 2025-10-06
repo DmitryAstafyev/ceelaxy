@@ -7,6 +7,7 @@
 #define PLAYER_H
 
 #include "../bullets/bullets.h"
+#include "../textures/textures.h"
 #include "unit.h"
 #include <raylib.h>
 #include <stdint.h>
@@ -111,7 +112,7 @@ Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
  * @param bullets Pointer to the global bullet list shared across units.
  * @return Pointer to a newly created Player, or NULL if allocation fails.
  */
-void drawPlayer(Player *player);
+void drawPlayer(Player *player, GameTextures *textures);
 
 /**
  * @brief Frees the memory allocated for the player instance.

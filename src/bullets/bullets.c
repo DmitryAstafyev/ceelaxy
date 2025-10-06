@@ -4,6 +4,7 @@
  * collision detection, and lifecycle management.
  */
 #include "bullets.h"
+#include "../textures/textures.h"
 #include "../units/unit.h"
 #include "raylib.h"
 #include <raymath.h>
@@ -100,13 +101,20 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
  * @return A Bullet instance.
  */
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
-                 BulletSize size, BulletParameters params) {
+                 BulletSize size, BulletParameters params,
+                 GameTextures *textures) {
+  GameTexture *tex = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
+  if (tex == NULL) {
+    TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
+    exit(1);
+  }
   Bullet bullet;
   bullet.movement = newBulletMovement(direction);
   bullet.position = position;
   bullet.params = params;
   bullet.size = size;
   bullet.alive = true;
+  bullet.trail = newTrailEmitter(tex->tex, true);
   return bullet;
 }
 
@@ -137,7 +145,7 @@ void updateBullet(Bullet *bullet, BulletAreaFrame *frame) {
  * @param bullet Pointer to the bullet.
  * @param frame Pointer to the bullet area frame.
  */
-void drawBullet(Bullet *bullet, BulletAreaFrame *frame) {
+void drawBullet(Bullet *bullet, BulletAreaFrame *frame, Camera3D *camera) {
   if (!bullet) {
     return;
   }
@@ -147,6 +155,7 @@ void drawBullet(Bullet *bullet, BulletAreaFrame *frame) {
   float sgn = (bullet->movement.direction == BULLET_MOVEMENT_DIRECTION_UP)
                   ? -1.0f
                   : 1.0f;
+  Vector3 direction = {0, 0, sgn};
 
   float len = bullet->size.by_z;
   float half = len * 0.5f;
@@ -163,6 +172,11 @@ void drawBullet(Bullet *bullet, BulletAreaFrame *frame) {
   Vector3 nose_end = {end.x, end.y, end.z + axis.z * nose};
   DrawCylinderEx(end, nose_end, bullet->size.radius_top, 0.0f,
                  bullet->size.slices, RED);
+
+  float dt = GetFrameTime();
+  trailEmit(&bullet->trail, start, direction, dt);
+  trailUpdate(&bullet->trail, dt);
+  trailDraw(&bullet->trail, *camera);
 }
 
 /**
@@ -306,11 +320,11 @@ void removeBullets(BulletList *list) {
  *
  * @param list Pointer to the bullet list.
  */
-void drawBullets(BulletList *list) {
+void drawBullets(BulletList *list, Camera3D *camera) {
   BulletNode *node = list->head;
   // Process and draw bullets
   while (node) {
-    drawBullet(&node->self, &list->frame);
+    drawBullet(&node->self, &list->frame, camera);
     node = node->next;
   }
   // Cleanup
