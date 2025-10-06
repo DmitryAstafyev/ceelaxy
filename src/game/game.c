@@ -7,9 +7,9 @@
 #include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../raylib/rlights.h"
+#include "../sprites/sprites.h"
 #include "../textures/textures.h"
 #include "../units/bars.h"
-#include "../units/explosion.h"
 #include "../units/player.h"
 #include "../units/unit.h"
 #include "../utils/debug.h"
@@ -58,8 +58,8 @@ Game *newGame(int height, int width) {
     return NULL;
   }
   // Load explosions
-  ExplosionModelList *explosions = loadExplosionModelList();
-  if (!explosions) {
+  SpriteSheetList *sprites = loadSpriteSheetList();
+  if (!sprites) {
     destroyTexturesList(textures);
     destroyUnitList(enemies);
     return NULL;
@@ -67,6 +67,7 @@ Game *newGame(int height, int width) {
   // Create bullets storage
   BulletList *bullets = newBulletList();
   if (!bullets) {
+    destroySpriteSheetList(sprites);
     destroyTexturesList(textures);
     destroyUnitList(enemies);
     return NULL;
@@ -74,12 +75,14 @@ Game *newGame(int height, int width) {
   // Create a player
   ShipModel *player_model = findModelInList(models, MODEL_Transtellar);
   if (!player_model) {
+    destroySpriteSheetList(sprites);
     destroyTexturesList(textures);
     destroyUnitList(enemies);
     return NULL;
   }
   Player *player = newPlayer(20.0f, 0.0f, 20.0f, 30.0f, player_model, bullets);
   if (!player) {
+    destroySpriteSheetList(sprites);
     destroyTexturesList(textures);
     destroyUnitList(enemies);
     destroyBulletList(bullets);
@@ -89,7 +92,7 @@ Game *newGame(int height, int width) {
   game->player = player;
   game->models = models;
   game->enemies = enemies;
-  game->explosions = explosions;
+  game->sprites = sprites;
   game->textures = textures;
   Camera3D camera = {.position = (Vector3){0.0f, 80.0f, 40.0f},
                      .target = (Vector3){0.0f, 0.0f, 0.0f},
@@ -125,7 +128,7 @@ void destroyGame(Game *game) {
   destroyPlayer(game->player);
   destroyShipModelList(game->models);
   destroyBulletList(game->bullets);
-  destroyExplosionModelList(game->explosions);
+  destroySpriteSheetList(game->sprites);
   destroyTexturesList(game->textures);
   free(game);
 }
@@ -157,7 +160,7 @@ void runGame(Game *game) {
       DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
     }
     checkBulletHitsUnits(game->enemies, game->bullets);
-    drawUnits(game->enemies, &game->camera, game->explosions);
+    drawUnits(game->enemies, &game->camera, game->sprites);
     drawPlayer(game->player, game->textures);
     drawBullets(game->bullets, &game->camera);
     EndMode3D();

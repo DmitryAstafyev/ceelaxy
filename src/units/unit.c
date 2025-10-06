@@ -7,11 +7,12 @@
 #include "../bullets/bullets.h"
 #include "../models/models.h"
 #include "../movement/movement.h"
-#include "../units/explosion.h"
+#include "../sprites/sprites.h"
 #include "../utils/debug.h"
 #include "raylib.h"
 #include <math.h>
 #include <raymath.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -114,6 +115,7 @@ Unit newUnit(UnitType ty, ShipModel *model) {
   unit.render = newUnitRender(newUnitPosition());
   unit.model = model;
   unit.explosion = NULL;
+  unit.hit = NULL;
   return unit;
 }
 
@@ -173,7 +175,7 @@ void destroyUnitNode(UnitNode *node) {
   if (node != NULL) {
     destroyMovementAction(node->self.render.action);
     if (node->self.explosion) {
-      destroyExplosionState(node->self.explosion);
+      destroySpriteSheetState(node->self.explosion);
     }
     free(node);
   }
@@ -227,7 +229,7 @@ void updateDestroyedUnitFall(Unit *unit, float deltaTime) {
  *
  * @param unit Pointer to the unit to draw.
  */
-void drawUnit(Unit *unit, Camera3D *camera, ExplosionModelList *explosions) {
+void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
   if (!unit) {
     return;
   }
@@ -236,22 +238,30 @@ void drawUnit(Unit *unit, Camera3D *camera, ExplosionModelList *explosions) {
   double current = GetTime();
   bool hit = current > BULLET_HIT_SEN_TIME &&
              current - unit->state.hit_time < BULLET_HIT_SEN_TIME;
-  if (hit) {
-    setShipModelColor(unit->model, RED);
-  }
-
   MovementAction *action = unit->render.action;
 
+  if (hit) {
+    setShipModelColor(unit->model, RED);
+    if (!unit->hit) {
+      unit->hit = newSpriteSheetState(&sprites->tail->self, 2, 5.0f, 0.1f);
+    }
+    dropSpriteSheetState(unit->hit);
+  }
+  drawSpriteSheetState(unit->hit, *camera,
+                       (Vector3){position->x + action->x,
+                                 position->y + action->y,
+                                 position->z + action->z});
   if (unit->state.health == 0) {
     updateDestroyedUnitFall(unit, GetFrameTime());
     if (!unit->explosion) {
-      unit->explosion = newExplosionState(&explosions->head->self);
+      unit->explosion =
+          newSpriteSheetState(&sprites->head->self, 3, 20.0f, 1.0f);
     }
     if (unit->explosion) {
-      drawExplosionState(unit->explosion, *camera,
-                         (Vector3){position->x + action->x,
-                                   position->y + action->y,
-                                   position->z + action->z});
+      drawSpriteSheetState(unit->explosion, *camera,
+                           (Vector3){position->x + action->x,
+                                     position->y + action->y,
+                                     position->z + action->z});
     }
   } else {
     iterateMovementAction(action, (float)unit->state.energy /
@@ -459,14 +469,13 @@ void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
  *
  * @param list Pointer to the UnitList.
  */
-void drawUnits(UnitList *list, Camera3D *camera,
-               ExplosionModelList *explosions) {
+void drawUnits(UnitList *list, Camera3D *camera, SpriteSheetList *sprites) {
   UnitNode *node = list->head;
   for (int i = 0; i < list->length; i += 1) {
     if (!node) {
       break;
     }
-    drawUnit(&node->self, camera, explosions);
+    drawUnit(&node->self, camera, sprites);
     node = node->next;
   }
   removeUnits(list);

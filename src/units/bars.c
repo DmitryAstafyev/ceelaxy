@@ -1,16 +1,10 @@
 #include "bars.h"
-#include "../bullets/bullets.h"
-#include "../models/models.h"
-#include "../movement/movement.h"
-#include "../units/explosion.h"
-#include "../utils/debug.h"
 #include "raylib.h"
 #include "unit.h"
 #include <math.h>
 #include <raymath.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 void drawUnitsStateBars(UnitList *list, Camera3D *camera) {

@@ -9,7 +9,7 @@
 
 #include "../models/models.h"
 #include "../movement/movement.h"
-#include "../units/explosion.h"
+#include "../sprites/sprites.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -74,7 +74,8 @@ typedef struct Unit {
   UnitState state;   ///< Health and energy state.
   UnitRender render; ///< Rendering and positioning data.
   ShipModel *model;  ///< 3D model used to render this unit.
-  ExplosionState *explosion;
+  SpriteSheetState *explosion;
+  SpriteSheetState *hit;
 } Unit;
 
 /**
@@ -157,7 +158,7 @@ UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
  *
  * @param unit Pointer to the unit to draw.
  */
-void drawUnit(Unit *unit, Camera3D *camera, ExplosionModelList *explosions);
+void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites);
 
 /**
  * @brief Creates a new UnitList and fills it with a specified number of units.
@@ -197,8 +198,7 @@ void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
  *
  * @param list Pointer to the list of units.
  */
-void drawUnits(UnitList *list, Camera3D *camera,
-               ExplosionModelList *explosions);
+void drawUnits(UnitList *list, Camera3D *camera, SpriteSheetList *sprites);
 
 /**
  * @brief Removes all units from the list and resets the structure.
