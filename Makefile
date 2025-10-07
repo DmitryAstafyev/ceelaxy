@@ -9,6 +9,7 @@ SRC = \
 	src/units/unit.c \
 	src/units/bars.c \
 	src/units/player.c \
+	src/units/explosion.c \
 	src/bullets/bullets.c \
 	src/bullets/trail.c \
 	src/models/models.c \

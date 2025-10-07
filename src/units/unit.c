@@ -8,6 +8,7 @@
 #include "../models/models.h"
 #include "../movement/movement.h"
 #include "../sprites/sprites.h"
+#include "../textures/textures.h"
 #include "../utils/debug.h"
 #include "raylib.h"
 #include <math.h>
@@ -108,14 +109,31 @@ UnitState newUnitState() {
  * @param model Pointer to the ship model used for rendering this unit.
  * @return A fully constructed Unit structure.
  */
-Unit newUnit(UnitType ty, ShipModel *model) {
+Unit newUnit(UnitType ty, ShipModel *model, GameTextures *textures) {
+  GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
+  if (tex_fire_soft == NULL) {
+    TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
+    exit(1);
+  }
+  GameTexture *tex_smoke_soft = getGameTextureById(textures, TEX_ID_SMOKE_SOFT);
+  if (tex_smoke_soft == NULL) {
+    TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_SMOKE_SOFT);
+    exit(1);
+  }
+  GameTexture *tex_glow = getGameTextureById(textures, TEX_ID_GLOW);
+  if (tex_glow == NULL) {
+    TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_GLOW);
+    exit(1);
+  }
   Unit unit;
   unit.type = ty;
   unit.state = newUnitState();
   unit.render = newUnitRender(newUnitPosition());
   unit.model = model;
-  unit.explosion = NULL;
+  unit.explosion_effect = NULL;
   unit.hit = NULL;
+  unit.explosion_bullet = newBulletExplosion(
+      tex_fire_soft->tex, tex_smoke_soft->tex, tex_glow->tex);
   return unit;
 }
 
@@ -174,8 +192,8 @@ UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
 void destroyUnitNode(UnitNode *node) {
   if (node != NULL) {
     destroyMovementAction(node->self.render.action);
-    if (node->self.explosion) {
-      destroySpriteSheetState(node->self.explosion);
+    if (node->self.explosion_effect) {
+      destroySpriteSheetState(node->self.explosion_effect);
     }
     free(node);
   }
@@ -239,26 +257,33 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
   bool hit = current > BULLET_HIT_SEN_TIME &&
              current - unit->state.hit_time < BULLET_HIT_SEN_TIME;
   MovementAction *action = unit->render.action;
-
+  float dt = GetFrameTime();
+  Vector3 origin =
+      (Vector3){position->x + action->x, position->y + action->y + 2.0f,
+                position->z + action->z + 2.0f};
   if (hit) {
     setShipModelColor(unit->model, RED);
     if (!unit->hit) {
-      unit->hit = newSpriteSheetState(&sprites->tail->self, 2, 5.0f, 0.1f);
+      unit->hit = newSpriteSheetState(&sprites->tail->self, 1, 3.0f, 0.1f);
     }
     dropSpriteSheetState(unit->hit);
+    bulletExplosionSpawnAt(&unit->explosion_bullet, origin, camera);
   }
-  drawSpriteSheetState(unit->hit, *camera,
-                       (Vector3){position->x + action->x,
-                                 position->y + action->y,
-                                 position->z + action->z});
+  bulletExplosionUpdate(&unit->explosion_bullet,
+                        (Vector3){position->x + action->x,
+                                  position->y + action->y,
+                                  position->z + action->z},
+                        dt, camera);
+  bulletExplosionDraw(&unit->explosion_bullet, *camera);
+  drawSpriteSheetState(unit->hit, *camera, origin);
   if (unit->state.health == 0) {
     updateDestroyedUnitFall(unit, GetFrameTime());
-    if (!unit->explosion) {
-      unit->explosion =
+    if (!unit->explosion_effect) {
+      unit->explosion_effect =
           newSpriteSheetState(&sprites->head->self, 3, 20.0f, 1.0f);
     }
-    if (unit->explosion) {
-      drawSpriteSheetState(unit->explosion, *camera,
+    if (unit->explosion_effect) {
+      drawSpriteSheetState(unit->explosion_effect, *camera,
                            (Vector3){position->x + action->x,
                                      position->y + action->y,
                                      position->z + action->z});
@@ -355,7 +380,7 @@ BoundingBox getUnitBoundingBox(Unit *unit) {
  * failure.
  */
 UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
-                      float z_offset) {
+                      float z_offset, GameTextures *textures) {
   UnitList *units = malloc(sizeof(UnitList));
   if (!units) {
     return NULL;
@@ -368,8 +393,8 @@ UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
 
   float mid_x = (unit_full_width * max_col) / 2.0f - unit_full_width / 2.0f;
   for (int i = count - 1; i >= 0; i -= 1) {
-    insertToUnitList(units, newUnit(UNIT_TYPE_ENEMY, model), max_col, max_ln,
-                     mid_x, z_offset);
+    insertToUnitList(units, newUnit(UNIT_TYPE_ENEMY, model, textures), max_col,
+                     max_ln, mid_x, z_offset);
     printf("Added unit %i\n", i);
   }
   return units;

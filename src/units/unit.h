@@ -10,6 +10,8 @@
 #include "../models/models.h"
 #include "../movement/movement.h"
 #include "../sprites/sprites.h"
+#include "../textures/textures.h"
+#include "explosion.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -74,7 +76,8 @@ typedef struct Unit {
   UnitState state;   ///< Health and energy state.
   UnitRender render; ///< Rendering and positioning data.
   ShipModel *model;  ///< 3D model used to render this unit.
-  SpriteSheetState *explosion;
+  SpriteSheetState *explosion_effect;
+  BulletExplosion explosion_bullet;
   SpriteSheetState *hit;
 } Unit;
 
@@ -110,7 +113,7 @@ UnitState newUnitState();
  * @param model Pointer to the model used for rendering the unit.
  * @return A fully initialized Unit structure.
  */
-Unit newUnit(UnitType ty, ShipModel *model);
+Unit newUnit(UnitType ty, ShipModel *model, GameTextures *textures);
 
 /**
  * @brief Computes the bounding box of the given unit for collision or
@@ -171,7 +174,7 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites);
  * @return Pointer to the newly allocated UnitList.
  */
 UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
-                      float z_offset);
+                      float z_offset, GameTextures *textures);
 
 /**
  * @brief Frees all memory used by the unit list and its nodes.

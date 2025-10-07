@@ -52,7 +52,7 @@ Game *newGame(int height, int width) {
     return NULL;
   }
 
-  UnitList *enemies = newUnitList(20, enemy_model, 10, 3, 40.0f);
+  UnitList *enemies = newUnitList(20, enemy_model, 10, 3, 40.0f, textures);
   if (!enemies) {
     destroyTexturesList(textures);
     return NULL;

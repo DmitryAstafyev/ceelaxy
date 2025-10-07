@@ -84,7 +84,8 @@ GameTextures *createGameTexturesList(void) {
   list->home = NULL;
   list->tail = NULL;
 
-  for (int i = 0; i < (int)(sizeof(TEX_PATHS) / sizeof(TEX_PATHS[0])); ++i) {
+  for (unsigned int i = 0; i < (int)(sizeof(TEX_PATHS) / sizeof(TEX_PATHS[0]));
+       ++i) {
     if (!addGameTextureIntoList(list, TEX_PATHS[i], i)) {
       destroyTexturesList(list);
       return NULL;
@@ -93,16 +94,13 @@ GameTextures *createGameTexturesList(void) {
   return list;
 }
 
-GameTexture *getGameTextureById(GameTextures *list, int id) {
+GameTexture *getGameTextureById(GameTextures *list, unsigned int id) {
   if (list == NULL) {
     return NULL;
   }
-  GameTexture *next = list->home;
-  while (next) {
-    if (next->id == id) {
-      return next;
-    }
-    GameTexture *next = next->next;
+  for (GameTexture *node = list->home; node; node = node->next) {
+    if (node->id == id)
+      return node;
   }
   return NULL;
 }

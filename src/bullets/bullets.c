@@ -103,8 +103,8 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
                  BulletSize size, BulletParameters params,
                  GameTextures *textures) {
-  GameTexture *tex = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
-  if (tex == NULL) {
+  GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
+  if (tex_fire_soft == NULL) {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
     exit(1);
   }
@@ -114,7 +114,7 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
   bullet.params = params;
   bullet.size = size;
   bullet.alive = true;
-  bullet.trail = newTrailEmitter(tex->tex, true);
+  bullet.trail = newTrailEmitter(tex_fire_soft->tex, true);
   return bullet;
 }
 

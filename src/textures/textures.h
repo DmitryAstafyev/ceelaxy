@@ -3,12 +3,10 @@
 #include "raylib.h"
 #include "rlgl.h"
 
-typedef enum GAME_TEXTURES {
-  TEX_ID_FIRE_SOFT = 0,
-  TEX_ID_FIRE_STREAK = 1,
-  TEX_ID_GLOW = 2,
-  TEX_ID_SMOKE_SOFT = 3,
-} GAME_TEXTURES;
+static unsigned int TEX_ID_FIRE_SOFT = 0;
+static unsigned int TEX_ID_FIRE_STREAK = 1;
+static unsigned int TEX_ID_GLOW = 2;
+static unsigned int TEX_ID_SMOKE_SOFT = 3;
 
 typedef struct GameTexture {
   struct GameTexture *next;
@@ -26,4 +24,4 @@ void destroyTexturesList(GameTextures *list);
 
 GameTextures *createGameTexturesList(void);
 
-GameTexture *getGameTextureById(GameTextures *list, int id);
+GameTexture *getGameTextureById(GameTextures *list, unsigned int id);
