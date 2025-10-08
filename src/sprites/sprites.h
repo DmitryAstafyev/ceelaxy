@@ -115,7 +115,7 @@ SpriteSheetList *loadSpriteSheetList();
  */
 void destroySpriteSheetList(SpriteSheetList *models);
 
-#endif
-
 SpriteSheet newSpriteSheet(const char *path, uint16_t frames_per_line,
                            uint16_t num_lines);
+
+#endif

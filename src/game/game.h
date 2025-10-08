@@ -14,6 +14,7 @@
 #include "../units/player.h"
 #include "../units/unit.h"
 #include "raylib.h"
+#include "stat.h"
 #include <stdbool.h>
 
 /**
@@ -31,6 +32,7 @@ typedef struct Game {
   SpriteSheetList *sprites; /// < List of loaded sprites textures/models
   Camera3D camera;          ///< Active 3D camera used for rendering the scene.
   Light light;              ///< Scene lighting setup for shading.
+  GameStat stat;
 } Game;
 
 /**

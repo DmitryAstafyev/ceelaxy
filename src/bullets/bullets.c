@@ -4,6 +4,7 @@
  * collision detection, and lifecycle management.
  */
 #include "bullets.h"
+#include "../game/stat.h"
 #include "../textures/textures.h"
 #include "../units/unit.h"
 #include "raylib.h"
@@ -124,7 +125,7 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
  * @param bullet Pointer to the bullet.
  * @param frame Pointer to the frame defining allowed Z range.
  */
-void updateBullet(Bullet *bullet, BulletAreaFrame *frame) {
+void updateBullet(Bullet *bullet, BulletAreaFrame *frame, GameStat *stat) {
   if (!bullet) {
     return;
   }
@@ -136,6 +137,7 @@ void updateBullet(Bullet *bullet, BulletAreaFrame *frame) {
       (bullet->movement.direction == BULLET_MOVEMENT_DIRECTION_DOWN &&
        bullet->position.z > frame->bottom)) {
     bullet->alive = false;
+    addMissIntoGameStat(stat);
   }
 }
 
@@ -145,12 +147,13 @@ void updateBullet(Bullet *bullet, BulletAreaFrame *frame) {
  * @param bullet Pointer to the bullet.
  * @param frame Pointer to the bullet area frame.
  */
-void drawBullet(Bullet *bullet, BulletAreaFrame *frame, Camera3D *camera) {
+void drawBullet(Bullet *bullet, BulletAreaFrame *frame, Camera3D *camera,
+                GameStat *stat) {
   if (!bullet) {
     return;
   }
 
-  updateBullet(bullet, frame);
+  updateBullet(bullet, frame, stat);
 
   float sgn = (bullet->movement.direction == BULLET_MOVEMENT_DIRECTION_UP)
                   ? -1.0f
@@ -320,11 +323,11 @@ void removeBullets(BulletList *list) {
  *
  * @param list Pointer to the bullet list.
  */
-void drawBullets(BulletList *list, Camera3D *camera) {
+void drawBullets(BulletList *list, Camera3D *camera, GameStat *stat) {
   BulletNode *node = list->head;
   // Process and draw bullets
   while (node) {
-    drawBullet(&node->self, &list->frame, camera);
+    drawBullet(&node->self, &list->frame, camera, stat);
     node = node->next;
   }
   // Cleanup
@@ -339,7 +342,7 @@ void drawBullets(BulletList *list, Camera3D *camera) {
  * @param unit Pointer to the target unit.
  * @param bullets Pointer to the bullet list.
  */
-void checkBulletHitsUnit(Unit *unit, BulletList *bullets) {
+void checkBulletHitsUnit(Unit *unit, BulletList *bullets, GameStat *stat) {
   if (!unit || !bullets)
     return;
 
@@ -364,6 +367,7 @@ void checkBulletHitsUnit(Unit *unit, BulletList *bullets) {
         unit->state.energy -= bullet->params.energy;
       }
       unit->state.hit_time = GetTime();
+      addHitIntoGameStat(stat);
       printf("[Bullets] HIT! health = %u\n", unit->state.health);
     }
 
@@ -377,13 +381,14 @@ void checkBulletHitsUnit(Unit *unit, BulletList *bullets) {
  * @param units Pointer to the unit list.
  * @param bullets Pointer to the bullet list.
  */
-void checkBulletHitsUnits(UnitList *units, BulletList *bullets) {
+void checkBulletHitsUnits(UnitList *units, BulletList *bullets,
+                          GameStat *stat) {
   if (!units || !bullets) {
     return;
   }
   UnitNode *node = units->head;
   while (node) {
-    checkBulletHitsUnit(&node->self, bullets);
+    checkBulletHitsUnit(&node->self, bullets, stat);
     node = node->next;
   }
   removeBullets(bullets);

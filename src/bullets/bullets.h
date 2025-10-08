@@ -6,6 +6,7 @@
 #ifndef BULLETS_H
 #define BULLETS_H
 
+#include "../game/stat.h"
 #include "../textures/textures.h"
 #include "../units/unit.h"
 #include "trail.h"
@@ -172,7 +173,7 @@ void insertBulletIntoList(BulletList *list, Bullet bullet);
  *
  * @param list Pointer to the BulletList.
  */
-void drawBullets(BulletList *list, Camera3D *camera);
+void drawBullets(BulletList *list, Camera3D *camera, GameStat *stat);
 
 /**
  * @brief Checks for collisions between bullets and enemy units.
@@ -182,7 +183,7 @@ void drawBullets(BulletList *list, Camera3D *camera);
  * @param units Pointer to the UnitList containing targets.
  * @param bullets Pointer to the BulletList to check against.
  */
-void checkBulletHitsUnits(UnitList *units, BulletList *bullets);
+void checkBulletHitsUnits(UnitList *units, BulletList *bullets, GameStat *stat);
 
 /**
  * @brief Frees all memory used by the BulletList and its bullets.

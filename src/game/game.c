@@ -14,6 +14,7 @@
 #include "../units/unit.h"
 #include "../utils/debug.h"
 #include "raylib.h"
+#include "stat.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +36,7 @@ Game *newGame(int height, int width) {
   if (!game) {
     return NULL;
   }
+  game->stat = newGameStat();
   // Load textures
   GameTextures *textures = createGameTexturesList();
   if (!textures) {
@@ -159,12 +161,13 @@ void runGame(Game *game) {
     if (is_debug_mode) {
       DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
     }
-    checkBulletHitsUnits(game->enemies, game->bullets);
+    checkBulletHitsUnits(game->enemies, game->bullets, &game->stat);
     drawUnits(game->enemies, &game->camera, game->sprites);
     drawPlayer(game->player, game->textures);
-    drawBullets(game->bullets, &game->camera);
+    drawBullets(game->bullets, &game->camera, &game->stat);
     EndMode3D();
     drawUnitsStateBars(game->enemies, &game->camera);
+    gameStatDraw(&game->stat);
     EndDrawing();
   }
   printf("[game] finished\n");
