@@ -83,7 +83,8 @@ Game *newGame(int height, int width) {
     destroyUnitList(enemies);
     return NULL;
   }
-  Player *player = newPlayer(20.0f, 0.0f, 20.0f, 30.0f, player_model, bullets);
+  Player *player =
+      newPlayer(20.0f, 0.0f, 20.0f, 30.0f, player_model, bullets, textures);
   if (!player) {
     destroySpriteSheetList(sprites);
     destroyTexturesList(textures);
@@ -167,7 +168,7 @@ void runGame(Game *game) {
     drawUnits(game->enemies, &game->camera, game->sprites);
     selectUnitsToFire(game->enemies, &game->camera, game->player, 10.0,
                       game->textures);
-    drawPlayer(game->player, game->textures);
+    drawPlayer(game->player, game->textures, &game->camera, game->sprites);
     drawBullets(game->bullets, &game->camera, &game->stat);
     EndMode3D();
     drawUnitsStateBars(game->enemies, &game->camera);

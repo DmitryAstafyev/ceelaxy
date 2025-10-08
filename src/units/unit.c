@@ -199,6 +199,9 @@ void destroyUnitNode(UnitNode *node) {
     if (node->self.explosion_effect) {
       destroySpriteSheetState(node->self.explosion_effect);
     }
+    if (node->self.hit) {
+      destroySpriteSheetState(node->self.hit);
+    }
     free(node);
   }
 }

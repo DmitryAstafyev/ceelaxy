@@ -72,6 +72,8 @@ typedef struct Player {
   PlayerRender render; ///< All rendering and movement-related information.
   ShipModel *model;    ///< Pointer to the 3D model used for drawing.
   BulletList *bullets; ///< Reference to the global bullet list used for firing.
+  BulletExplosion explosion_bullet;
+  SpriteSheetState *hit;
 } Player;
 
 /**
@@ -99,7 +101,8 @@ PlayerRender newPlayerRender(float max_x, float max_y, float max_z,
  * @return Pointer to a newly created Player, or NULL if allocation fails.
  */
 Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
-                  ShipModel *model, BulletList *bullets);
+                  ShipModel *model, BulletList *bullets,
+                  GameTextures *textures);
 
 /**
  * @brief Allocates and initializes a new Player instance.
@@ -112,7 +115,8 @@ Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
  * @param bullets Pointer to the global bullet list shared across units.
  * @return Pointer to a newly created Player, or NULL if allocation fails.
  */
-void drawPlayer(Player *player, GameTextures *textures);
+void drawPlayer(Player *player, GameTextures *textures, Camera3D *camera,
+                SpriteSheetList *sprites);
 
 /**
  * @brief Frees the memory allocated for the player instance.

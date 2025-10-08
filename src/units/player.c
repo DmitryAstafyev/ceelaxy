@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <wchar.h>
 
 /// Minimum delay (in seconds) between direction changes to reset acceleration.
 static const float ACCELERATION_DEALY = 0.2f;
@@ -156,7 +157,8 @@ PlayerRender newPlayerRender(float max_x, float max_y, float max_z,
  * @return Pointer to a newly created Player instance, or NULL on failure.
  */
 Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
-                  ShipModel *model, BulletList *bullets) {
+                  ShipModel *model, BulletList *bullets,
+                  GameTextures *textures) {
   if (!model) {
     return NULL;
   }
@@ -164,11 +166,29 @@ Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
   if (!player) {
     return NULL;
   }
+  GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
+  if (tex_fire_soft == NULL) {
+    TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
+    exit(1);
+  }
+  GameTexture *tex_smoke_soft = getGameTextureById(textures, TEX_ID_SMOKE_SOFT);
+  if (tex_smoke_soft == NULL) {
+    TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_SMOKE_SOFT);
+    exit(1);
+  }
+  GameTexture *tex_glow = getGameTextureById(textures, TEX_ID_GLOW);
+  if (tex_glow == NULL) {
+    TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_GLOW);
+    exit(1);
+  }
   player->type = UNIT_TYPE_SOLDER;
   player->state = newUnitState();
   player->render = newPlayerRender(max_x, max_y, max_z, offset_z);
   player->model = model;
   player->bullets = bullets;
+  player->hit = NULL;
+  player->explosion_bullet = newBulletExplosion(
+      tex_fire_soft->tex, tex_smoke_soft->tex, tex_glow->tex);
   return player;
 }
 
@@ -335,13 +355,31 @@ BoundingBox getPlayerBoundingBox(Player *player) {
  *
  * @param player Pointer to the player instance to draw.
  */
-void drawPlayer(Player *player, GameTextures *textures) {
+void drawPlayer(Player *player, GameTextures *textures, Camera3D *camera,
+                SpriteSheetList *sprites) {
   if (!player)
     return;
   updatePlayer(player, textures);
 
+  float dt = GetFrameTime();
+  double current = GetTime();
+  bool hit = current > BULLET_HIT_SEN_TIME &&
+             current - player->state.hit_time < BULLET_HIT_SEN_TIME;
+
   Vector3 pos = {player->render.position.x, player->render.position.y,
                  player->render.position.z + player->render.position.offset_z};
+
+  if (hit) {
+    setShipModelColor(player->model, RED);
+    if (!player->hit) {
+      player->hit = newSpriteSheetState(&sprites->tail->self, 1, 3.0f, 0.1f);
+    }
+    dropSpriteSheetState(player->hit);
+    bulletExplosionSpawnAt(&player->explosion_bullet, pos, camera);
+  }
+  bulletExplosionUpdate(&player->explosion_bullet, pos, dt, camera);
+  bulletExplosionDraw(&player->explosion_bullet, *camera);
+  drawSpriteSheetState(player->hit, *camera, pos);
 
   Matrix transform = MatrixTranslate(pos.x, pos.y, pos.z);
 
@@ -357,6 +395,9 @@ void drawPlayer(Player *player, GameTextures *textures) {
   Model model = player->model->model;
   model.transform = result;
   DrawModel(model, (Vector3){0, 0, 0}, 1.0f, WHITE);
+  if (hit) {
+    setShipModelColor(player->model, WHITE);
+  }
   if (is_debug_mode) {
     if (is_debug_mode && player->model->box_model) {
       Model box_model = *player->model->box_model;
