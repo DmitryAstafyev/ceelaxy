@@ -5,11 +5,13 @@
  */
 #include "unit.h"
 #include "../bullets/bullets.h"
+#include "../game/stat.h"
 #include "../models/models.h"
 #include "../movement/movement.h"
 #include "../sprites/sprites.h"
 #include "../textures/textures.h"
 #include "../utils/debug.h"
+#include "player.h"
 #include "raylib.h"
 #include <math.h>
 #include <raymath.h>
@@ -61,6 +63,7 @@ UnitPosition newUnitPosition() {
   position.y = 0.0f;
   position.z = 0.0f;
   position.z_max_area = 300.0f;
+  position.in_front = false;
   position.ln = 0;
   position.col = 0;
   return position;
@@ -96,6 +99,7 @@ UnitState newUnitState() {
   state.init_health = DEFAULT_UNIT_HEALTH;
   state.init_energy = DEFAULT_UNIT_ENERGY;
   state.hit_time = 0.0f;
+  state.last_shoot = 0.0f;
   return state;
 }
 
@@ -504,4 +508,102 @@ void drawUnits(UnitList *list, Camera3D *camera, SpriteSheetList *sprites) {
     node = node->next;
   }
   removeUnits(list);
+}
+
+bool isUnitAbleToFire(UnitList *list, Unit *unit) {
+  if (!list || !unit) {
+    return false;
+  }
+  if (unit->render.position.in_front) {
+    return true;
+  }
+  UnitNode *node = list->head;
+  for (int i = 0; i < list->length; i += 1) {
+    if (!node) {
+      break;
+    }
+    if (unit->render.position.col == node->self.render.position.col &&
+        unit->render.position.ln < node->self.render.position.ln) {
+      return false;
+    }
+    node = node->next;
+  }
+  unit->render.position.in_front = true;
+  return true;
+}
+
+/**
+ * @brief Checks if any bullet in the list has collided with the given unit.
+ *
+ * On collision, bullet is deactivated and unit health/energy is reduced.
+ *
+ * @param unit Pointer to the target unit.
+ * @param bullets Pointer to the bullet list.
+ */
+void checkBulletHitsUnit(Unit *unit, BulletList *bullets, GameStat *stat) {
+  if (!unit || !bullets)
+    return;
+
+  BoundingBox unitBox = getUnitBoundingBox(unit);
+
+  BulletNode *node = bullets->head;
+  while (node) {
+    Bullet *bullet = &node->self;
+    if (!bullet->alive || bullet->owner != BULLET_OWNER_PLAYER) {
+      node = node->next;
+      continue;
+    }
+
+    BoundingBox bulletBox = getBulletBoundingBox(bullet);
+
+    if (CheckCollisionBoxes(unitBox, bulletBox)) {
+      bullet->alive = false;
+      if (unit->state.health > 0) {
+        unit->state.health -= bullet->params.health;
+      }
+      if (unit->state.energy > 0) {
+        unit->state.energy -= bullet->params.energy;
+      }
+      unit->state.hit_time = GetTime();
+      addHitIntoGameStat(stat);
+      printf("[Bullets] HIT! health = %u\n", unit->state.health);
+    }
+
+    node = node->next;
+  }
+}
+
+/**
+ * @brief Applies bullet collision checks to all units in the list.
+ *
+ * @param units Pointer to the unit list.
+ * @param bullets Pointer to the bullet list.
+ */
+void checkBulletHitsUnits(UnitList *units, BulletList *bullets,
+                          GameStat *stat) {
+  if (!units || !bullets || !stat) {
+    return;
+  }
+  UnitNode *node = units->head;
+  while (node) {
+    checkBulletHitsUnit(&node->self, bullets, stat);
+    node = node->next;
+  }
+  removeBullets(bullets);
+}
+
+void spawnUnitShoot(BulletList *bullets, Unit *unit, GameTextures *textures) {
+  double current_time = GetTime();
+  double elapsed_last_bullet_spawn = current_time - unit->state.last_shoot;
+
+  if (elapsed_last_bullet_spawn > 1.2f) {
+    Bullet bullet = newBullet(
+        BULLET_MOVEMENT_DIRECTION_DOWN,
+        newBulletPosition(unit->render.position.x, unit->render.position.y,
+                          unit->render.position.z),
+        newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10),
+        BULLET_OWNER_UNIT, textures);
+    insertBulletIntoList(bullets, bullet);
+    unit->state.last_shoot = current_time;
+  }
 }

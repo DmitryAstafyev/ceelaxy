@@ -8,7 +8,6 @@
 
 #include "../game/stat.h"
 #include "../textures/textures.h"
-#include "../units/unit.h"
 #include "trail.h"
 #include <stdbool.h>
 #include <stddef.h>
@@ -18,6 +17,10 @@
 /// being hit by a bullet.
 static const double BULLET_HIT_SEN_TIME = 0.1f;
 
+typedef enum BulletOwner {
+  BULLET_OWNER_PLAYER = 0,
+  BULLET_OWNER_UNIT = 1
+} BulletOwner;
 /**
  * @brief Enumeration representing the direction of bullet movement.
  */
@@ -76,6 +79,7 @@ typedef struct {
   BulletSize size;         ///< Shape and dimensions.
   BulletParameters params; ///< Damage and energy parameters.
   bool alive;              ///< Status flag: false if bullet is inactive.
+  BulletOwner owner;
   TrailEmitter trail;
 } Bullet;
 
@@ -150,7 +154,7 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy);
  * @return Fully initialized Bullet object.
  */
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
-                 BulletSize size, BulletParameters params,
+                 BulletSize size, BulletParameters params, BulletOwner owner,
                  GameTextures *textures);
 
 /**
@@ -176,14 +180,14 @@ void insertBulletIntoList(BulletList *list, Bullet bullet);
 void drawBullets(BulletList *list, Camera3D *camera, GameStat *stat);
 
 /**
- * @brief Checks for collisions between bullets and enemy units.
+ * @brief Computes the bounding box for a given bullet.
  *
- * If a collision is detected, unit and bullet states are updated accordingly.
+ * Used for collision detection with units.
  *
- * @param units Pointer to the UnitList containing targets.
- * @param bullets Pointer to the BulletList to check against.
+ * @param bullet Pointer to the bullet.
+ * @return BoundingBox struct in world space.
  */
-void checkBulletHitsUnits(UnitList *units, BulletList *bullets, GameStat *stat);
+BoundingBox getBulletBoundingBox(Bullet *bullet);
 
 /**
  * @brief Frees all memory used by the BulletList and its bullets.
@@ -191,4 +195,7 @@ void checkBulletHitsUnits(UnitList *units, BulletList *bullets, GameStat *stat);
  * @param list Pointer to the BulletList to destroy.
  */
 void destroyBulletList(BulletList *list);
+
+void removeBullets(BulletList *list);
+
 #endif

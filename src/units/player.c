@@ -12,6 +12,7 @@
 #include <raymath.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
@@ -224,7 +225,7 @@ void updatePlayer(Player *player, GameTextures *textures) {
                   newBulletPosition(position->x, position->y,
                                     position->z + position->offset_z),
                   newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10),
-                  textures);
+                  BULLET_OWNER_PLAYER, textures);
     insertBulletIntoList(player->bullets, bullet);
     bullets->last_spawn = current_time;
   }
@@ -292,6 +293,39 @@ void updatePlayer(Player *player, GameTextures *textures) {
   }
 }
 
+BoundingBox getPlayerBoundingBox(Player *player) {
+  const ShipBoundingBox *box = &player->model->box;
+  const PlayerRender *render = &player->render;
+
+  Vector3 pos = {render->position.x, render->position.y,
+                 render->position.z + render->position.offset_z};
+
+  const float hx = box->by_x * 0.5f;
+  const float hy = box->by_y * 0.5f;
+  const float hz = box->by_z * 0.5f;
+
+  Vector3 corners[8] = {
+      {-hx, -hy, -hz}, {-hx, -hy, hz}, {-hx, hy, -hz}, {-hx, hy, hz},
+      {hx, -hy, -hz},  {hx, -hy, hz},  {hx, hy, -hz},  {hx, hy, hz},
+  };
+
+  float rx = render->state.rotate_x;
+  float ry = render->state.rotate_y;
+  float rz = render->state.rotate_z;
+
+  Matrix R = MatrixRotateXYZ((Vector3){rx, ry, rz});
+
+  Vector3 p0 = Vector3Add(Vector3Transform(corners[0], R), pos);
+  BoundingBox world = {.min = p0, .max = p0};
+
+  for (int i = 1; i < 8; ++i) {
+    Vector3 pw = Vector3Add(Vector3Transform(corners[i], R), pos);
+    world.min = Vector3Min(world.min, pw);
+    world.max = Vector3Max(world.max, pw);
+  }
+
+  return world;
+}
 /**
  * @brief Renders the player model and its debug box (if enabled).
  *
@@ -344,4 +378,65 @@ void destroyPlayer(Player *player) {
     return;
   }
   free(player);
+}
+
+bool isPlayerOnFireLine(Unit *enemy, Player *player, float factor) {
+  if (!enemy || !player)
+    return false;
+
+  const float l_x = enemy->render.position.x - factor;
+  const float r_x = enemy->render.position.x + factor;
+  return player->render.position.x > l_x && player->render.position.x < r_x;
+}
+
+void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
+                       float factor, GameTextures *textures) {
+  UnitNode *node = list->head;
+  for (int i = 0; i < list->length; i += 1) {
+    if (!node) {
+      break;
+    }
+    if (isPlayerOnFireLine(&node->self, player, factor) &&
+        isUnitAbleToFire(list, &node->self)) {
+      spawnUnitShoot(player->bullets, &node->self, textures);
+    }
+    node = node->next;
+  }
+}
+
+void checkBulletHitsPlayer(Player *player, BulletList *bullets,
+                           GameStat *stat) {
+  if (!player || !bullets || !stat) {
+    return;
+  }
+
+  BoundingBox playerBox = getPlayerBoundingBox(player);
+
+  BulletNode *node = bullets->head;
+  while (node) {
+    Bullet *bullet = &node->self;
+    if (!bullet->alive || bullet->owner != BULLET_OWNER_UNIT) {
+      node = node->next;
+      continue;
+    }
+
+    BoundingBox bulletBox = getBulletBoundingBox(bullet);
+
+    if (CheckCollisionBoxes(playerBox, bulletBox)) {
+      bullet->alive = false;
+      if (player->state.health > 0) {
+        player->state.health -= bullet->params.health;
+      }
+      if (player->state.energy > 0) {
+        player->state.energy -= bullet->params.energy;
+      }
+      player->state.hit_time = GetTime();
+      addHitIntoGameStat(stat);
+      printf("[Player] HIT! health = %u\n", player->state.health);
+    }
+
+    node = node->next;
+  }
+
+  removeBullets(bullets);
 }

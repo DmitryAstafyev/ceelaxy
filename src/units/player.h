@@ -123,4 +123,9 @@ void drawPlayer(Player *player, GameTextures *textures);
  */
 void destroyPlayer(Player *player);
 
+void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
+                       float factor, GameTextures *textures);
+
+void checkBulletHitsPlayer(Player *player, BulletList *bullets, GameStat *stat);
+
 #endif

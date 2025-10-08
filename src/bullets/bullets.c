@@ -6,7 +6,6 @@
 #include "bullets.h"
 #include "../game/stat.h"
 #include "../textures/textures.h"
-#include "../units/unit.h"
 #include "raylib.h"
 #include <raymath.h>
 #include <stdbool.h>
@@ -102,7 +101,7 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
  * @return A Bullet instance.
  */
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
-                 BulletSize size, BulletParameters params,
+                 BulletSize size, BulletParameters params, BulletOwner owner,
                  GameTextures *textures) {
   GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
   if (tex_fire_soft == NULL) {
@@ -115,6 +114,7 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
   bullet.params = params;
   bullet.size = size;
   bullet.alive = true;
+  bullet.owner = owner;
   bullet.trail = newTrailEmitter(tex_fire_soft->tex, true);
   return bullet;
 }
@@ -332,66 +332,6 @@ void drawBullets(BulletList *list, Camera3D *camera, GameStat *stat) {
   }
   // Cleanup
   removeBullets(list);
-}
-
-/**
- * @brief Checks if any bullet in the list has collided with the given unit.
- *
- * On collision, bullet is deactivated and unit health/energy is reduced.
- *
- * @param unit Pointer to the target unit.
- * @param bullets Pointer to the bullet list.
- */
-void checkBulletHitsUnit(Unit *unit, BulletList *bullets, GameStat *stat) {
-  if (!unit || !bullets)
-    return;
-
-  BoundingBox unitBox = getUnitBoundingBox(unit);
-
-  BulletNode *node = bullets->head;
-  while (node) {
-    Bullet *bullet = &node->self;
-    if (!bullet->alive) {
-      node = node->next;
-      continue;
-    }
-
-    BoundingBox bulletBox = getBulletBoundingBox(bullet);
-
-    if (CheckCollisionBoxes(unitBox, bulletBox)) {
-      bullet->alive = false;
-      if (unit->state.health > 0) {
-        unit->state.health -= bullet->params.health;
-      }
-      if (unit->state.energy > 0) {
-        unit->state.energy -= bullet->params.energy;
-      }
-      unit->state.hit_time = GetTime();
-      addHitIntoGameStat(stat);
-      printf("[Bullets] HIT! health = %u\n", unit->state.health);
-    }
-
-    node = node->next;
-  }
-}
-
-/**
- * @brief Applies bullet collision checks to all units in the list.
- *
- * @param units Pointer to the unit list.
- * @param bullets Pointer to the bullet list.
- */
-void checkBulletHitsUnits(UnitList *units, BulletList *bullets,
-                          GameStat *stat) {
-  if (!units || !bullets) {
-    return;
-  }
-  UnitNode *node = units->head;
-  while (node) {
-    checkBulletHitsUnit(&node->self, bullets, stat);
-    node = node->next;
-  }
-  removeBullets(bullets);
 }
 
 /**

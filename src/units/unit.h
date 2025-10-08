@@ -7,6 +7,8 @@
 #ifndef UNIT_H
 #define UNIT_H
 
+#include "../bullets/bullets.h"
+#include "../game/stat.h"
 #include "../models/models.h"
 #include "../movement/movement.h"
 #include "../sprites/sprites.h"
@@ -33,6 +35,7 @@ typedef struct UnitState {
   uint8_t init_health; ///< Initianal health value.
   uint8_t init_energy; ///< Initianal energy or stamina.
   double hit_time;     ///< Timestamp of the last hit taken.
+  double last_shoot;   ///< Time of the last bullet spawn.
 } UnitState;
 
 /**
@@ -45,6 +48,7 @@ typedef struct UnitPosition {
   float z_max_area; ///< Maximum area limit on the Z axis.
   uint16_t ln;      ///< Logical row index in grid or formation.
   uint16_t col;     ///< Logical column index in grid or formation.
+  bool in_front;
 } UnitPosition;
 
 /**
@@ -209,5 +213,19 @@ void drawUnits(UnitList *list, Camera3D *camera, SpriteSheetList *sprites);
  * @param list Pointer to the UnitList to clear.
  */
 void removeUnits(UnitList *list);
+
+bool isUnitAbleToFire(UnitList *list, Unit *unit);
+
+/**
+ * @brief Checks for collisions between bullets and enemy units.
+ *
+ * If a collision is detected, unit and bullet states are updated accordingly.
+ *
+ * @param units Pointer to the UnitList containing targets.
+ * @param bullets Pointer to the BulletList to check against.
+ */
+void checkBulletHitsUnits(UnitList *units, BulletList *bullets, GameStat *stat);
+
+void spawnUnitShoot(BulletList *list, Unit *unit, GameTextures *textures);
 
 #endif
