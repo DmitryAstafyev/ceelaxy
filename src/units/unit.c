@@ -595,17 +595,17 @@ void checkBulletHitsUnits(UnitList *units, BulletList *bullets,
   removeBullets(bullets);
 }
 
-void spawnUnitShoot(BulletList *bullets, Unit *unit, GameTextures *textures) {
+void spawnUnitShoot(BulletList *bullets, Unit *unit, float target_x,
+                    float target_z, GameTextures *textures) {
   double current_time = GetTime();
   double elapsed_last_bullet_spawn = current_time - unit->state.last_shoot;
 
   if (elapsed_last_bullet_spawn > 1.2f) {
-    Bullet bullet = newBullet(
-        BULLET_MOVEMENT_DIRECTION_DOWN,
+    Bullet bullet = newBulletAimedAt(
         newBulletPosition(unit->render.position.x, unit->render.position.y,
                           unit->render.position.z),
         newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10),
-        BULLET_OWNER_UNIT, textures);
+        BULLET_OWNER_UNIT, target_x, target_z, textures);
     insertBulletIntoList(bullets, bullet);
     unit->state.last_shoot = current_time;
   }

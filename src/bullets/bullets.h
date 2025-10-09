@@ -67,6 +67,7 @@ typedef struct {
   float speed;        ///< Current speed of the bullet.
   float angle; ///< Orientation angle (used for rotation or visual effects).
   uint8_t direction; ///< Movement direction (from BulletMovementDirection).
+  Vector3 dir;
 } BulletMovement;
 
 /**
@@ -157,6 +158,9 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
                  BulletSize size, BulletParameters params, BulletOwner owner,
                  GameTextures *textures);
 
+Bullet newBulletAimedAt(BulletPosition position, BulletSize size,
+                        BulletParameters params, BulletOwner owner,
+                        float target_x, float target_z, GameTextures *textures);
 /**
  * @brief Creates a new empty BulletList with default frame bounds.
  *

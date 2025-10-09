@@ -226,6 +226,7 @@ bool isUnitAbleToFire(UnitList *list, Unit *unit);
  */
 void checkBulletHitsUnits(UnitList *units, BulletList *bullets, GameStat *stat);
 
-void spawnUnitShoot(BulletList *list, Unit *unit, GameTextures *textures);
+void spawnUnitShoot(BulletList *bullets, Unit *unit, float target_x,
+                    float target_z, GameTextures *textures);
 
 #endif

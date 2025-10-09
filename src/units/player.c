@@ -439,7 +439,10 @@ void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
     }
     if (isPlayerOnFireLine(&node->self, player, factor) &&
         isUnitAbleToFire(list, &node->self)) {
-      spawnUnitShoot(player->bullets, &node->self, textures);
+      spawnUnitShoot(player->bullets, &node->self, player->render.position.x,
+                     player->render.position.z +
+                         player->render.position.offset_z,
+                     textures);
     }
     node = node->next;
   }

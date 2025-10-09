@@ -36,9 +36,28 @@ BulletAreaFrame newBulletAreaFrame() {
 BulletMovement newBulletMovement(BulletMovementDirection direction) {
   BulletMovement movement;
   movement.acceleration = 0.1f;
-  movement.angle = 0.0f;
   movement.direction = direction;
   movement.speed = 1.0f;
+  movement.dir = (Vector3){
+      0.0f, 0.0f, (direction == BULLET_MOVEMENT_DIRECTION_UP) ? -1.0f : 1.0f};
+  movement.angle = atan2f(movement.dir.x, movement.dir.z);
+  return movement;
+}
+
+BulletMovement newBulletAimedMovement(BulletPosition from, float to_x,
+                                      float to_z) {
+  BulletMovement movement;
+  movement.acceleration = 0.1f;
+  movement.speed = 1.0f;
+  float dx = to_x - from.x;
+  float dz = to_z - from.z;
+  float len = sqrtf(dx * dx + dz * dz);
+  Vector3 dir = (len > 1e-6f) ? (Vector3){dx / len, 0.0f, dz / len}
+                              : (Vector3){0.0f, 0.0f, 1.0f};
+  movement.dir = dir;
+  movement.angle = atan2f(dir.x, dir.z);
+  movement.direction = (dir.z < 0.0f) ? BULLET_MOVEMENT_DIRECTION_UP
+                                      : BULLET_MOVEMENT_DIRECTION_DOWN;
   return movement;
 }
 
@@ -119,6 +138,27 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
   return bullet;
 }
 
+Bullet newBulletAimedAt(BulletPosition position, BulletSize size,
+                        BulletParameters params, BulletOwner owner,
+                        float target_x, float target_z,
+                        GameTextures *textures) {
+  GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
+  if (!tex_fire_soft) {
+    TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
+    exit(1);
+  }
+
+  Bullet bullet;
+  bullet.movement = newBulletAimedMovement(position, target_x, target_z);
+  bullet.position = position;
+  bullet.params = params;
+  bullet.size = size;
+  bullet.alive = true;
+  bullet.owner = owner;
+  bullet.trail = newTrailEmitter(tex_fire_soft->tex, true);
+  return bullet;
+}
+
 /**
  * @brief Updates bullet position and checks whether it exited the valid frame.
  *
@@ -126,16 +166,15 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
  * @param frame Pointer to the frame defining allowed Z range.
  */
 void updateBullet(Bullet *bullet, BulletAreaFrame *frame, GameStat *stat) {
-  if (!bullet) {
+  if (!bullet || !bullet->alive)
     return;
-  }
-  int direction =
-      bullet->movement.direction == BULLET_MOVEMENT_DIRECTION_UP ? -1 : 1;
-  bullet->position.z += bullet->movement.speed * direction;
-  if ((bullet->movement.direction == BULLET_MOVEMENT_DIRECTION_UP &&
-       bullet->position.z < frame->top) ||
-      (bullet->movement.direction == BULLET_MOVEMENT_DIRECTION_DOWN &&
-       bullet->position.z > frame->bottom)) {
+
+  // bullet->movement.speed += bullet->movement.acceleration;
+
+  bullet->position.x += bullet->movement.speed * bullet->movement.dir.x;
+  bullet->position.z += bullet->movement.speed * bullet->movement.dir.z;
+
+  if (bullet->position.z < frame->top || bullet->position.z > frame->bottom) {
     bullet->alive = false;
     addMissIntoGameStat(stat);
   }
@@ -149,35 +188,33 @@ void updateBullet(Bullet *bullet, BulletAreaFrame *frame, GameStat *stat) {
  */
 void drawBullet(Bullet *bullet, BulletAreaFrame *frame, Camera3D *camera,
                 GameStat *stat) {
-  if (!bullet) {
+  if (!bullet || !bullet->alive || !stat || !frame || !camera) {
     return;
   }
 
   updateBullet(bullet, frame, stat);
 
-  float sgn = (bullet->movement.direction == BULLET_MOVEMENT_DIRECTION_UP)
-                  ? -1.0f
-                  : 1.0f;
-  Vector3 direction = {0, 0, sgn};
+  Vector3 center = {bullet->position.x, bullet->position.y, bullet->position.z};
+
+  Vector3 axis = Vector3Normalize(
+      (Vector3){bullet->movement.dir.x, 0.0f, bullet->movement.dir.z});
 
   float len = bullet->size.by_z;
   float half = len * 0.5f;
 
-  Vector3 center = {bullet->position.x, bullet->position.y, bullet->position.z};
-  Vector3 axis = {0.0f, 0.0f, sgn};
-
-  Vector3 start = {center.x, center.y, center.z - axis.z * half};
-  Vector3 end = {center.x, center.y, center.z + axis.z * half};
+  Vector3 start = Vector3Subtract(center, Vector3Scale(axis, half));
+  Vector3 end = Vector3Add(center, Vector3Scale(axis, half));
 
   DrawCylinderEx(start, end, bullet->size.radius_bottom,
                  bullet->size.radius_bottom, bullet->size.slices, RED);
+
   float nose = len * 0.35f;
-  Vector3 nose_end = {end.x, end.y, end.z + axis.z * nose};
+  Vector3 nose_end = Vector3Add(end, Vector3Scale(axis, nose));
   DrawCylinderEx(end, nose_end, bullet->size.radius_top, 0.0f,
                  bullet->size.slices, RED);
 
   float dt = GetFrameTime();
-  trailEmit(&bullet->trail, start, direction, dt);
+  trailEmit(&bullet->trail, start, axis, dt); // направление эффекта = ось
   trailUpdate(&bullet->trail, dt);
   trailDraw(&bullet->trail, *camera);
 }
