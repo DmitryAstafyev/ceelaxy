@@ -1,3 +1,4 @@
+#include "player.h"
 #include "raylib.h"
 #include "unit.h"
 #include <raymath.h>
@@ -11,3 +12,5 @@ static const double STATE_BAR_Y_OFFSET = 12.0f;
 void drawUnitsStateBars(UnitList *list, Camera3D *camera);
 
 void drawUnitStateBars(Unit *unit, Camera3D *camera);
+
+void drawPlayerStateBars(Player *player, Camera3D *camera);

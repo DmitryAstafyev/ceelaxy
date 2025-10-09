@@ -44,3 +44,7 @@ void addMissIntoGameStat(GameStat *stat) {
   stat->misses += 1;
   stat->score -= GAME_STAT_MISS_COST;
 }
+
+void addShootIntoGameStat(GameStat *stat) {
+  stat->score -= GAME_STAT_SHOOT_COST;
+}

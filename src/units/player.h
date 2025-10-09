@@ -104,6 +104,7 @@ Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
                   ShipModel *model, BulletList *bullets,
                   GameTextures *textures);
 
+BoundingBox getPlayerBoundingBox(Player *player);
 /**
  * @brief Allocates and initializes a new Player instance.
  *

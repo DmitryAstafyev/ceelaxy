@@ -472,7 +472,7 @@ void checkBulletHitsPlayer(Player *player, BulletList *bullets,
         player->state.energy -= bullet->params.energy;
       }
       player->state.hit_time = GetTime();
-      addHitIntoGameStat(stat);
+      addShootIntoGameStat(stat);
       printf("[Player] HIT! health = %u\n", player->state.health);
     }
 

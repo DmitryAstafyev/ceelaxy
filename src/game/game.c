@@ -172,6 +172,7 @@ void runGame(Game *game) {
     drawBullets(game->bullets, &game->camera, &game->stat);
     EndMode3D();
     drawUnitsStateBars(game->enemies, &game->camera);
+    drawPlayerStateBars(game->player, &game->camera);
     gameStatDraw(&game->stat);
     EndDrawing();
   }
