@@ -172,14 +172,16 @@ void updateBullet(Bullet *bullet, BulletAreaFrame *frame, GameStat *stat) {
   if (!bullet || !bullet->alive)
     return;
 
-  // bullet->movement.speed += bullet->movement.acceleration;
+  bullet->movement.speed += bullet->movement.acceleration;
 
   bullet->position.x += bullet->movement.speed * bullet->movement.dir.x;
   bullet->position.z += bullet->movement.speed * bullet->movement.dir.z;
 
   if (bullet->position.z < frame->top || bullet->position.z > frame->bottom) {
     bullet->alive = false;
-    addMissIntoGameStat(stat);
+    if (bullet->owner == BULLET_OWNER_PLAYER) {
+      addMissIntoGameStat(stat);
+    }
   }
 }
 

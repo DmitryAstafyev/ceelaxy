@@ -70,6 +70,34 @@ char *getFilesPath(const char *filename, const char *ext) {
   return result;
 }
 
+static BoundingBox getModelBBLocal(Model *m) {
+  BoundingBox bb = GetMeshBoundingBox(m->meshes[0]);
+  for (int i = 1; i < m->meshCount; ++i) {
+    BoundingBox b = GetMeshBoundingBox(m->meshes[i]);
+    bb.min = Vector3Min(bb.min, b.min);
+    bb.max = Vector3Max(bb.max, b.max);
+  }
+  return bb;
+}
+
+static void centerModelGeometry(Model *m) {
+  BoundingBox bb = getModelBBLocal(m);
+  Vector3 c = Vector3Scale(Vector3Add(bb.min, bb.max), 0.5f);
+
+  for (int i = 0; i < m->meshCount; ++i) {
+    Mesh *mesh = &m->meshes[i];
+    for (int v = 0; v < mesh->vertexCount; ++v) {
+      float *vx = &mesh->vertices[v * 3 + 0];
+      float *vy = &mesh->vertices[v * 3 + 1];
+      float *vz = &mesh->vertices[v * 3 + 2];
+      *vx -= c.x;
+      *vy -= c.y;
+      *vz -= c.z;
+    }
+    UploadMesh(mesh, false);
+  }
+}
+
 /**
  * @brief Loads a 3D model and its texture from disk and assigns a shader.
  *
@@ -88,6 +116,7 @@ ShipModel *loadShipModel(const char *filename, ModelId id, Shader *shader) {
     exit(EXIT_FAILURE);
   }
   Model model = LoadModel(path_obj);
+  centerModelGeometry(&model);
   free(path_obj);
 
   char *path_texture = getFilesPath(filename, MODEL_PNG_EXT);

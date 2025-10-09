@@ -1,4 +1,5 @@
 #include "levels.h"
+#include "../utils/debug.h"
 #include <raylib.h>
 #include <stdint.h>
 
@@ -8,8 +9,8 @@ Level getFirstLevel() {
   units.bullet_acceleration = INIT_LEVEL_UNIT_BULLET_ACCELERATION;
   units.bullet_init_speed = INIT_LEVEL_UNIT_BULLET_INIT_SPEED;
   units.bullet_delay_spawn = INIT_LEVEL_UNIT_BULLET_DELAY;
-  units.damage_life = INIT_LEVEL_UNIT_DAMAGE_LIFE;
-  units.damage_energy = INIT_LEVEL_UNIT_DAMAGE_ENERGY;
+  units.damage_life = is_debug_mode ? 0.001f : INIT_LEVEL_UNIT_DAMAGE_LIFE;
+  units.damage_energy = is_debug_mode ? 0.001f : INIT_LEVEL_UNIT_DAMAGE_ENERGY;
   units.count = 20;
   units.max_ln = 2;
   units.max_col = 10;
@@ -18,8 +19,10 @@ Level getFirstLevel() {
   player.bullet_acceleration = INIT_LEVEL_PLAYER_BULLET_ACCELERATION;
   player.bullet_init_speed = INIT_LEVEL_PLAYER_BULLET_INIT_SPEED;
   player.bullet_delay_spawn = INIT_LEVEL_PLAYER_BULLET_DELAY;
-  player.damage_life = INIT_LEVEL_PLAYER_DAMAGE_LIFE;
-  player.damage_energy = INIT_LEVEL_PLAYER_DAMAGE_ENERGY;
+  player.damage_life =
+      (is_debug_mode ? 100.0 : 1.0) * INIT_LEVEL_PLAYER_DAMAGE_LIFE;
+  player.damage_energy =
+      (is_debug_mode ? 100.0 : 1.0) * INIT_LEVEL_PLAYER_DAMAGE_ENERGY;
   level.level = 0;
   level.units = units;
   level.player = player;

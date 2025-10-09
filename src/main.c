@@ -17,10 +17,10 @@ int main(int argc, char *argv[]) {
   srand(time(NULL));
   printf("Starting\n");
 
-  InitWindow(800, 600, "Ceelaxy");
+  InitWindow(1600, 1200, "Ceelaxy");
   SetTargetFPS(60);
 
-  Game *game = newGame(600, 800);
+  Game *game = newGame(1200, 1600);
 
   if (!game) {
     return 1;

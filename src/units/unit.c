@@ -562,10 +562,16 @@ void checkBulletHitsUnit(Unit *unit, BulletList *bullets, GameStat *stat) {
     if (CheckCollisionBoxes(unitBox, bulletBox)) {
       bullet->alive = false;
       if (unit->state.health > 0) {
-        unit->state.health -= bullet->params.health;
+        unit->state.health =
+            (unit->state.health > bullet->params.health)
+                ? (uint8_t)(unit->state.health - bullet->params.health)
+                : 0u;
       }
       if (unit->state.energy > 0) {
-        unit->state.energy -= bullet->params.energy;
+        unit->state.energy =
+            (unit->state.energy > bullet->params.energy)
+                ? (uint8_t)(unit->state.energy - bullet->params.energy)
+                : 0u;
       }
       unit->state.hit_time = GetTime();
       addHitIntoGameStat(stat);
