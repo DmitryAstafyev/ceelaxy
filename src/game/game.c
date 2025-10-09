@@ -139,6 +139,22 @@ void destroyGame(Game *game) {
   free(game);
 }
 
+bool nextGameLevel(Game *game) {
+  game->level = goToNextLevel(game->level);
+  ShipModel *enemy_model = findModelInList(game->models, game->level.level);
+  if (!enemy_model) {
+    return false;
+  }
+  UnitList *enemies =
+      newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
+  if (!enemies) {
+    return false;
+  }
+  game->enemies = enemies;
+  game->player->state.health = 100;
+  game->player->state.energy = 100;
+  return true;
+}
 /**
  * @brief Runs the main game loop until the window is closed.
  *
@@ -155,8 +171,10 @@ void runGame(Game *game) {
   printf("[game] starting\n");
   while (!WindowShouldClose()) {
     if (!game->enemies->head) {
-      printf("[game] ooops\n");
-      return;
+      printf("[game] next level!\n");
+      if (!nextGameLevel(game)) {
+        return;
+      }
     }
     BeginDrawing();
     ClearBackground(BLACK);
@@ -177,6 +195,7 @@ void runGame(Game *game) {
     drawUnitsStateBars(game->enemies, &game->camera);
     drawPlayerStateBars(game->player, &game->camera);
     gameStatDraw(&game->stat);
+    levelDraw(&game->level);
     EndDrawing();
   }
   printf("[game] finished\n");

@@ -604,7 +604,9 @@ void spawnUnitShoot(BulletList *bullets, Unit *unit, float target_x,
     Bullet bullet = newBulletAimedAt(
         newBulletPosition(unit->render.position.x, unit->render.position.y,
                           unit->render.position.z),
-        newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10),
+        newBulletSize(0.25f, .25f, 2.0f),
+        newBulletParameters(level->units.damage_life,
+                            level->units.damage_energy),
         BULLET_OWNER_UNIT, target_x, target_z, level->units.bullet_acceleration,
         level->units.bullet_init_speed, textures);
     insertBulletIntoList(bullets, bullet);

@@ -246,7 +246,9 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
         newBullet(BULLET_MOVEMENT_DIRECTION_UP,
                   newBulletPosition(position->x, position->y,
                                     position->z + position->offset_z),
-                  newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10),
+                  newBulletSize(0.25f, .25f, 2.0f),
+                  newBulletParameters(level->player.damage_life,
+                                      level->player.damage_energy),
                   BULLET_OWNER_PLAYER, level->player.bullet_acceleration,
                   level->player.bullet_init_speed, textures);
     insertBulletIntoList(player->bullets, bullet);
