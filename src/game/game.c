@@ -141,7 +141,8 @@ void destroyGame(Game *game) {
 
 bool nextGameLevel(Game *game) {
   game->level = goToNextLevel(game->level);
-  ShipModel *enemy_model = findModelInList(game->models, game->level.level);
+  ShipModel *enemy_model =
+      findModelInListCycle(game->models, game->level.level);
   if (!enemy_model) {
     return false;
   }

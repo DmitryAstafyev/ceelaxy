@@ -96,6 +96,8 @@ void destroyShipModelNode(ShipModelNode *node);
  */
 ShipModel *findModelInList(ShipModelList *list, ModelId id);
 
+ShipModel *findModelInListCycle(ShipModelList *list, int id);
+
 /**
  * @brief Initializes and loads all ship models into a linked list.
  *

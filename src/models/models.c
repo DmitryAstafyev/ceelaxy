@@ -80,22 +80,12 @@ static BoundingBox getModelBBLocal(Model *m) {
   return bb;
 }
 
-static void centerModelGeometry(Model *m) {
+static void centerModelByTransform(Model *m) {
   BoundingBox bb = getModelBBLocal(m);
   Vector3 c = Vector3Scale(Vector3Add(bb.min, bb.max), 0.5f);
 
-  for (int i = 0; i < m->meshCount; ++i) {
-    Mesh *mesh = &m->meshes[i];
-    for (int v = 0; v < mesh->vertexCount; ++v) {
-      float *vx = &mesh->vertices[v * 3 + 0];
-      float *vy = &mesh->vertices[v * 3 + 1];
-      float *vz = &mesh->vertices[v * 3 + 2];
-      *vx -= c.x;
-      *vy -= c.y;
-      *vz -= c.z;
-    }
-    UploadMesh(mesh, false);
-  }
+  Matrix T = MatrixTranslate(-c.x, -c.y, -c.z);
+  m->transform = MatrixMultiply(T, m->transform);
 }
 
 /**
@@ -116,7 +106,7 @@ ShipModel *loadShipModel(const char *filename, ModelId id, Shader *shader) {
     exit(EXIT_FAILURE);
   }
   Model model = LoadModel(path_obj);
-  centerModelGeometry(&model);
+  centerModelByTransform(&model);
   free(path_obj);
 
   char *path_texture = getFilesPath(filename, MODEL_PNG_EXT);
@@ -295,29 +285,28 @@ ShipModelList *newShipModelList() {
   return models;
 }
 
-/**
- * @brief Finds a ship model in the list by its name.
- *
- * Iterates through the linked list of ship models and returns a pointer
- * to the first model whose `model_name` matches the given `name`.
- * The comparison is case-sensitive.
- *
- * @param list Pointer to the ShipModelList to search.
- * @param name Name of the model to find.
- * @return Pointer to the matching ShipModel, or NULL if not found.
- */
+static inline ModelId wrap_model_id(int id) {
+  int wrapped = id % MODEL_ID_COUNT;
+  if (wrapped < 0)
+    wrapped += MODEL_ID_COUNT;
+  return (ModelId)wrapped;
+}
+
 ShipModel *findModelInList(ShipModelList *list, ModelId id) {
-  ShipModelNode *node = list->head;
-  if (!node) {
+  if (!list)
     return NULL;
-  }
-  while (node) {
-    if (node->self->id == id) {
+  for (ShipModelNode *node = list->head; node; node = node->next) {
+    if (node->self && node->self->id == id)
       return node->self;
-    }
-    node = node->next;
   }
   return NULL;
+}
+
+ShipModel *findModelInListCycle(ShipModelList *list, int id) {
+  if (!list)
+    return NULL;
+  ModelId wrapped = wrap_model_id(id);
+  return findModelInList(list, wrapped);
 }
 
 /**
