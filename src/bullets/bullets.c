@@ -392,3 +392,59 @@ void destroyBulletList(BulletList *list) {
   list->length = 0;
   list->idx = 0;
 }
+
+static inline float bulletCollisionRadius(const Bullet *b) {
+  float r_shape = fmaxf(b->size.radius_top, b->size.radius_bottom);
+  if (r_shape > 0.0f)
+    return r_shape;
+  return 0.5f * fmaxf(b->size.by_x, b->size.by_z);
+}
+
+static inline bool bulletsOverlapXZ(const Bullet *a, const Bullet *b) {
+  const float dx = a->position.x - b->position.x;
+  const float dz = a->position.z - b->position.z;
+  const float r = bulletCollisionRadius(a) + bulletCollisionRadius(b);
+  return (dx * dx + dz * dz) <= (r * r);
+}
+
+/**
+ * Resolve mutual bullet-to-bullet collisions within a single list.
+ *
+ * All checks are done in the XZ plane (top-down 2D gameplay).
+ *
+ * @param list                 The list of bullets.
+ * @param same_owner_collides  If false, bullets from the same owner do NOT
+ * collide.
+ * @return                     Number of pairs that were destroyed.
+ */
+void bulletsResolveMutualCollisions(BulletList *list,
+                                    bool same_owner_collides) {
+  if (!list)
+    return;
+
+  size_t destroyed_pairs = 0;
+
+  for (BulletNode *a = list->head; a; a = a->next) {
+    Bullet *ba = &a->self;
+    if (!ba->alive)
+      continue;
+
+    for (BulletNode *b = a->next; b; b = b->next) {
+      Bullet *bb = &b->self;
+      if (!bb->alive)
+        continue;
+
+      if (!same_owner_collides && ba->owner == bb->owner)
+        continue;
+
+      if (bulletsOverlapXZ(ba, bb)) {
+        ba->alive = false;
+        bb->alive = false;
+
+        destroyed_pairs++;
+        break;
+      }
+    }
+  }
+  removeBullets(list);
+}

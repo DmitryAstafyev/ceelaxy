@@ -229,11 +229,14 @@ void runGame(Game *game) {
     if (is_debug_mode) {
       DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
     }
-    checkBulletHitsUnits(game->enemies, game->bullets, &game->stat);
-    checkBulletHitsPlayer(game->player, game->bullets, &game->stat);
+    if (!over) {
+      checkBulletHitsUnits(game->enemies, game->bullets, &game->stat);
+      checkBulletHitsPlayer(game->player, game->bullets, &game->stat);
+      bulletsResolveMutualCollisions(game->bullets, false);
+      selectUnitsToFire(game->enemies, &game->camera, game->player,
+                        &game->level, 10.0, game->textures);
+    }
     drawUnits(game->enemies, &game->camera, game->sprites);
-    selectUnitsToFire(game->enemies, &game->camera, game->player, &game->level,
-                      10.0, game->textures);
     if (!over) {
       drawPlayer(game->player, &game->level, game->textures, &game->camera,
                  game->sprites);

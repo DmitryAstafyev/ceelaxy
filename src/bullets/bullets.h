@@ -203,4 +203,6 @@ void destroyBulletList(BulletList *list);
 
 void removeBullets(BulletList *list);
 
+void bulletsResolveMutualCollisions(BulletList *list, bool same_owner_collides);
+
 #endif
