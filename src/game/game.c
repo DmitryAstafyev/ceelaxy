@@ -19,7 +19,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <wchar.h>
+#include <unistd.h>
 
 /**
  * @brief Initializes a new Game instance, loading models, creating player,
@@ -155,6 +155,38 @@ bool nextGameLevel(Game *game) {
   game->player->state.energy = 100;
   return true;
 }
+
+void dropGameLevel(Game *game) {
+  game->level = getFirstLevel();
+  ShipModel *enemy_model =
+      findModelInList(game->models, MODEL_CAMO_STELLAR_JET);
+  if (!enemy_model) {
+    return;
+  }
+  UnitList *enemies =
+      newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
+  if (!enemies) {
+    return;
+  }
+  game->enemies = enemies;
+  game->player->state.health = 100;
+  game->player->state.energy = 100;
+  game->stat = newGameStat();
+}
+
+void gameOverDraw() {
+
+  const char *text = TextFormat("Game Over");
+  int font = LEVEL_LABEL_FONT_SIZE;
+
+  int textW = MeasureText(text, font);
+  int textH = font;
+  int x = (GetScreenWidth() - textW) / 2;
+  int y = (GetScreenHeight() - textH) / 2;
+
+  DrawText(text, x + 2, y + 2, font, Fade(BLACK, 0.5f));
+  DrawText(text, x, y, font, Fade(RAYWHITE, 1.0f));
+}
 /**
  * @brief Runs the main game loop until the window is closed.
  *
@@ -169,7 +201,19 @@ bool nextGameLevel(Game *game) {
  */
 void runGame(Game *game) {
   printf("[game] starting\n");
+  double over_tm = GetTime();
+  bool over = false;
   while (!WindowShouldClose()) {
+    if (game->player->state.health <= 0 && !over) {
+      over_tm = GetTime();
+      over = true;
+    }
+    if (over) {
+      if (GetTime() - over_tm > 5.0) {
+        over = false;
+        dropGameLevel(game);
+      }
+    }
     if (!game->enemies->head) {
       printf("[game] next level!\n");
       if (!nextGameLevel(game)) {
@@ -180,6 +224,7 @@ void runGame(Game *game) {
     ClearBackground(BLACK);
 
     BeginMode3D(game->camera);
+
     if (is_debug_mode) {
       DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
     }
@@ -188,14 +233,24 @@ void runGame(Game *game) {
     drawUnits(game->enemies, &game->camera, game->sprites);
     selectUnitsToFire(game->enemies, &game->camera, game->player, &game->level,
                       10.0, game->textures);
-    drawPlayer(game->player, &game->level, game->textures, &game->camera,
-               game->sprites);
-    drawBullets(game->bullets, &game->camera, &game->stat);
+    if (!over) {
+      drawPlayer(game->player, &game->level, game->textures, &game->camera,
+                 game->sprites);
+      drawBullets(game->bullets, &game->camera, &game->stat);
+    }
+
     EndMode3D();
+
+    if (!over) {
+      drawPlayerStateBars(game->player, &game->camera);
+    }
+
     drawUnitsStateBars(game->enemies, &game->camera);
-    drawPlayerStateBars(game->player, &game->camera);
     gameStatDraw(&game->stat);
     levelDraw(&game->level);
+    if (over) {
+      gameOverDraw();
+    }
     EndDrawing();
   }
   printf("[game] finished\n");
