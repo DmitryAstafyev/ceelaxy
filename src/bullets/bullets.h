@@ -156,11 +156,12 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy);
  */
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
                  BulletSize size, BulletParameters params, BulletOwner owner,
-                 GameTextures *textures);
+                 float acceleration, float speed, GameTextures *textures);
 
 Bullet newBulletAimedAt(BulletPosition position, BulletSize size,
                         BulletParameters params, BulletOwner owner,
-                        float target_x, float target_z, GameTextures *textures);
+                        float target_x, float target_z, float acceleration,
+                        float speed, GameTextures *textures);
 /**
  * @brief Creates a new empty BulletList with default frame bounds.
  *

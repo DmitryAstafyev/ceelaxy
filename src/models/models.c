@@ -81,7 +81,7 @@ char *getFilesPath(const char *filename, const char *ext) {
  * @param shader Pointer to the shared shader used by this model.
  * @return ShipModel* Allocated model instance, or NULL on failure.
  */
-ShipModel *loadShipModel(const char *filename, Shader *shader) {
+ShipModel *loadShipModel(const char *filename, ModelId id, Shader *shader) {
   char *path_obj = getFilesPath(filename, MODEL_OBJ_EXT);
   if (!path_obj) {
     fprintf(stderr, "[ModelLoader] Fail load model: %s\n", filename);
@@ -127,6 +127,7 @@ ShipModel *loadShipModel(const char *filename, Shader *shader) {
   ship->model = model;
   ship->texture = texture;
   ship->model_name = filename;
+  ship->id = id;
   ship->box = box;
   return ship;
 }
@@ -177,9 +178,9 @@ void destroyShipModel(ShipModel *ship) {
  * @param prev Pointer to the previous node in the list (can be NULL).
  * @return ShipModelNode* Allocated node or NULL on failure.
  */
-ShipModelNode *newShipModelNode(const char *model_name, Shader *shader,
-                                ShipModelNode *prev) {
-  ShipModel *model = loadShipModel(model_name, shader);
+ShipModelNode *newShipModelNode(const char *model_name, ModelId id,
+                                Shader *shader, ShipModelNode *prev) {
+  ShipModel *model = loadShipModel(model_name, id, shader);
   if (!model) {
     return NULL;
   }
@@ -208,6 +209,10 @@ void destroyShipModelNode(ShipModelNode *node) {
   free(node);
 }
 
+const char *getModelNameById(ModelId id) {
+  return (id >= 0 && id < MODEL_ID_COUNT) ? MODEL_ID_NAMES[id] : "UnknownModel";
+}
+
 /**
  * @brief Loads all predefined models into a ShipModelList.
  *
@@ -230,17 +235,6 @@ ShipModelList *newShipModelList() {
   models->head = NULL;
   models->tail = NULL;
 
-  const char *list[] = {MODEL_CamoStellarJet,
-                        MODEL_DualStriker,
-                        MODEL_GalactixRacer,
-                        MODEL_InterstellarRunner,
-                        MODEL_MeteorSlicer,
-                        MODEL_RedFighter,
-                        MODEL_StarMarineTrooper,
-                        MODEL_Transtellar,
-                        MODEL_UltravioletIntruder,
-                        MODEL_Warship,
-                        NULL};
   // Create shader
   char *vs_file = path_join(LIGHTS, "lighting.vs");
   char *fs_file = path_join(LIGHTS, "lighting.fs");
@@ -250,9 +244,10 @@ ShipModelList *newShipModelList() {
   free(vs_file);
   free(fs_file);
 
-  for (int i = 0; list[i] != NULL; i++) {
-    printf("[Models] Loading model %s\n", list[i]);
-    ShipModelNode *node = newShipModelNode(list[i], &shader, models->tail);
+  for (int id = 0; id < MODEL_ID_COUNT; id++) {
+    const char *name = getModelNameById(id);
+    printf("[Models] Loading model %s\n", name);
+    ShipModelNode *node = newShipModelNode(name, id, &shader, models->tail);
     if (!node) {
       destroyShipModelList(models);
       return NULL;
@@ -265,7 +260,7 @@ ShipModelList *newShipModelList() {
     }
     models->tail = node;
     models->length += 1;
-    printf("Model %s has been loaded\n", list[i]);
+    printf("Model %s has been loaded\n", name);
   }
   models->shader = shader;
   return models;
@@ -282,13 +277,13 @@ ShipModelList *newShipModelList() {
  * @param name Name of the model to find.
  * @return Pointer to the matching ShipModel, or NULL if not found.
  */
-ShipModel *findModelInList(ShipModelList *list, char *name) {
+ShipModel *findModelInList(ShipModelList *list, ModelId id) {
   ShipModelNode *node = list->head;
   if (!node) {
     return NULL;
   }
   while (node) {
-    if (strcmp(node->self->model_name, name) == 0) {
+    if (node->self->id == id) {
       return node->self;
     }
     node = node->next;

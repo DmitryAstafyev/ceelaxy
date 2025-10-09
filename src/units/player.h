@@ -116,8 +116,8 @@ BoundingBox getPlayerBoundingBox(Player *player);
  * @param bullets Pointer to the global bullet list shared across units.
  * @return Pointer to a newly created Player, or NULL if allocation fails.
  */
-void drawPlayer(Player *player, GameTextures *textures, Camera3D *camera,
-                SpriteSheetList *sprites);
+void drawPlayer(Player *player, Level *level, GameTextures *textures,
+                Camera3D *camera, SpriteSheetList *sprites);
 
 /**
  * @brief Frees the memory allocated for the player instance.
@@ -129,7 +129,7 @@ void drawPlayer(Player *player, GameTextures *textures, Camera3D *camera,
 void destroyPlayer(Player *player);
 
 void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
-                       float factor, GameTextures *textures);
+                       Level *level, float factor, GameTextures *textures);
 
 void checkBulletHitsPlayer(Player *player, BulletList *bullets, GameStat *stat);
 

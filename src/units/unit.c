@@ -5,13 +5,13 @@
  */
 #include "unit.h"
 #include "../bullets/bullets.h"
+#include "../game/levels.h"
 #include "../game/stat.h"
 #include "../models/models.h"
 #include "../movement/movement.h"
 #include "../sprites/sprites.h"
 #include "../textures/textures.h"
 #include "../utils/debug.h"
-#include "player.h"
 #include "raylib.h"
 #include <math.h>
 #include <raymath.h>
@@ -596,16 +596,17 @@ void checkBulletHitsUnits(UnitList *units, BulletList *bullets,
 }
 
 void spawnUnitShoot(BulletList *bullets, Unit *unit, float target_x,
-                    float target_z, GameTextures *textures) {
+                    float target_z, Level *level, GameTextures *textures) {
   double current_time = GetTime();
   double elapsed_last_bullet_spawn = current_time - unit->state.last_shoot;
 
-  if (elapsed_last_bullet_spawn > 1.2f) {
+  if (elapsed_last_bullet_spawn > level->units.bullet_delay_spawn) {
     Bullet bullet = newBulletAimedAt(
         newBulletPosition(unit->render.position.x, unit->render.position.y,
                           unit->render.position.z),
         newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10),
-        BULLET_OWNER_UNIT, target_x, target_z, textures);
+        BULLET_OWNER_UNIT, target_x, target_z, level->units.bullet_acceleration,
+        level->units.bullet_init_speed, textures);
     insertBulletIntoList(bullets, bullet);
     unit->state.last_shoot = current_time;
   }

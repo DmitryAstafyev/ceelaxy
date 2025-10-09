@@ -13,6 +13,7 @@
 #include "../textures/textures.h"
 #include "../units/player.h"
 #include "../units/unit.h"
+#include "levels.h"
 #include "raylib.h"
 #include "stat.h"
 #include <stdbool.h>
@@ -33,6 +34,7 @@ typedef struct Game {
   Camera3D camera;          ///< Active 3D camera used for rendering the scene.
   Light light;              ///< Scene lighting setup for shading.
   GameStat stat;
+  Level level;
 } Game;
 
 /**

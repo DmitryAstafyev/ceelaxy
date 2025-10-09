@@ -8,6 +8,7 @@
 #define UNIT_H
 
 #include "../bullets/bullets.h"
+#include "../game/levels.h"
 #include "../game/stat.h"
 #include "../models/models.h"
 #include "../movement/movement.h"
@@ -227,6 +228,6 @@ bool isUnitAbleToFire(UnitList *list, Unit *unit);
 void checkBulletHitsUnits(UnitList *units, BulletList *bullets, GameStat *stat);
 
 void spawnUnitShoot(BulletList *bullets, Unit *unit, float target_x,
-                    float target_z, GameTextures *textures);
+                    float target_z, Level *level, GameTextures *textures);
 
 #endif

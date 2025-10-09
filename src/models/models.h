@@ -4,20 +4,28 @@
 #include "raylib.h"
 #include <stddef.h> // For size_t
 
-/**
- * @def MODEL_<Name>
- * @brief Identifiers for each built-in model (used during loading).
- */
-#define MODEL_CamoStellarJet "CamoStellarJet"
-#define MODEL_DualStriker "DualStriker"
-#define MODEL_GalactixRacer "GalactixRacer"
-#define MODEL_InterstellarRunner "InterstellarRunner"
-#define MODEL_MeteorSlicer "MeteorSlicer"
-#define MODEL_RedFighter "RedFighter"
-#define MODEL_StarMarineTrooper "StarMarineTrooper"
-#define MODEL_Transtellar "Transtellar"
-#define MODEL_UltravioletIntruder "UltravioletIntruder"
-#define MODEL_Warship "Warship"
+#include <string.h>
+
+typedef enum ModelId {
+  MODEL_CAMO_STELLAR_JET = 0,
+  MODEL_DUAL_STRIKER,
+  MODEL_GALACTIX_RACER,
+  MODEL_INTERSTELLAR_RUNNER,
+  MODEL_METEOR_SLICER,
+  MODEL_RED_FIGHTER,
+  MODEL_STAR_MARINE_TROOPER,
+  MODEL_TRANSTELLAR,
+  MODEL_ULTRAVIOLET_INTRUDER,
+  MODEL_WARSHIP,
+  MODEL_ID_COUNT
+} ModelId;
+
+static const char *const MODEL_ID_NAMES[MODEL_ID_COUNT] = {
+    "CamoStellarJet",      "DualStriker",
+    "GalactixRacer",       "InterstellarRunner",
+    "MeteorSlicer",        "RedFighter",
+    "StarMarineTrooper",   "Transtellar",
+    "UltravioletIntruder", "Warship"};
 
 typedef struct ShipBoundingBox {
   float by_x;
@@ -32,6 +40,7 @@ typedef struct ShipModel {
   Model model;            ///< Geometry of the model loaded via raylib.
   Texture2D texture;      ///< Texture applied to the model.
   const char *model_name; ///< Name of the model (without extension or path).
+  ModelId id;
   ShipBoundingBox box;
   Model *box_model;
 } ShipModel;
@@ -85,7 +94,7 @@ void destroyShipModelNode(ShipModelNode *node);
  * @param name Name of the model to find.
  * @return Pointer to the matching ShipModel, or NULL if not found.
  */
-ShipModel *findModelInList(ShipModelList *list, char *name);
+ShipModel *findModelInList(ShipModelList *list, ModelId id);
 
 /**
  * @brief Initializes and loads all ship models into a linked list.

@@ -33,11 +33,12 @@ BulletAreaFrame newBulletAreaFrame() {
  * @param direction Direction of bullet travel (up or down).
  * @return A new BulletMovement object.
  */
-BulletMovement newBulletMovement(BulletMovementDirection direction) {
+BulletMovement newBulletMovement(BulletMovementDirection direction,
+                                 float acceleration, float speed) {
   BulletMovement movement;
-  movement.acceleration = 0.1f;
+  movement.acceleration = acceleration;
+  movement.speed = speed;
   movement.direction = direction;
-  movement.speed = 1.0f;
   movement.dir = (Vector3){
       0.0f, 0.0f, (direction == BULLET_MOVEMENT_DIRECTION_UP) ? -1.0f : 1.0f};
   movement.angle = atan2f(movement.dir.x, movement.dir.z);
@@ -45,10 +46,11 @@ BulletMovement newBulletMovement(BulletMovementDirection direction) {
 }
 
 BulletMovement newBulletAimedMovement(BulletPosition from, float to_x,
-                                      float to_z) {
+                                      float to_z, float acceleration,
+                                      float speed) {
   BulletMovement movement;
-  movement.acceleration = 0.1f;
-  movement.speed = 1.0f;
+  movement.acceleration = acceleration;
+  movement.speed = speed;
   float dx = to_x - from.x;
   float dz = to_z - from.z;
   float len = sqrtf(dx * dx + dz * dz);
@@ -121,14 +123,14 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
  */
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
                  BulletSize size, BulletParameters params, BulletOwner owner,
-                 GameTextures *textures) {
+                 float acceleration, float speed, GameTextures *textures) {
   GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
   if (tex_fire_soft == NULL) {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
     exit(1);
   }
   Bullet bullet;
-  bullet.movement = newBulletMovement(direction);
+  bullet.movement = newBulletMovement(direction, acceleration, speed);
   bullet.position = position;
   bullet.params = params;
   bullet.size = size;
@@ -140,8 +142,8 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
 
 Bullet newBulletAimedAt(BulletPosition position, BulletSize size,
                         BulletParameters params, BulletOwner owner,
-                        float target_x, float target_z,
-                        GameTextures *textures) {
+                        float target_x, float target_z, float acceleration,
+                        float speed, GameTextures *textures) {
   GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
   if (!tex_fire_soft) {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
@@ -149,7 +151,8 @@ Bullet newBulletAimedAt(BulletPosition position, BulletSize size,
   }
 
   Bullet bullet;
-  bullet.movement = newBulletAimedMovement(position, target_x, target_z);
+  bullet.movement =
+      newBulletAimedMovement(position, target_x, target_z, acceleration, speed);
   bullet.position = position;
   bullet.params = params;
   bullet.size = size;

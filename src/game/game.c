@@ -13,6 +13,7 @@
 #include "../units/player.h"
 #include "../units/unit.h"
 #include "../utils/debug.h"
+#include "levels.h"
 #include "raylib.h"
 #include "stat.h"
 #include <stdbool.h>
@@ -48,7 +49,7 @@ Game *newGame(int height, int width) {
     destroyTexturesList(textures);
     return NULL;
   }
-  ShipModel *enemy_model = findModelInList(models, MODEL_CamoStellarJet);
+  ShipModel *enemy_model = findModelInList(models, MODEL_CAMO_STELLAR_JET);
   if (!enemy_model) {
     destroyTexturesList(textures);
     return NULL;
@@ -75,7 +76,7 @@ Game *newGame(int height, int width) {
     return NULL;
   }
   // Create a player
-  ShipModel *player_model = findModelInList(models, MODEL_Transtellar);
+  ShipModel *player_model = findModelInList(models, MODEL_TRANSTELLAR);
   if (!player_model) {
     destroyBulletList(bullets);
     destroySpriteSheetList(sprites);
@@ -98,6 +99,7 @@ Game *newGame(int height, int width) {
   game->enemies = enemies;
   game->sprites = sprites;
   game->textures = textures;
+  game->level = getFirstLevel();
   Camera3D camera = {.position = (Vector3){0.0f, 80.0f, 40.0f},
                      .target = (Vector3){0.0f, 0.0f, 0.0f},
                      .up = (Vector3){0.0f, 1.0f, 0.0f},
@@ -166,9 +168,10 @@ void runGame(Game *game) {
     checkBulletHitsUnits(game->enemies, game->bullets, &game->stat);
     checkBulletHitsPlayer(game->player, game->bullets, &game->stat);
     drawUnits(game->enemies, &game->camera, game->sprites);
-    selectUnitsToFire(game->enemies, &game->camera, game->player, 10.0,
-                      game->textures);
-    drawPlayer(game->player, game->textures, &game->camera, game->sprites);
+    selectUnitsToFire(game->enemies, &game->camera, game->player, &game->level,
+                      10.0, game->textures);
+    drawPlayer(game->player, &game->level, game->textures, &game->camera,
+               game->sprites);
     drawBullets(game->bullets, &game->camera, &game->stat);
     EndMode3D();
     drawUnitsStateBars(game->enemies, &game->camera);

@@ -5,6 +5,7 @@
  */
 #include "player.h"
 #include "../bullets/bullets.h"
+#include "../game/levels.h"
 #include "../textures/textures.h"
 #include "../utils/debug.h"
 #include "unit.h"
@@ -226,7 +227,7 @@ bool directionChanged(Player *player) {
  *
  * @param player Pointer to the player instance to update.
  */
-void updatePlayer(Player *player, GameTextures *textures) {
+void updatePlayer(Player *player, Level *level, GameTextures *textures) {
   if (!player) {
     return;
   }
@@ -239,13 +240,15 @@ void updatePlayer(Player *player, GameTextures *textures) {
   double current_time = GetTime();
   double elapsed_last_bullet_spawn = current_time - bullets->last_spawn;
 
-  if (IsKeyDown(KEY_SPACE) && elapsed_last_bullet_spawn > 0.2f) {
+  if (IsKeyDown(KEY_SPACE) &&
+      elapsed_last_bullet_spawn > level->player.bullet_delay_spawn) {
     Bullet bullet =
         newBullet(BULLET_MOVEMENT_DIRECTION_UP,
                   newBulletPosition(position->x, position->y,
                                     position->z + position->offset_z),
                   newBulletSize(0.25f, .25f, 2.0f), newBulletParameters(10, 10),
-                  BULLET_OWNER_PLAYER, textures);
+                  BULLET_OWNER_PLAYER, level->player.bullet_acceleration,
+                  level->player.bullet_init_speed, textures);
     insertBulletIntoList(player->bullets, bullet);
     bullets->last_spawn = current_time;
   }
@@ -355,11 +358,11 @@ BoundingBox getPlayerBoundingBox(Player *player) {
  *
  * @param player Pointer to the player instance to draw.
  */
-void drawPlayer(Player *player, GameTextures *textures, Camera3D *camera,
-                SpriteSheetList *sprites) {
+void drawPlayer(Player *player, Level *level, GameTextures *textures,
+                Camera3D *camera, SpriteSheetList *sprites) {
   if (!player)
     return;
-  updatePlayer(player, textures);
+  updatePlayer(player, level, textures);
 
   float dt = GetFrameTime();
   double current = GetTime();
@@ -431,7 +434,7 @@ bool isPlayerOnFireLine(Unit *enemy, Player *player, float factor) {
 }
 
 void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
-                       float factor, GameTextures *textures) {
+                       Level *level, float factor, GameTextures *textures) {
   UnitNode *node = list->head;
   for (int i = 0; i < list->length; i += 1) {
     if (!node) {
@@ -442,7 +445,7 @@ void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
       spawnUnitShoot(player->bullets, &node->self, player->render.position.x,
                      player->render.position.z +
                          player->render.position.offset_z,
-                     textures);
+                     level, textures);
     }
     node = node->next;
   }

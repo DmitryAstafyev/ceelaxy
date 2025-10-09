@@ -19,6 +19,7 @@ SRC = \
 	src/utils/path.c \
 	src/utils/debug.c \
 	src/game/game.c \
+	src/game/levels.c \
 	src/game/stat.c
 
 TARGET = ceelaxy
