@@ -63,6 +63,7 @@ UnitPosition newUnitPosition() {
   position.y = 0.0f;
   position.z = 0.0f;
   position.z_max_area = 300.0f;
+  position.z_offset = -30.0f;
   position.in_front = false;
   position.ln = 0;
   position.col = 0;
@@ -238,7 +239,8 @@ void updateDestroyedUnitFall(Unit *unit, float deltaTime) {
   if (action->angle > 360.0f) {
     action->angle -= 360.0f;
   }
-  if (fabsf(position->z + action->z) > fabsf(position->z_max_area)) {
+  if (fabsf(position->z + position->z_offset + action->z) >
+      fabsf(position->z_max_area)) {
     unit->render.visible = false;
   }
 }
@@ -260,6 +262,13 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
   }
 
   UnitPosition *position = &unit->render.position;
+  if (unit->render.position.z_offset < 0) {
+    float step = 0.1f + (0.2f - 0.1f) * ((float)rand() / (float)RAND_MAX);
+    unit->render.position.z_offset += step;
+    if (unit->render.position.z_offset > 0) {
+      unit->render.position.z_offset = 0;
+    }
+  }
   double current = GetTime();
   bool hit = current > BULLET_HIT_SEN_TIME &&
              current - unit->state.hit_time < BULLET_HIT_SEN_TIME;
@@ -267,7 +276,7 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
   float dt = GetFrameTime();
   Vector3 origin =
       (Vector3){position->x + action->x, position->y + action->y + 2.0f,
-                position->z + action->z + 2.0f};
+                position->z + position->z_offset + action->z + 2.0f};
   if (hit) {
     setShipModelColor(unit->model, RED);
     if (!unit->hit) {
@@ -279,7 +288,7 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
   bulletExplosionUpdate(&unit->explosion_bullet,
                         (Vector3){position->x + action->x,
                                   position->y + action->y,
-                                  position->z + action->z},
+                                  position->z + position->z_offset + action->z},
                         dt, camera);
   bulletExplosionDraw(&unit->explosion_bullet, *camera);
   drawSpriteSheetState(unit->hit, *camera, origin);
@@ -290,10 +299,10 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
           newSpriteSheetState(&sprites->head->self, 3, 20.0f, 1.0f);
     }
     if (unit->explosion_effect) {
-      drawSpriteSheetState(unit->explosion_effect, *camera,
-                           (Vector3){position->x + action->x,
-                                     position->y + action->y,
-                                     position->z + action->z});
+      drawSpriteSheetState(
+          unit->explosion_effect, *camera,
+          (Vector3){position->x + action->x, position->y + action->y,
+                    position->z + position->z_offset + action->z});
     }
   } else {
     iterateMovementAction(action, (float)unit->state.energy /
@@ -301,7 +310,7 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
   }
   DrawModelEx(unit->model->model,
               (Vector3){position->x + action->x, position->y + action->y,
-                        position->z + action->z},
+                        position->z + position->z_offset + action->z},
               (Vector3){action->rotate_x, action->rotate_y, action->rotate_z},
               action->angle, (Vector3){1, 1, 1}, hit ? RED : WHITE);
   if (hit) {
@@ -310,7 +319,7 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
   if (is_debug_mode && unit->model->box_model) {
     DrawModelEx(*unit->model->box_model,
                 (Vector3){position->x + action->x, position->y + action->y,
-                          position->z + action->z},
+                          position->z + position->z_offset + action->z},
                 (Vector3){action->rotate_x, action->rotate_y, action->rotate_z},
                 action->angle, (Vector3){1, 1, 1}, RED);
   }
@@ -333,7 +342,8 @@ BoundingBox getUnitBoundingBox(Unit *unit) {
 
   float x = render->position.x + (action ? action->x : 0);
   float y = render->position.y + (action ? action->y : 0);
-  float z = render->position.z + (action ? action->z : 0);
+  float z =
+      render->position.z + (action ? action->z : 0) + render->position.z_offset;
 
   Vector3 position = {x, y, z};
 
@@ -609,7 +619,8 @@ void spawnUnitShoot(BulletList *bullets, Unit *unit, float target_x,
   if (elapsed_last_bullet_spawn > level->units.bullet_delay_spawn) {
     Bullet bullet = newBulletAimedAt(
         newBulletPosition(unit->render.position.x, unit->render.position.y,
-                          unit->render.position.z),
+                          unit->render.position.z +
+                              unit->render.position.z_offset),
         newBulletSize(0.25f, .25f, 2.0f),
         newBulletParameters(level->units.damage_life,
                             level->units.damage_energy),

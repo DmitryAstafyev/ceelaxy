@@ -47,8 +47,9 @@ typedef struct UnitPosition {
   float y;          ///< Y coordinate in world space.
   float z;          ///< Z coordinate in world space.
   float z_max_area; ///< Maximum area limit on the Z axis.
-  uint16_t ln;      ///< Logical row index in grid or formation.
-  uint16_t col;     ///< Logical column index in grid or formation.
+  float z_offset;
+  uint16_t ln;  ///< Logical row index in grid or formation.
+  uint16_t col; ///< Logical column index in grid or formation.
   bool in_front;
 } UnitPosition;
 
