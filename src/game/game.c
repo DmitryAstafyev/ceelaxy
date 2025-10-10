@@ -88,7 +88,7 @@ Game *newGame(int height, int width) {
     return NULL;
   }
   Player *player =
-      newPlayer(20.0f, 0.0f, 20.0f, 30.0f, player_model, bullets, textures);
+      newPlayer(40.0f, 0.0f, -30.0f, 30.0f, player_model, bullets, textures);
   if (!player) {
     destroySpriteSheetList(sprites);
     destroyTexturesList(textures);
@@ -96,7 +96,7 @@ Game *newGame(int height, int width) {
     destroyBulletList(bullets);
     return NULL;
   }
-  game->parallax = ParallaxInit(500, (Vector2){30.0f, 80.0f},
+  game->parallax = parallaxInit(500, (Vector2){30.0f, 80.0f},
                                 (unsigned)GetRandomValue(1, INT_MAX));
 
   game->bullets = bullets;
@@ -142,6 +142,7 @@ void destroyGame(Game *game) {
   destroyBulletList(game->bullets);
   destroySpriteSheetList(game->sprites);
   destroyTexturesList(game->textures);
+  destroyParallax(&game->parallax);
   free(game);
 }
 
@@ -248,8 +249,8 @@ void runGame(Game *game) {
                  game->sprites);
       drawBullets(game->bullets, &game->camera, &game->stat);
     }
-    ParallaxUpdate(&game->parallax, &game->camera, game->player);
-    ParallaxRender(&game->parallax, &game->camera);
+    parallaxUpdate(&game->parallax, &game->camera, game->player);
+    parallaxRender(&game->parallax, &game->camera);
     EndMode3D();
 
     if (!over) {

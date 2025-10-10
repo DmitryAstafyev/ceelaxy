@@ -94,7 +94,7 @@ static void randomizeParticle(ParallaxField *f, ParallaxParticle *pp,
 
 // -------------------- public API --------------------
 
-ParallaxField ParallaxInit(int particleCount, Vector2 halfExtentXZ,
+ParallaxField parallaxInit(int particleCount, Vector2 halfExtentXZ,
                            unsigned int seed) {
   ParallaxField f = (ParallaxField){0};
 
@@ -138,7 +138,7 @@ ParallaxField ParallaxInit(int particleCount, Vector2 halfExtentXZ,
   return f;
 }
 
-void ParallaxShutdown(ParallaxField *f) {
+void destroyParallax(ParallaxField *f) {
   if (!f)
     return;
   if (f->dotTex.id)
@@ -150,7 +150,7 @@ void ParallaxShutdown(ParallaxField *f) {
   f->count = 0;
 }
 
-void ParallaxUpdate(ParallaxField *f, const Camera3D *cam,
+void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
                     const Player *player) {
   if (!f || !cam || !player)
     return;
@@ -257,7 +257,7 @@ void ParallaxUpdate(ParallaxField *f, const Camera3D *cam,
   }
 }
 
-void ParallaxRender(const ParallaxField *f, const Camera3D *cam) {
+void parallaxRender(const ParallaxField *f, const Camera3D *cam) {
   if (!f || !cam)
     return;
 

@@ -52,11 +52,11 @@ typedef struct {
 } ParallaxField;
 
 /** Public API (only these three are meant to be used from outside). */
-ParallaxField ParallaxInit(int particleCount, Vector2 halfExtentXZ,
+ParallaxField parallaxInit(int particleCount, Vector2 halfExtentXZ,
                            unsigned int seed);
-void ParallaxUpdate(ParallaxField *f, const Camera3D *cam,
+void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
                     const Player *player);
-void ParallaxRender(const ParallaxField *f, const Camera3D *cam);
+void parallaxRender(const ParallaxField *f, const Camera3D *cam);
 
 /** Optional cleanup (call once when destroying the scene). */
-void ParallaxShutdown(ParallaxField *f);
+void destroyParallax(ParallaxField *f);

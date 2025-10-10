@@ -300,6 +300,8 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
                           ? state->max_rotate_z
                           : state->rotate_z;
   }
+  position->x =
+      copysignf(fminf(fabsf(position->x), fabsf(position->max_x)), position->x);
   if (IsKeyDown(KEY_UP)) {
     position->z -= movement->acceleration;
     movement->direction_z_key = KEY_UP;
@@ -316,6 +318,9 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
                           ? -state->max_rotate_x
                           : state->rotate_x;
   }
+  position->z = position->z > 0                 ? 0
+                : position->z < position->max_z ? position->max_z
+                                                : position->z;
 }
 
 BoundingBox getPlayerBoundingBox(Player *player) {
