@@ -6,6 +6,7 @@
 #include "game.h"
 #include "../bullets/bullets.h"
 #include "../models/models.h"
+#include "../parallax/parallax.h"
 #include "../raylib/rlights.h"
 #include "../sprites/sprites.h"
 #include "../textures/textures.h"
@@ -16,9 +17,11 @@
 #include "levels.h"
 #include "raylib.h"
 #include "stat.h"
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 
 /**
@@ -93,6 +96,9 @@ Game *newGame(int height, int width) {
     destroyBulletList(bullets);
     return NULL;
   }
+  game->parallax = ParallaxInit(500, (Vector2){30.0f, 80.0f},
+                                (unsigned)GetRandomValue(1, INT_MAX));
+
   game->bullets = bullets;
   game->player = player;
   game->models = models;
@@ -242,7 +248,8 @@ void runGame(Game *game) {
                  game->sprites);
       drawBullets(game->bullets, &game->camera, &game->stat);
     }
-
+    ParallaxUpdate(&game->parallax, &game->camera, game->player);
+    ParallaxRender(&game->parallax, &game->camera);
     EndMode3D();
 
     if (!over) {

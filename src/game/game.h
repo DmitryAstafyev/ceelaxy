@@ -8,6 +8,7 @@
 
 #include "../bullets/bullets.h"
 #include "../models/models.h"
+#include "../parallax/parallax.h"
 #include "../raylib/rlights.h"
 #include "../sprites/sprites.h"
 #include "../textures/textures.h"
@@ -35,6 +36,7 @@ typedef struct Game {
   Light light;              ///< Scene lighting setup for shading.
   GameStat stat;
   Level level;
+  ParallaxField parallax;
 } Game;
 
 /**

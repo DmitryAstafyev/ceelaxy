@@ -18,6 +18,7 @@ SRC = \
 	src/movement/movement.c \
 	src/utils/path.c \
 	src/utils/debug.c \
+	src/parallax/parallax.c\
 	src/game/game.c \
 	src/game/levels.c \
 	src/game/stat.c
