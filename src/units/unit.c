@@ -412,7 +412,7 @@ UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
   for (int i = count - 1; i >= 0; i -= 1) {
     insertToUnitList(units, newUnit(UNIT_TYPE_ENEMY, model, textures), max_col,
                      max_ln, mid_x, z_offset);
-    printf("Added unit %i\n", i);
+    TraceLog(LOG_INFO, "[Units] Added unit %i", i);
   }
   return units;
 }
@@ -449,7 +449,7 @@ void removeUnits(UnitList *list) {
       destroyUnitNode(node);
       list->length--;
 
-      printf("[Units] in list: %i\n", list->length);
+      TraceLog(LOG_INFO, "[Units] in list: %i", list->length);
     }
 
     node = next;
@@ -585,7 +585,7 @@ void checkBulletHitsUnit(Unit *unit, BulletList *bullets, GameStat *stat) {
       }
       unit->state.hit_time = GetTime();
       addHitIntoGameStat(stat);
-      printf("[Bullets] HIT! health = %u\n", unit->state.health);
+      TraceLog(LOG_INFO, "[Units] HIT! health = %u", unit->state.health);
     }
 
     node = node->next;

@@ -21,7 +21,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <unistd.h>
 
 /**
@@ -42,69 +41,56 @@ Game *newGame(int height, int width) {
   }
   game->stat = newGameStat();
   // Load textures
-  GameTextures *textures = createGameTexturesList();
-  if (!textures) {
+  game->textures = createGameTexturesList();
+  if (!game->textures) {
+    destroyGame(game);
     return NULL;
   }
   // Load models
-  ShipModelList *models = newShipModelList();
-  if (!models || models->length == 0) {
-    destroyTexturesList(textures);
+  game->models = newShipModelList();
+  if (!game->models || game->models->length == 0) {
+    destroyGame(game);
     return NULL;
   }
-  ShipModel *enemy_model = findModelInList(models, MODEL_CAMO_STELLAR_JET);
+  ShipModel *enemy_model =
+      findModelInList(game->models, MODEL_CAMO_STELLAR_JET);
   if (!enemy_model) {
-    destroyTexturesList(textures);
+    destroyGame(game);
     return NULL;
   }
   // Create bullets storage
-  BulletList *bullets = newBulletList();
-  if (!bullets) {
-    destroyTexturesList(textures);
+  game->bullets = newBulletList();
+  if (!game->bullets) {
+    destroyGame(game);
     return NULL;
   }
 
-  UnitList *enemies = newUnitList(20, enemy_model, 10, 3, 40.0f, textures);
-  if (!enemies) {
-    destroyBulletList(bullets);
-    destroyTexturesList(textures);
+  game->enemies = newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
+  if (!game->enemies) {
+    destroyGame(game);
     return NULL;
   }
   // Load explosions
-  SpriteSheetList *sprites = loadSpriteSheetList();
-  if (!sprites) {
-    destroyBulletList(bullets);
-    destroyTexturesList(textures);
-    destroyUnitList(enemies);
+  game->sprites = loadSpriteSheetList();
+  if (!game->sprites) {
+    destroyGame(game);
     return NULL;
   }
   // Create a player
-  ShipModel *player_model = findModelInList(models, MODEL_TRANSTELLAR);
+  ShipModel *player_model = findModelInList(game->models, MODEL_TRANSTELLAR);
   if (!player_model) {
-    destroyBulletList(bullets);
-    destroySpriteSheetList(sprites);
-    destroyTexturesList(textures);
-    destroyUnitList(enemies);
+    destroyGame(game);
     return NULL;
   }
-  Player *player =
-      newPlayer(40.0f, 0.0f, -30.0f, 30.0f, player_model, bullets, textures);
-  if (!player) {
-    destroySpriteSheetList(sprites);
-    destroyTexturesList(textures);
-    destroyUnitList(enemies);
-    destroyBulletList(bullets);
+  game->player = newPlayer(40.0f, 0.0f, -30.0f, 30.0f, player_model,
+                           game->bullets, game->textures);
+  if (!game->player) {
+    destroyGame(game);
     return NULL;
   }
   game->parallax = parallaxInit(500, (Vector2){30.0f, 80.0f},
                                 (unsigned)GetRandomValue(1, INT_MAX));
 
-  game->bullets = bullets;
-  game->player = player;
-  game->models = models;
-  game->enemies = enemies;
-  game->sprites = sprites;
-  game->textures = textures;
   game->level = getFirstLevel();
   Camera3D camera = {.position = (Vector3){0.0f, 80.0f, 40.0f},
                      .target = (Vector3){0.0f, 0.0f, 0.0f},
@@ -121,7 +107,7 @@ Game *newGame(int height, int width) {
   SetShaderValue(game->models->shader, ambientLoc, ambient,
                  SHADER_UNIFORM_VEC4);
 
-  printf("[game] Game has been created\n");
+  TraceLog(LOG_INFO, "[game] Game has been created");
   return game;
 }
 
@@ -208,7 +194,7 @@ void gameOverDraw() {
  * @param game Pointer to the initialized Game instance.
  */
 void runGame(Game *game) {
-  printf("[game] starting\n");
+  TraceLog(LOG_INFO, "[game] starting");
   double over_tm = GetTime();
   bool over = false;
   while (!WindowShouldClose()) {
@@ -223,7 +209,7 @@ void runGame(Game *game) {
       }
     }
     if (!game->enemies->head) {
-      printf("[game] next level!\n");
+      TraceLog(LOG_INFO, "[game] next level!");
       if (!nextGameLevel(game)) {
         return;
       }
@@ -265,5 +251,5 @@ void runGame(Game *game) {
     }
     EndDrawing();
   }
-  printf("[game] finished\n");
+  TraceLog(LOG_INFO, "[game] finished");
 }

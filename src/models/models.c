@@ -102,7 +102,7 @@ static void centerModelByTransform(Model *m) {
 ShipModel *loadShipModel(const char *filename, ModelId id, Shader *shader) {
   char *path_obj = getFilesPath(filename, MODEL_OBJ_EXT);
   if (!path_obj) {
-    fprintf(stderr, "[ModelLoader] Fail load model: %s\n", filename);
+    fprintf(stderr, "[ModelLoader] Fail load model: %s", filename);
     exit(EXIT_FAILURE);
   }
   Model model = LoadModel(path_obj);
@@ -111,7 +111,7 @@ ShipModel *loadShipModel(const char *filename, ModelId id, Shader *shader) {
 
   char *path_texture = getFilesPath(filename, MODEL_PNG_EXT);
   if (!path_texture) {
-    fprintf(stderr, "[ModelLoader] Fail load model's texture: %s\n", filename);
+    fprintf(stderr, "[ModelLoader] Fail load model's texture: %s", filename);
     exit(EXIT_FAILURE);
   }
   Texture2D texture = LoadTexture(path_texture);
@@ -176,14 +176,14 @@ void setShipModelColor(ShipModel *model, Color color) {
  * @param ship Pointer to the model to destroy. Must not be NULL.
  */
 void destroyShipModel(ShipModel *ship) {
-  printf("[Models] model will be unload \"%s\"\n", ship->model_name);
+  TraceLog(LOG_INFO, "[Models] model will be unload \"%s\"", ship->model_name);
   UnloadModel(ship->model);
   if (ship->box_model) {
     UnloadModel(*ship->box_model);
     free(ship->box_model);
   }
   UnloadTexture(ship->texture);
-  printf("[Models] model \"%s\" has been unload\n", ship->model_name);
+  TraceLog(LOG_INFO, "[Models] model \"%s\" has been unload", ship->model_name);
   free(ship);
 }
 
@@ -265,7 +265,7 @@ ShipModelList *newShipModelList() {
 
   for (int id = 0; id < MODEL_ID_COUNT; id++) {
     const char *name = getModelNameById(id);
-    printf("[Models] Loading model %s\n", name);
+    TraceLog(LOG_INFO, "[Models] Loading model %s", name);
     ShipModelNode *node = newShipModelNode(name, id, &shader, models->tail);
     if (!node) {
       destroyShipModelList(models);
@@ -279,7 +279,7 @@ ShipModelList *newShipModelList() {
     }
     models->tail = node;
     models->length += 1;
-    printf("Model %s has been loaded\n", name);
+    TraceLog(LOG_INFO, "Model %s has been loaded", name);
   }
   models->shader = shader;
   return models;

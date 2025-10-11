@@ -10,7 +10,7 @@ static const float INIT_LEVEL_UNIT_BULLET_ACCELERATION = 0.005f;
 static const float INIT_LEVEL_UNIT_BULLET_INIT_SPEED = 0.8f;
 static const float INIT_LEVEL_UNIT_BULLET_DELAY = 1.2f;
 static const float INIT_LEVEL_UNIT_DAMAGE_LIFE = 5.0f;
-static const float INIT_LEVEL_UNIT_DAMAGE_ENERGY = 1.0f;
+static const float INIT_LEVEL_UNIT_DAMAGE_ENERGY = 10.0f;
 static const ModelId INIT_LEVEL_UNIT_MODEL = MODEL_INTERSTELLAR_RUNNER;
 
 static const float INIT_LEVEL_PLAYER_BULLET_ACCELERATION = 0.01f;

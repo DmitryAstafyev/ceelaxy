@@ -11,11 +11,11 @@ int main(int argc, char *argv[]) {
   checkDebugFlag(argc, argv);
 
   if (is_debug_mode) {
-    printf("[DEBUG] Debug mode is ON\n");
+    TraceLog(LOG_INFO, "[DEBUG] Debug mode is ON");
   }
 
   srand(time(NULL));
-  printf("Starting\n");
+  TraceLog(LOG_INFO, "Starting");
 
   InitWindow(1600, 1200, "Ceelaxy");
   SetTargetFPS(60);

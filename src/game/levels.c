@@ -54,7 +54,7 @@ void levelDraw(Level *level) {
 
   double elapsed = GetTime() - level->label_started_at;
   if (elapsed >= LEVEL_LABEL_DURATION)
-    return; // надпись уже погасла
+    return;
 
   float alpha = (float)(1.0 - (elapsed / LEVEL_LABEL_DURATION));
   if (alpha < 0.0f)

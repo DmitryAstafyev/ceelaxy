@@ -190,7 +190,7 @@ SpriteSheetList *loadSpriteSheetList() {
   };
 
   for (int i = 0; list[i] != NULL; i++) {
-    printf("[Explosion] Loading model %s\n", list[i]);
+    TraceLog(LOG_INFO, "[Explosion] Loading model %s", list[i]);
     SpriteSheetNode *node =
         newSpriteSheetNode(list[i], pers[i], nums[i], models->tail);
     if (!node) {
@@ -205,7 +205,7 @@ SpriteSheetList *loadSpriteSheetList() {
     }
     models->tail = node;
     models->length += 1;
-    printf("[Explosion]Model %s has been loaded\n", list[i]);
+    TraceLog(LOG_INFO, "[Explosion]Model %s has been loaded", list[i]);
   }
   return models;
 }

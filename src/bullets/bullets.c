@@ -316,8 +316,8 @@ void insertBulletIntoList(BulletList *list, Bullet bullet) {
     prev->next = node;
   }
   list->length += 1;
-  printf("[Bullets] bullet has been spawn: %f, %f, %f\n", bullet.position.x,
-         bullet.position.y, bullet.position.z);
+  TraceLog(LOG_INFO, "[Bullets] bullet has been spawn: %f, %f, %f",
+           bullet.position.x, bullet.position.y, bullet.position.z);
 }
 
 /**
@@ -351,7 +351,7 @@ void removeBullets(BulletList *list) {
       destroyBulletNode(node);
       list->length--;
 
-      printf("[Bullets] in list: %i\n", list->length);
+      TraceLog(LOG_INFO, "[Bullets] in list: %i", list->length);
     }
 
     node = next;
