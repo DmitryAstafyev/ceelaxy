@@ -35,7 +35,7 @@ const float MOVEMENT_MAX_Z = 1.0f;
 #define MOVEMENT_Y_MASK (MOVEMENT_DIRECTION_UP | MOVEMENT_DIRECTION_DOWN)
 
 /// Bitmask for checking forward/backward movement (Z axis).
-#define MOVEMENT_Z_MASK                                                        \
+#define MOVEMENT_Z_MASK \
   (MOVEMENT_DIRECTION_FORWARD | MOVEMENT_DIRECTION_BACKWARD)
 
 /**
@@ -47,9 +47,11 @@ const float MOVEMENT_MAX_Z = 1.0f;
  *
  * @return Pointer to a newly allocated MovementAction, or NULL on failure.
  */
-MovementAction *newMovementAction() {
+MovementAction *newMovementAction()
+{
   MovementAction *action = malloc(sizeof(MovementAction));
-  if (!action) {
+  if (!action)
+  {
     return NULL;
   }
   action->direction =
@@ -80,7 +82,8 @@ MovementAction *newMovementAction() {
  * @param max Maximum possible value.
  * @return Random float in the range [min, max].
  */
-float randomFloatInRange(float min, float max) {
+float randomFloatInRange(float min, float max)
+{
   return min + ((float)rand() / (float)RAND_MAX) * (max - min);
 }
 
@@ -92,8 +95,10 @@ float randomFloatInRange(float min, float max) {
  *
  * @param action Pointer to the MovementAction to modify.
  */
-void randSpeedMovementAction(MovementAction *action, float slow_factor) {
-  if (!action) {
+void randSpeedMovementAction(MovementAction *action, float slow_factor)
+{
+  if (!action)
+  {
     return;
   }
   float max = MAX_SPEED_MOVEMENT_ACTION * slow_factor;
@@ -114,20 +119,29 @@ void randSpeedMovementAction(MovementAction *action, float slow_factor) {
  *
  * @param action Pointer to the MovementAction to iterate.
  */
-void iterateMovementAction(MovementAction *action, float slow_factor) {
-  if (!action) {
+void iterateMovementAction(MovementAction *action, float slow_factor)
+{
+  if (!action)
+  {
     return;
   }
-  if (action->direction & MOVEMENT_X_MASK) {
-    if (fabsf(action->x) <= action->max_x) {
+  if (action->direction & MOVEMENT_X_MASK)
+  {
+    if (fabsf(action->x) <= action->max_x)
+    {
       action->x += (action->step_x) *
                    (action->direction & MOVEMENT_DIRECTION_LEFT ? -1 : 1);
-    } else {
+    }
+    else
+    {
       action->x = action->max_x * (action->x > 0 ? 1 : -1);
-      if (action->direction & MOVEMENT_DIRECTION_LEFT) {
+      if (action->direction & MOVEMENT_DIRECTION_LEFT)
+      {
         action->direction &= ~MOVEMENT_DIRECTION_LEFT;
         action->direction |= MOVEMENT_DIRECTION_RIGHT;
-      } else {
+      }
+      else
+      {
         action->direction &= ~MOVEMENT_DIRECTION_RIGHT;
         action->direction |= MOVEMENT_DIRECTION_LEFT;
       }
@@ -136,35 +150,51 @@ void iterateMovementAction(MovementAction *action, float slow_factor) {
     action->rotate_z = -action->max_rotate_z * (action->x / action->max_x);
     action->angle = action->max_angle *
                     ((action->max_x - fabsf(action->x)) - action->max_x);
-  } else {
+  }
+  else
+  {
     action->rotate_z = 0.0f;
   }
-  if (action->direction & MOVEMENT_Y_MASK) {
-    if (fabsf(action->y) <= action->max_y) {
+  if (action->direction & MOVEMENT_Y_MASK)
+  {
+    if (fabsf(action->y) <= action->max_y)
+    {
       action->y += (action->step_y) *
                    (action->direction & MOVEMENT_DIRECTION_UP ? -1 : 1);
-    } else {
+    }
+    else
+    {
       action->y = action->max_y * (action->y > 0 ? 1 : -1);
-      if (action->direction & MOVEMENT_DIRECTION_UP) {
+      if (action->direction & MOVEMENT_DIRECTION_UP)
+      {
         action->direction &= ~MOVEMENT_DIRECTION_UP;
         action->direction |= MOVEMENT_DIRECTION_DOWN;
-      } else {
+      }
+      else
+      {
         action->direction &= ~MOVEMENT_DIRECTION_DOWN;
         action->direction |= MOVEMENT_DIRECTION_UP;
       }
       randSpeedMovementAction(action, slow_factor);
     }
   }
-  if (action->direction & MOVEMENT_Z_MASK) {
-    if (fabsf(action->z) <= action->max_z) {
+  if (action->direction & MOVEMENT_Z_MASK)
+  {
+    if (fabsf(action->z) <= action->max_z)
+    {
       action->z += (action->step_z) *
                    (action->direction & MOVEMENT_DIRECTION_FORWARD ? -1 : 1);
-    } else {
+    }
+    else
+    {
       action->z = action->max_z * (action->z > 0 ? 1 : -1);
-      if (action->direction & MOVEMENT_DIRECTION_FORWARD) {
+      if (action->direction & MOVEMENT_DIRECTION_FORWARD)
+      {
         action->direction &= ~MOVEMENT_DIRECTION_FORWARD;
         action->direction |= MOVEMENT_DIRECTION_BACKWARD;
-      } else {
+      }
+      else
+      {
         action->direction &= ~MOVEMENT_DIRECTION_BACKWARD;
         action->direction |= MOVEMENT_DIRECTION_FORWARD;
       }
@@ -173,7 +203,9 @@ void iterateMovementAction(MovementAction *action, float slow_factor) {
     action->rotate_x = action->max_rotate_x * (action->z / action->max_z);
     action->angle = action->max_angle *
                     ((action->max_z - fabsf(action->z)) - action->max_z);
-  } else {
+  }
+  else
+  {
     action->rotate_x = 0.0f;
   }
 }
@@ -183,8 +215,10 @@ void iterateMovementAction(MovementAction *action, float slow_factor) {
  *
  * @param action Pointer to the MovementAction to destroy.
  */
-void destroyMovementAction(MovementAction *action) {
-  if (action) {
+void destroyMovementAction(MovementAction *action)
+{
+  if (action)
+  {
     free(action);
   }
 }

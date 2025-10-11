@@ -4,10 +4,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * @brief Creates and initializes a new sprite sheet from an image file.
+ *
+ * Loads the texture from the specified path and calculates frame dimensions
+ * based on the number of frames per line and number of lines.
+ *
+ * @param path Path to the image file.
+ * @param frames_per_line Number of frames in each row of the sprite sheet.
+ * @param num_lines Number of rows in the sprite sheet.
+ * @return An initialized SpriteSheet structure.
+ */
 SpriteSheet newSpriteSheet(const char *path, uint16_t frames_per_line,
-                           uint16_t num_lines) {
+                           uint16_t num_lines)
+{
   Texture2D texture = LoadTexture(path);
-  if (texture.id == 0) {
+  if (texture.id == 0)
+  {
     TraceLog(LOG_ERROR, "Fail to load texture: %s", path);
     exit(1);
   }
@@ -39,9 +52,11 @@ SpriteSheet newSpriteSheet(const char *path, uint16_t frames_per_line,
  * @return Pointer to a newly allocated SpriteSheetState, or NULL on failure.
  */
 SpriteSheetState *newSpriteSheetState(SpriteSheet *model, int repeats,
-                                      float size, float opacity) {
+                                      float size, float opacity)
+{
   SpriteSheetState *state = malloc(sizeof(SpriteSheetState));
-  if (!state) {
+  if (!state)
+  {
     return NULL;
   }
   state->counter = 0;
@@ -60,13 +75,23 @@ SpriteSheetState *newSpriteSheetState(SpriteSheet *model, int repeats,
  *
  * @param state Pointer to the SpriteSheetState to destroy.
  */
-void destroySpriteSheetState(SpriteSheetState *state) {
+void destroySpriteSheetState(SpriteSheetState *state)
+{
   if (!state)
     return;
   free(state);
 }
 
-void dropSpriteSheetState(SpriteSheetState *state) {
+/**
+ * @brief Resets and reactivates a sprite animation state.
+ *
+ * If the animation is already active, this function does nothing.
+ * Otherwise, it resets the frame counters and marks the animation as active.
+ *
+ * @param state Pointer to the SpriteSheetState to reset.
+ */
+void dropSpriteSheetState(SpriteSheetState *state)
+{
   if (!state || state->active)
     return;
   state->active = true;
@@ -74,6 +99,7 @@ void dropSpriteSheetState(SpriteSheetState *state) {
   state->frame = 0;
   state->line = 0;
 }
+
 /**
  * @brief Draws the sprite animation as a billboard in 3D space.
  *
@@ -85,20 +111,24 @@ void dropSpriteSheetState(SpriteSheetState *state) {
  * @param position The world position where the sprite should be rendered.
  */
 void drawSpriteSheetState(SpriteSheetState *state, Camera3D camera,
-                          Vector3 position) {
+                          Vector3 position)
+{
   if (!state || !state->active)
     return;
 
   state->frame++;
-  if (state->frame >= state->model->frames_per_line) {
+  if (state->frame >= state->model->frames_per_line)
+  {
     state->frame = 0;
     state->line++;
-    if (state->line >= state->model->num_lines) {
+    if (state->line >= state->model->num_lines)
+    {
       state->line = 0;
       state->counter++;
     }
   }
-  if (state->counter > state->repeats) {
+  if (state->counter > state->repeats)
+  {
     state->active = false;
   }
   if (!state->active)
@@ -131,9 +161,11 @@ void drawSpriteSheetState(SpriteSheetState *state, Camera3D camera,
  * @return Pointer to the newly allocated node, or NULL on failure.
  */
 SpriteSheetNode *newSpriteSheetNode(const char *path, uint16_t frames_per_line,
-                                    uint16_t num_lines, SpriteSheetNode *prev) {
+                                    uint16_t num_lines, SpriteSheetNode *prev)
+{
   SpriteSheetNode *node = malloc(sizeof(SpriteSheetNode));
-  if (!node) {
+  if (!node)
+  {
     return NULL;
   }
 
@@ -150,8 +182,10 @@ SpriteSheetNode *newSpriteSheetNode(const char *path, uint16_t frames_per_line,
  *
  * @param node Pointer to the node to destroy.
  */
-void destroySpriteSheetNode(SpriteSheetNode *node) {
-  if (!node) {
+void destroySpriteSheetNode(SpriteSheetNode *node)
+{
+  if (!node)
+  {
     return;
   }
   UnloadTexture(node->self.texture);
@@ -165,9 +199,11 @@ void destroySpriteSheetNode(SpriteSheetNode *node) {
  *
  * @return Pointer to a newly allocated SpriteSheetList, or NULL on failure.
  */
-SpriteSheetList *loadSpriteSheetList() {
+SpriteSheetList *loadSpriteSheetList()
+{
   SpriteSheetList *models = malloc(sizeof(SpriteSheetList));
-  if (!models) {
+  if (!models)
+  {
     return NULL;
   }
   models->length = 0;
@@ -189,18 +225,22 @@ SpriteSheetList *loadSpriteSheetList() {
       EXPLOSION_B_NUM_LINES,
   };
 
-  for (int i = 0; list[i] != NULL; i++) {
+  for (int i = 0; list[i] != NULL; i++)
+  {
     TraceLog(LOG_INFO, "[Explosion] Loading model %s", list[i]);
     SpriteSheetNode *node =
         newSpriteSheetNode(list[i], pers[i], nums[i], models->tail);
-    if (!node) {
+    if (!node)
+    {
       destroySpriteSheetList(models);
       return NULL;
     }
-    if (!models->head) {
+    if (!models->head)
+    {
       models->head = node;
     }
-    if (models->tail) {
+    if (models->tail)
+    {
       models->tail->next = node;
     }
     models->tail = node;
@@ -215,12 +255,15 @@ SpriteSheetList *loadSpriteSheetList() {
  *
  * @param models Pointer to the SpriteSheetList to destroy.
  */
-void destroySpriteSheetList(SpriteSheetList *models) {
-  if (!models) {
+void destroySpriteSheetList(SpriteSheetList *models)
+{
+  if (!models)
+  {
     return;
   }
   SpriteSheetNode *node = models->head;
-  while (node) {
+  while (node)
+  {
     SpriteSheetNode *next = node->next;
     destroySpriteSheetNode(node);
     node = next;

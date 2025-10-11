@@ -1,28 +1,31 @@
 // parallax.c
 #include "parallax.h"
-#include "../units/player.h" // adjust path if needed
+#include "../units/player.h"
 
 #include <limits.h>
 #include <math.h>
 #include <stdlib.h>
 
-// -------------------- helpers --------------------
-
+// -------------------- internal utils --------------------
 static inline float clamp01(float x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
 
-static inline float smoothstep(float e0, float e1, float x) {
+static inline float smoothstep(float e0, float e1, float x)
+{
   if (e0 == e1)
     return x >= e1 ? 1.0f : 0.0f;
   x = clamp01((x - e0) / (e1 - e0));
   return x * x * (3.0f - 2.0f * x);
 }
 
-static inline float frand01(unsigned int *state) {
+static inline float frand01(unsigned int *state)
+{
   *state = (*state * 1664525u + 1013904223u);
   return (float)(*state) / (float)UINT_MAX;
 }
 
-static Texture2D makeDotTexture(void) {
+// Create a simple 1x1 white texture for point sprites.
+static Texture2D makeDotTexture(void)
+{
   // 1x1 white tex; swap to a round sprite if you have one.
   Image img = GenImageColor(1, 1, WHITE);
   Texture2D t = LoadTextureFromImage(img);
@@ -30,26 +33,34 @@ static Texture2D makeDotTexture(void) {
   return t;
 }
 
-static Color colorWithAlpha(Color c, float a) {
+// Apply alpha to a Color, clamping to [0..255].
+static Color colorWithAlpha(Color c, float a)
+{
   c.a = (unsigned char)Clamp(a * 255.0f, 0.0f, 255.0f);
   return c;
 }
 
-static Color pickStarTint(float layer) {
+// Slightly bluish white for distant stars, pure white for near ones.
+static Color pickStarTint(float layer)
+{
   // Slightly brighter on the near layer.
   unsigned char v = (unsigned char)Clamp(200.0f + 55.0f * layer, 0.0f, 255.0f);
   return (Color){v, v, v, 255};
 }
 
-static inline Vector2 playerXZ(const Player *pl) {
+// -------------------- internal logic --------------------
+static inline Vector2 playerXZ(const Player *pl)
+{
   const float x = pl->render.position.x;
   const float z = pl->render.position.z + pl->render.position.offset_z;
   return (Vector2){x, z};
 }
 
+// Update smoothed player velocity, return the influence vector.
 static void randomizeParticle(ParallaxField *f, ParallaxParticle *pp,
                               unsigned int *rng, const Camera3D *cam,
-                              bool ahead, Vector2 dirXZ) {
+                              bool ahead, Vector2 dirXZ)
+{
   // Depth bucket (far / mid / near)
   float u = frand01(rng);
   if (u < 0.34f)
@@ -76,11 +87,14 @@ static void randomizeParticle(ParallaxField *f, ParallaxParticle *pp,
   float hx = f->halfExtentXZ.x, hz = f->halfExtentXZ.y;
   float mx = hx + f->respawnMargin, mz = hz + f->respawnMargin;
 
-  if (ahead && (dirXZ.x != 0 || dirXZ.y != 0)) {
+  if (ahead && (dirXZ.x != 0 || dirXZ.y != 0))
+  {
     Vector2 n = Vector2Normalize(dirXZ);
     pp->pos.x = cpos.x + n.x * mx + (frand01(rng) - 0.5f) * hx * 0.5f;
     pp->pos.z = cpos.z + n.y * mz + (frand01(rng) - 0.5f) * hz * 0.5f;
-  } else {
+  }
+  else
+  {
     pp->pos.x = cpos.x + (frand01(rng) * 2.0f - 1.0f) * mx;
     pp->pos.z = cpos.z + (frand01(rng) * 2.0f - 1.0f) * mz;
   }
@@ -94,8 +108,16 @@ static void randomizeParticle(ParallaxField *f, ParallaxParticle *pp,
 
 // -------------------- public API --------------------
 
+/** Initializes a parallax starfield effect.
+ *
+ * @param particleCount Number of particles to create.
+ * @param halfExtentXZ Half-size of the field in X and Z directions (world units).
+ * @param seed Random seed for particle distribution.
+ * @return Initialized ParallaxField structure.
+ */
 ParallaxField parallaxInit(int particleCount, Vector2 halfExtentXZ,
-                           unsigned int seed) {
+                           unsigned int seed)
+{
   ParallaxField f = (ParallaxField){0};
 
   f.count = particleCount;
@@ -131,27 +153,42 @@ ParallaxField parallaxInit(int particleCount, Vector2 halfExtentXZ,
   fakeCam.position = (Vector3){0, 0, 0};
 
   unsigned int rng = seed ? seed : 0xCAFEBABE;
-  for (int i = 0; i < particleCount; ++i) {
+  for (int i = 0; i < particleCount; ++i)
+  {
     randomizeParticle(&f, &f.p[i], &rng, &fakeCam, false, (Vector2){0, 0});
   }
 
   return f;
 }
 
-void destroyParallax(ParallaxField *f) {
+/** Advances the parallax field state for the current frame.
+ *
+ * @param f Pointer to the ParallaxField to update.
+ * @param cam Pointer to the active Camera3D for view/projection.
+ * @param player Pointer to the Player for velocity influence (can be NULL).
+ */
+void destroyParallax(ParallaxField *f)
+{
   if (!f)
     return;
   if (f->dotTex.id)
     UnloadTexture(f->dotTex);
-  if (f->p) {
+  if (f->p)
+  {
     MemFree(f->p);
     f->p = NULL;
   }
   f->count = 0;
 }
 
+/** Renders the parallax field as a background effect.
+ *
+ * @param f Pointer to the ParallaxField to render.
+ * @param cam Pointer to the active Camera3D for view/projection.
+ */
 void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
-                    const Player *player) {
+                    const Player *player)
+{
   if (!f || !cam || !player)
     return;
 
@@ -161,10 +198,13 @@ void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
   // Raw player velocity in XZ
   const Vector2 curr = playerXZ(player);
   Vector2 pvel = (Vector2){0, 0};
-  if (!f->hasPrevPlayerPos) {
+  if (!f->hasPrevPlayerPos)
+  {
     f->prevPlayerXZ = curr;
     f->hasPrevPlayerPos = true;
-  } else if (dt > 0.0f) {
+  }
+  else if (dt > 0.0f)
+  {
     pvel.x = (curr.x - f->prevPlayerXZ.x) / dt;
     pvel.y = (curr.y - f->prevPlayerXZ.y) / dt;
     f->prevPlayerXZ = curr;
@@ -176,7 +216,8 @@ void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
   f->smoothedVelXZ.y = Lerp(pvel.y, f->smoothedVelXZ.y, a);
 
   float len = Vector2Length(f->smoothedVelXZ);
-  if (len > f->maxInfluenceVel && len > 0.0f) {
+  if (len > f->maxInfluenceVel && len > 0.0f)
+  {
     f->smoothedVelXZ = Vector2Scale(f->smoothedVelXZ, f->maxInfluenceVel / len);
   }
 
@@ -200,7 +241,8 @@ void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
   static float tAccum = 0.0f;
   tAccum += dt;
 
-  for (int i = 0; i < f->count; ++i) {
+  for (int i = 0; i < f->count; ++i)
+  {
     ParallaxParticle *pp = &f->p[i];
 
     // Fixed Y on the starfield plane (under the scene)
@@ -217,7 +259,8 @@ void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
     pp->pos.z += v.y * dt;
 
     // Subtle jitter
-    if (pp->jitterAmp > 0.0f) {
+    if (pp->jitterAmp > 0.0f)
+    {
       float s = sinf(pp->phase + tAccum * pp->jitterFreq);
       float c =
           cosf(pp->phase * 0.7f + tAccum * (pp->jitterFreq * 0.6f + 0.3f));
@@ -227,23 +270,30 @@ void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
 
     // Toroidal wrap-around around camera box +/- mx,mz
     bool wrapped = false;
-    if (pp->pos.x < cpos.x - mx) {
+    if (pp->pos.x < cpos.x - mx)
+    {
       pp->pos.x += 2.0f * mx;
       wrapped = true;
-    } else if (pp->pos.x > cpos.x + mx) {
+    }
+    else if (pp->pos.x > cpos.x + mx)
+    {
       pp->pos.x -= 2.0f * mx;
       wrapped = true;
     }
 
-    if (pp->pos.z < cpos.z - mz) {
+    if (pp->pos.z < cpos.z - mz)
+    {
       pp->pos.z += 2.0f * mz;
       wrapped = true;
-    } else if (pp->pos.z > cpos.z + mz) {
+    }
+    else if (pp->pos.z > cpos.z + mz)
+    {
       pp->pos.z -= 2.0f * mz;
       wrapped = true;
     }
 
-    if (wrapped) {
+    if (wrapped)
+    {
       // Tiny re-randomization to avoid visible tiling
       unsigned int rng = (unsigned int)(pp->pos.x * 131.0f) ^
                          (unsigned int)(pp->pos.z * 911.0f);
@@ -257,7 +307,13 @@ void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
   }
 }
 
-void parallaxRender(const ParallaxField *f, const Camera3D *cam) {
+/** Renders the parallax field as a background effect.
+ *
+ * @param f Pointer to the ParallaxField to render.
+ * @param cam Pointer to the active Camera3D for view/projection.
+ */
+void parallaxRender(const ParallaxField *f, const Camera3D *cam)
+{
   if (!f || !cam)
     return;
 
@@ -267,7 +323,8 @@ void parallaxRender(const ParallaxField *f, const Camera3D *cam) {
   // World up works well for top-down too.
   const Vector3 upBill = (Vector3){0, 1, 0};
 
-  for (int i = 0; i < f->count; ++i) {
+  for (int i = 0; i < f->count; ++i)
+  {
     const ParallaxParticle *pp = &f->p[i];
 
     const float base = pp->size;

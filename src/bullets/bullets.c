@@ -14,12 +14,15 @@
 #include <stdlib.h>
 
 /**
- * @brief Creates a new bullet area frame defining valid Z boundaries for
- * bullets.
+ * @brief Creates and initializes a new BulletAreaFrame instance.
  *
- * @return BulletAreaFrame with default top/bottom Z range.
+ * This function allocates and sets up a new BulletAreaFrame structure,
+ * initializing its fields to default values as required.
+ *
+ * @return A newly created BulletAreaFrame object.
  */
-BulletAreaFrame newBulletAreaFrame() {
+BulletAreaFrame newBulletAreaFrame()
+{
   BulletAreaFrame frame;
   frame.top = -60.0f;
   frame.bottom = 60.0f;
@@ -27,14 +30,14 @@ BulletAreaFrame newBulletAreaFrame() {
 }
 
 /**
- * @brief Initializes a BulletMovement struct with default speed and
- * acceleration.
+ * @brief Creates and initializes a new BulletMovement structure.
  *
- * @param direction Direction of bullet travel (up or down).
- * @return A new BulletMovement object.
+ * @param direction The direction in which the bullet will move.
+ * @return A BulletMovement structure initialized with the specified direction.
  */
 BulletMovement newBulletMovement(BulletMovementDirection direction,
-                                 float acceleration, float speed) {
+                                 float acceleration, float speed)
+{
   BulletMovement movement;
   movement.acceleration = acceleration;
   movement.speed = speed;
@@ -45,9 +48,17 @@ BulletMovement newBulletMovement(BulletMovementDirection direction,
   return movement;
 }
 
+/**
+ * @brief Creates a new BulletMovement struct for a bullet aimed from a starting position towards a target x-coordinate.
+ *
+ * @param from The starting position of the bullet.
+ * @param to_x The x-coordinate of the target position the bullet should aim at.
+ * @return BulletMovement The initialized movement parameters for the aimed bullet.
+ */
 BulletMovement newBulletAimedMovement(BulletPosition from, float to_x,
                                       float to_z, float acceleration,
-                                      float speed) {
+                                      float speed)
+{
   BulletMovement movement;
   movement.acceleration = acceleration;
   movement.speed = speed;
@@ -64,14 +75,18 @@ BulletMovement newBulletAimedMovement(BulletPosition from, float to_x,
 }
 
 /**
- * @brief Creates a new BulletPosition with specified coordinates.
+ * @brief Creates a new BulletPosition with the specified coordinates.
  *
- * @param x X coordinate.
- * @param y Y coordinate.
- * @param z Z coordinate.
- * @return A BulletPosition struct.
+ * This function initializes and returns a BulletPosition structure
+ * using the provided x, y, and z floating-point coordinates.
+ *
+ * @param x The x-coordinate of the bullet's position.
+ * @param y The y-coordinate of the bullet's position.
+ * @param z The z-coordinate of the bullet's position.
+ * @return A BulletPosition structure initialized with the given coordinates.
  */
-BulletPosition newBulletPosition(float x, float y, float z) {
+BulletPosition newBulletPosition(float x, float y, float z)
+{
   BulletPosition position;
   position.x = x;
   position.y = y;
@@ -80,14 +95,18 @@ BulletPosition newBulletPosition(float x, float y, float z) {
 }
 
 /**
- * @brief Creates a new BulletSize with default shape parameters.
+ * @brief Creates and initializes a new BulletSize structure.
  *
- * @param by_x Width of the bullet.
- * @param by_y Height of the bullet.
- * @param by_z Depth of the bullet.
- * @return A BulletSize struct with top/bottom radii and slices set.
+ * This function constructs a BulletSize object using the provided
+ * dimensions along the x, y, and z axes.
+ *
+ * @param by_x The size of the bullet along the x-axis.
+ * @param by_y The size of the bullet along the y-axis.
+ * @param by_z The size of the bullet along the z-axis.
+ * @return A BulletSize structure initialized with the specified dimensions.
  */
-BulletSize newBulletSize(float by_x, float by_y, float by_z) {
+BulletSize newBulletSize(float by_x, float by_y, float by_z)
+{
   BulletSize size;
   size.by_x = by_x;
   size.by_y = by_y;
@@ -99,13 +118,17 @@ BulletSize newBulletSize(float by_x, float by_y, float by_z) {
 }
 
 /**
- * @brief Creates bullet parameters that define its effect on health and energy.
+ * @brief Creates and initializes a new BulletParameters structure.
  *
- * @param health Health impact on hit.
- * @param energy Energy impact on hit.
- * @return A BulletParameters struct.
+ * This function sets up a BulletParameters instance with the specified
+ * health and energy values.
+ *
+ * @param health The initial health value for the bullet.
+ * @param energy The initial energy value for the bullet.
+ * @return A BulletParameters structure initialized with the given health and energy.
  */
-BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
+BulletParameters newBulletParameters(uint8_t health, uint8_t energy)
+{
   BulletParameters params;
   params.energy = energy;
   params.health = health;
@@ -113,19 +136,19 @@ BulletParameters newBulletParameters(uint8_t health, uint8_t energy) {
 }
 
 /**
- * @brief Creates a fully initialized Bullet object.
+ * @brief Creates a new Bullet instance with the specified movement direction and position.
  *
- * @param direction Movement direction.
- * @param position Starting position.
- * @param size Physical size of the bullet.
- * @param params Damage and energy properties.
- * @return A Bullet instance.
+ * @param direction The direction in which the bullet will move.
+ * @param position The initial position of the bullet.
+ * @return Bullet The newly created Bullet instance.
  */
 Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
                  BulletSize size, BulletParameters params, BulletOwner owner,
-                 float acceleration, float speed, GameTextures *textures) {
+                 float acceleration, float speed, GameTextures *textures)
+{
   GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
-  if (tex_fire_soft == NULL) {
+  if (tex_fire_soft == NULL)
+  {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
     exit(1);
   }
@@ -140,12 +163,33 @@ Bullet newBullet(BulletMovementDirection direction, BulletPosition position,
   return bullet;
 }
 
+/**
+ * @brief Creates a new Bullet instance aimed at a specific target position.
+ *
+ * This function initializes a Bullet object with movement parameters
+ * calculated to aim from the given starting position towards the specified
+ * target coordinates (target_x, target_z). The bullet is also configured
+ * with size, parameters, owner, acceleration, speed, and associated textures.
+ *
+ * @param position The starting position of the bullet.
+ * @param size The size dimensions of the bullet.
+ * @param params The parameters defining the bullet's behavior (e.g., health, energy).
+ * @param owner The owner of the bullet (e.g., player or unit).
+ * @param target_x The x-coordinate of the target position the bullet should aim at.
+ * @param target_z The z-coordinate of the target position the bullet should aim at.
+ * @param acceleration The acceleration of the bullet along its movement direction.
+ * @param speed The initial speed of the bullet.
+ * @param textures A pointer to the GameTextures structure containing available textures.
+ * @return A newly created Bullet instance aimed at the specified target.
+ */
 Bullet newBulletAimedAt(BulletPosition position, BulletSize size,
                         BulletParameters params, BulletOwner owner,
                         float target_x, float target_z, float acceleration,
-                        float speed, GameTextures *textures) {
+                        float speed, GameTextures *textures)
+{
   GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
-  if (!tex_fire_soft) {
+  if (!tex_fire_soft)
+  {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
     exit(1);
   }
@@ -163,12 +207,19 @@ Bullet newBulletAimedAt(BulletPosition position, BulletSize size,
 }
 
 /**
- * @brief Updates bullet position and checks whether it exited the valid frame.
+ * @brief Updates the position and state of a bullet based on its movement parameters.
  *
- * @param bullet Pointer to the bullet.
- * @param frame Pointer to the frame defining allowed Z range.
+ * This function modifies the bullet's position according to its speed and
+ * acceleration. It also checks if the bullet has moved outside the defined
+ * area frame, marking it as inactive if so. If a player-owned bullet goes
+ * out of bounds, it increments the miss count in the provided game statistics.
+ *
+ * @param bullet A pointer to the Bullet instance to be updated.
+ * @param frame A pointer to the BulletAreaFrame defining the valid area for bullets.
+ * @param stat A pointer to the GameStat structure for tracking hits and misses.
  */
-void updateBullet(Bullet *bullet, BulletAreaFrame *frame, GameStat *stat) {
+void updateBullet(Bullet *bullet, BulletAreaFrame *frame, GameStat *stat)
+{
   if (!bullet || !bullet->alive)
     return;
 
@@ -177,23 +228,35 @@ void updateBullet(Bullet *bullet, BulletAreaFrame *frame, GameStat *stat) {
   bullet->position.x += bullet->movement.speed * bullet->movement.dir.x;
   bullet->position.z += bullet->movement.speed * bullet->movement.dir.z;
 
-  if (bullet->position.z < frame->top || bullet->position.z > frame->bottom) {
+  if (bullet->position.z < frame->top || bullet->position.z > frame->bottom)
+  {
     bullet->alive = false;
-    if (bullet->owner == BULLET_OWNER_PLAYER) {
+    if (bullet->owner == BULLET_OWNER_PLAYER)
+    {
       addMissIntoGameStat(stat);
     }
   }
 }
 
 /**
- * @brief Draws a bullet as a 3D cylinder and updates its position.
+ * @brief Renders a bullet in the 3D world and updates its trail effect.
  *
- * @param bullet Pointer to the bullet.
- * @param frame Pointer to the bullet area frame.
+ * This function draws the bullet as a cylinder with a nose cone, based on its
+ * current position and size. It also updates and renders the bullet's trail
+ * effect using the provided camera for proper 3D perspective. The bullet's
+ * state is updated before rendering, and if it goes out of bounds, it is marked
+ * as inactive and the miss count is updated in the game statistics.
+ *
+ * @param bullet A pointer to the Bullet instance to be drawn.
+ * @param frame A pointer to the BulletAreaFrame defining the valid area for bullets.
+ * @param camera A pointer to the Camera3D used for rendering the scene.
+ * @param stat A pointer to the GameStat structure for tracking hits and misses.
  */
 void drawBullet(Bullet *bullet, BulletAreaFrame *frame, Camera3D *camera,
-                GameStat *stat) {
-  if (!bullet || !bullet->alive || !stat || !frame || !camera) {
+                GameStat *stat)
+{
+  if (!bullet || !bullet->alive || !stat || !frame || !camera)
+  {
     return;
   }
 
@@ -225,14 +288,17 @@ void drawBullet(Bullet *bullet, BulletAreaFrame *frame, Camera3D *camera,
 }
 
 /**
- * @brief Computes the bounding box for a given bullet.
+ * @brief Computes the axis-aligned bounding box (AABB) for a given bullet.
  *
- * Used for collision detection with units.
+ * This function calculates the AABB that fully contains the bullet based on
+ * its position and size. The bounding box is defined by its minimum and
+ * maximum corners in 3D space.
  *
- * @param bullet Pointer to the bullet.
- * @return BoundingBox struct in world space.
+ * @param bullet A pointer to the Bullet instance for which to compute the bounding box.
+ * @return A BoundingBox structure representing the AABB of the bullet.
  */
-BoundingBox getBulletBoundingBox(Bullet *bullet) {
+BoundingBox getBulletBoundingBox(Bullet *bullet)
+{
   return (BoundingBox){.min = {bullet->position.x - bullet->size.by_x / 2,
                                bullet->position.y - bullet->size.by_y / 2,
                                bullet->position.z - bullet->size.by_z / 2},
@@ -242,16 +308,22 @@ BoundingBox getBulletBoundingBox(Bullet *bullet) {
 }
 
 /**
- * @brief Creates and initializes a new BulletNode.
+ * @brief Creates a new BulletNode with the specified previous node, bullet data, and index.
  *
- * @param prev Pointer to the previous node.
- * @param bullet Bullet to be stored in the node.
- * @param idx Unique index or identifier.
- * @return Pointer to the new BulletNode or NULL on failure.
+ * This function allocates memory for a new BulletNode, initializes its fields,
+ * and links it to the provided previous node. The new node's next pointer is
+ * set to NULL, and it contains the given bullet data and index.
+ *
+ * @param prev A pointer to the previous BulletNode in the list (can be NULL).
+ * @param bullet The Bullet data to be stored in the new node.
+ * @param idx A unique identifier or spawn index for the new bullet.
+ * @return A pointer to the newly created BulletNode, or NULL if memory allocation fails.
  */
-BulletNode *newBulletNode(BulletNode *prev, Bullet bullet, size_t idx) {
+BulletNode *newBulletNode(BulletNode *prev, Bullet bullet, size_t idx)
+{
   BulletNode *node = malloc(sizeof(BulletNode));
-  if (!node) {
+  if (!node)
+  {
     return NULL;
   }
   node->idx = idx;
@@ -262,25 +334,36 @@ BulletNode *newBulletNode(BulletNode *prev, Bullet bullet, size_t idx) {
 }
 
 /**
- * @brief Frees memory allocated for a single BulletNode.
+ * @brief Frees the memory allocated for a BulletNode.
  *
- * @param node Pointer to the node to free.
+ * This function deallocates the memory used by the specified BulletNode.
+ * It does not free any linked nodes or the bullet data itself.
+ *
+ * @param node A pointer to the BulletNode to be destroyed.
  */
-void destroyBulletNode(BulletNode *node) {
-  if (!node) {
+void destroyBulletNode(BulletNode *node)
+{
+  if (!node)
+  {
     return;
   }
   free(node);
 }
 
 /**
- * @brief Allocates and initializes a new BulletList.
+ * @brief Creates and initializes a new BulletList instance.
  *
- * @return Pointer to the new BulletList.
+ * This function allocates memory for a new BulletList structure,
+ * initializes its fields to default values, and returns a pointer
+ * to the newly created list.
+ *
+ * @return A pointer to the newly created BulletList, or NULL if memory allocation fails.
  */
-BulletList *newBulletList() {
+BulletList *newBulletList()
+{
   BulletList *list = malloc(sizeof(BulletList));
-  if (!list) {
+  if (!list)
+  {
     return NULL;
   }
   list->head = NULL;
@@ -295,24 +378,33 @@ BulletList *newBulletList() {
 /**
  * @brief Inserts a new bullet into the bullet list.
  *
- * @param list Pointer to the bullet list.
- * @param bullet Bullet to insert.
+ * This function creates a new BulletNode for the given bullet and
+ * appends it to the end of the specified BulletList. It updates
+ * the list's head, tail, length, and index accordingly.
+ *
+ * @param list A pointer to the BulletList where the bullet will be inserted.
+ * @param bullet The Bullet instance to be added to the list.
  */
-void insertBulletIntoList(BulletList *list, Bullet bullet) {
-  if (!list) {
+void insertBulletIntoList(BulletList *list, Bullet bullet)
+{
+  if (!list)
+  {
     return;
   }
   list->idx += 1;
   BulletNode *node = newBulletNode(list->tail, bullet, list->idx);
-  if (!node) {
+  if (!node)
+  {
     return;
   }
-  if (!list->head) {
+  if (!list->head)
+  {
     list->head = node;
   }
   BulletNode *prev = list->tail;
   list->tail = node;
-  if (prev) {
+  if (prev)
+  {
     prev->next = node;
   }
   list->length += 1;
@@ -321,30 +413,39 @@ void insertBulletIntoList(BulletList *list, Bullet bullet) {
 }
 
 /**
- * @brief Removes all inactive (dead) bullets from the list.
+ * @brief Removes inactive bullets from the bullet list.
  *
- * Updates list links and decrements length accordingly.
+ * This function iterates through the BulletList and removes any bullets
+ * that are marked as inactive (alive == false). It updates the list's
+ * head, tail, and length accordingly, and frees the memory of removed nodes.
  *
- * @param list Pointer to the bullet list.
+ * @param list A pointer to the BulletList from which inactive bullets will be removed.
  */
-void removeBullets(BulletList *list) {
+void removeBullets(BulletList *list)
+{
   BulletNode *node = list->head;
-  while (node) {
+  while (node)
+  {
     BulletNode *next = node->next;
 
-    if (!node->self.alive) {
-      if (node == list->head) {
+    if (!node->self.alive)
+    {
+      if (node == list->head)
+      {
         list->head = node->next;
       }
 
-      if (node == list->tail) {
+      if (node == list->tail)
+      {
         list->tail = node->prev;
       }
 
-      if (node->prev) {
+      if (node->prev)
+      {
         node->prev->next = node->next;
       }
-      if (node->next) {
+      if (node->next)
+      {
         node->next->prev = node->prev;
       }
 
@@ -359,16 +460,22 @@ void removeBullets(BulletList *list) {
 }
 
 /**
- * @brief Draws all bullets in the list and updates their positions.
+ * @brief Updates and draws all bullets in the list, then removes inactive ones.
  *
- * Also removes any bullets that have become inactive.
+ * This function iterates through the BulletList, updating and rendering
+ * each active bullet using the provided camera and game statistics. After
+ * processing all bullets, it removes any that are no longer active.
  *
- * @param list Pointer to the bullet list.
+ * @param list A pointer to the BulletList containing the bullets to be drawn.
+ * @param camera A pointer to the Camera3D used for rendering the scene.
+ * @param stat A pointer to the GameStat structure for tracking hits and misses.
  */
-void drawBullets(BulletList *list, Camera3D *camera, GameStat *stat) {
+void drawBullets(BulletList *list, Camera3D *camera, GameStat *stat)
+{
   BulletNode *node = list->head;
   // Process and draw bullets
-  while (node) {
+  while (node)
+  {
     drawBullet(&node->self, &list->frame, camera, stat);
     node = node->next;
   }
@@ -377,13 +484,19 @@ void drawBullets(BulletList *list, Camera3D *camera, GameStat *stat) {
 }
 
 /**
- * @brief Frees all memory used by the bullet list and its nodes.
+ * @brief Destroys the entire BulletList and frees associated memory.
  *
- * @param list Pointer to the bullet list.
+ * This function iterates through the BulletList, freeing each BulletNode
+ * and its associated resources. After all nodes are freed, it resets the
+ * list's head, tail, length, and index to indicate that it is empty.
+ *
+ * @param list A pointer to the BulletList to be destroyed.
  */
-void destroyBulletList(BulletList *list) {
+void destroyBulletList(BulletList *list)
+{
   BulletNode *node = list->head;
-  while (node) {
+  while (node)
+  {
     BulletNode *next = node->next;
     destroyBulletNode(node);
     node = next;
@@ -393,14 +506,18 @@ void destroyBulletList(BulletList *list) {
   list->idx = 0;
 }
 
-static inline float bulletCollisionRadius(const Bullet *b) {
+// Helper function to compute collision radius of a bullet
+static inline float bulletCollisionRadius(const Bullet *b)
+{
   float r_shape = fmaxf(b->size.radius_top, b->size.radius_bottom);
   if (r_shape > 0.0f)
     return r_shape;
   return 0.5f * fmaxf(b->size.by_x, b->size.by_z);
 }
 
-static inline bool bulletsOverlapXZ(const Bullet *a, const Bullet *b) {
+// Check if two bullets overlap in the XZ plane
+static inline bool bulletsOverlapXZ(const Bullet *a, const Bullet *b)
+{
   const float dx = a->position.x - b->position.x;
   const float dz = a->position.z - b->position.z;
   const float r = bulletCollisionRadius(a) + bulletCollisionRadius(b);
@@ -408,28 +525,32 @@ static inline bool bulletsOverlapXZ(const Bullet *a, const Bullet *b) {
 }
 
 /**
- * Resolve mutual bullet-to-bullet collisions within a single list.
+ * @brief Resolves collisions between bullets in the list.
  *
- * All checks are done in the XZ plane (top-down 2D gameplay).
+ * This function checks for collisions between all pairs of bullets in the
+ * BulletList. If two bullets collide (overlap in the XZ plane), both are
+ * marked as inactive (alive = false). The function can be configured to
+ * ignore collisions between bullets owned by the same entity.
  *
- * @param list                 The list of bullets.
- * @param same_owner_collides  If false, bullets from the same owner do NOT
- * collide.
- * @return                     Number of pairs that were destroyed.
+ * @param list A pointer to the BulletList containing the bullets to check for collisions.
+ * @param same_owner_collides A boolean flag indicating whether bullets from the same owner should collide.
  */
 void bulletsResolveMutualCollisions(BulletList *list,
-                                    bool same_owner_collides) {
+                                    bool same_owner_collides)
+{
   if (!list)
     return;
 
   size_t destroyed_pairs = 0;
 
-  for (BulletNode *a = list->head; a; a = a->next) {
+  for (BulletNode *a = list->head; a; a = a->next)
+  {
     Bullet *ba = &a->self;
     if (!ba->alive)
       continue;
 
-    for (BulletNode *b = a->next; b; b = b->next) {
+    for (BulletNode *b = a->next; b; b = b->next)
+    {
       Bullet *bb = &b->self;
       if (!bb->alive)
         continue;
@@ -437,7 +558,8 @@ void bulletsResolveMutualCollisions(BulletList *list,
       if (!same_owner_collides && ba->owner == bb->owner)
         continue;
 
-      if (bulletsOverlapXZ(ba, bb)) {
+      if (bulletsOverlapXZ(ba, bb))
+      {
         ba->alive = false;
         bb->alive = false;
 

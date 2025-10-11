@@ -44,7 +44,8 @@ const uint8_t DEFAULT_UNIT_ENERGY = 100;
  *
  * @return A UnitSize structure with predefined width and height.
  */
-UnitSize newUnitSize() {
+UnitSize newUnitSize()
+{
   UnitSize size;
   size.width = DEFAULT_UNIT_WIDTH;
   size.height = DEFAULT_UNIT_HEIGHT;
@@ -57,7 +58,8 @@ UnitSize newUnitSize() {
  *
  * @return A UnitPosition structure with zeroed coordinates and grid indices.
  */
-UnitPosition newUnitPosition() {
+UnitPosition newUnitPosition()
+{
   UnitPosition position;
   position.x = 0.0f;
   position.y = 0.0f;
@@ -77,7 +79,8 @@ UnitPosition newUnitPosition() {
  * @param position Initial world position of the unit.
  * @return A fully initialized UnitRender structure.
  */
-UnitRender newUnitRender(UnitPosition position) {
+UnitRender newUnitRender(UnitPosition position)
+{
   UnitRender render;
   render.position = position;
   render.size = newUnitSize();
@@ -93,7 +96,8 @@ UnitRender newUnitRender(UnitPosition position) {
  * @return A UnitState structure with default health, energy, and zeroed hit
  * time.
  */
-UnitState newUnitState() {
+UnitState newUnitState()
+{
   UnitState state;
   state.health = DEFAULT_UNIT_HEALTH;
   state.energy = DEFAULT_UNIT_ENERGY;
@@ -114,19 +118,23 @@ UnitState newUnitState() {
  * @param model Pointer to the ship model used for rendering this unit.
  * @return A fully constructed Unit structure.
  */
-Unit newUnit(UnitType ty, ShipModel *model, GameTextures *textures) {
+Unit newUnit(UnitType ty, ShipModel *model, GameTextures *textures)
+{
   GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
-  if (tex_fire_soft == NULL) {
+  if (tex_fire_soft == NULL)
+  {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
     exit(1);
   }
   GameTexture *tex_smoke_soft = getGameTextureById(textures, TEX_ID_SMOKE_SOFT);
-  if (tex_smoke_soft == NULL) {
+  if (tex_smoke_soft == NULL)
+  {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_SMOKE_SOFT);
     exit(1);
   }
   GameTexture *tex_glow = getGameTextureById(textures, TEX_ID_GLOW);
-  if (tex_glow == NULL) {
+  if (tex_glow == NULL)
+  {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_GLOW);
     exit(1);
   }
@@ -157,23 +165,31 @@ Unit newUnit(UnitType ty, ShipModel *model, GameTextures *textures) {
  * @return Pointer to the allocated UnitNode, or NULL on failure.
  */
 UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
-                      float mid_x, float z_offset) {
+                      float mid_x, float z_offset)
+{
   UnitNode *node = malloc(sizeof(UnitNode));
-  if (!node) {
+  if (!node)
+  {
     return NULL;
   }
   int prev_col, prev_ln;
-  if (prev) {
+  if (prev)
+  {
     unit.render.position.col = prev->self.render.position.col + 1;
     prev_ln = prev->self.render.position.ln;
-  } else {
+  }
+  else
+  {
     unit.render.position.col = 0;
     prev_ln = 0;
   }
-  if (unit.render.position.col == max_col) {
+  if (unit.render.position.col == max_col)
+  {
     unit.render.position.ln = prev_ln + 1;
     unit.render.position.col = 0;
-  } else {
+  }
+  else
+  {
     unit.render.position.ln = prev_ln;
   }
   unit.render.position.x =
@@ -194,13 +210,17 @@ UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
  *
  * @param node Pointer to the node to destroy.
  */
-void destroyUnitNode(UnitNode *node) {
-  if (node != NULL) {
+void destroyUnitNode(UnitNode *node)
+{
+  if (node != NULL)
+  {
     destroyMovementAction(node->self.render.action);
-    if (node->self.explosion_effect) {
+    if (node->self.explosion_effect)
+    {
       destroySpriteSheetState(node->self.explosion_effect);
     }
-    if (node->self.hit) {
+    if (node->self.hit)
+    {
       destroySpriteSheetState(node->self.hit);
     }
     free(node);
@@ -217,7 +237,8 @@ void destroyUnitNode(UnitNode *node) {
  * @param unit Pointer to the unit to update.
  * @param deltaTime Time elapsed since last frame.
  */
-void updateDestroyedUnitFall(Unit *unit, float deltaTime) {
+void updateDestroyedUnitFall(Unit *unit, float deltaTime)
+{
   if (!unit || unit->state.health > 0)
     return;
 
@@ -236,36 +257,42 @@ void updateDestroyedUnitFall(Unit *unit, float deltaTime) {
 
   action->angle += 360.0f * deltaTime;
 
-  if (action->angle > 360.0f) {
+  if (action->angle > 360.0f)
+  {
     action->angle -= 360.0f;
   }
   if (fabsf(position->z + position->z_offset + action->z) >
-      fabsf(position->z_max_area)) {
+      fabsf(position->z_max_area))
+  {
     unit->render.visible = false;
   }
 }
 
 /**
- * @brief Draws a single unit, applying animation, movement, hit indication, and
- * transformations.
+ * @brief Renders the unit's model, explosion effects, and hit animations.
  *
- * If the unit was recently hit, it's rendered red temporarily. If health is
- * zero, the falling animation is applied.
+ * Handles the drawing of the unit's 3D model, applying hit effects and
+ * explosion animations as necessary. Also manages movement updates and debug
+ * bounding box rendering.
  *
- * In debug mode, the bounding box model is also rendered.
- *
- * @param unit Pointer to the unit to draw.
+ * @param unit Pointer to the Unit to draw.
+ * @param camera Pointer to the active Camera3D for view/projection.
+ * @param sprites Pointer to the SpriteSheetList containing explosion models.
  */
-void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
-  if (!unit) {
+void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites)
+{
+  if (!unit)
+  {
     return;
   }
 
   UnitPosition *position = &unit->render.position;
-  if (unit->render.position.z_offset < 0) {
+  if (unit->render.position.z_offset < 0)
+  {
     float step = 0.1f + (0.2f - 0.1f) * ((float)rand() / (float)RAND_MAX);
     unit->render.position.z_offset += step;
-    if (unit->render.position.z_offset > 0) {
+    if (unit->render.position.z_offset > 0)
+    {
       unit->render.position.z_offset = 0;
     }
   }
@@ -277,9 +304,11 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
   Vector3 origin =
       (Vector3){position->x + action->x, position->y + action->y + 2.0f,
                 position->z + position->z_offset + action->z + 2.0f};
-  if (hit) {
+  if (hit)
+  {
     setShipModelColor(unit->model, RED);
-    if (!unit->hit) {
+    if (!unit->hit)
+    {
       unit->hit = newSpriteSheetState(&sprites->tail->self, 1, 3.0f, 0.1f);
     }
     dropSpriteSheetState(unit->hit);
@@ -292,19 +321,24 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
                         dt, camera);
   bulletExplosionDraw(&unit->explosion_bullet, *camera);
   drawSpriteSheetState(unit->hit, *camera, origin);
-  if (unit->state.health == 0) {
+  if (unit->state.health == 0)
+  {
     updateDestroyedUnitFall(unit, GetFrameTime());
-    if (!unit->explosion_effect) {
+    if (!unit->explosion_effect)
+    {
       unit->explosion_effect =
           newSpriteSheetState(&sprites->head->self, 3, 20.0f, 1.0f);
     }
-    if (unit->explosion_effect) {
+    if (unit->explosion_effect)
+    {
       drawSpriteSheetState(
           unit->explosion_effect, *camera,
           (Vector3){position->x + action->x, position->y + action->y,
                     position->z + position->z_offset + action->z});
     }
-  } else {
+  }
+  else
+  {
     iterateMovementAction(action, (float)unit->state.energy /
                                       (float)unit->state.init_energy);
   }
@@ -313,10 +347,12 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
                         position->z + position->z_offset + action->z},
               (Vector3){action->rotate_x, action->rotate_y, action->rotate_z},
               action->angle, (Vector3){1, 1, 1}, hit ? RED : WHITE);
-  if (hit) {
+  if (hit)
+  {
     setShipModelColor(unit->model, WHITE);
   }
-  if (is_debug_mode && unit->model->box_model) {
+  if (is_debug_mode && unit->model->box_model)
+  {
     DrawModelEx(*unit->model->box_model,
                 (Vector3){position->x + action->x, position->y + action->y,
                           position->z + position->z_offset + action->z},
@@ -335,7 +371,8 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites) {
  * @param unit Pointer to the unit.
  * @return A BoundingBox in world coordinates.
  */
-BoundingBox getUnitBoundingBox(Unit *unit) {
+BoundingBox getUnitBoundingBox(Unit *unit)
+{
   ShipBoundingBox *box = &unit->model->box;
   UnitRender *render = &unit->render;
   MovementAction *action = render->action;
@@ -351,7 +388,8 @@ BoundingBox getUnitBoundingBox(Unit *unit) {
                        .max = {box->by_x / 2, box->by_y / 2, box->by_z / 2}};
 
   Matrix transform = MatrixTranslate(position.x, position.y, position.z);
-  if (action) {
+  if (action)
+  {
     Matrix rotX = MatrixRotateX(DEG2RAD * action->rotate_x);
     Matrix rotZ = MatrixRotateZ(DEG2RAD * action->rotate_z);
     Matrix rotY = MatrixRotateY(DEG2RAD * action->rotate_y);
@@ -373,7 +411,8 @@ BoundingBox getUnitBoundingBox(Unit *unit) {
   BoundingBox world = {.min = Vector3Transform(corners[0], transform),
                        .max = Vector3Transform(corners[0], transform)};
 
-  for (int i = 1; i < 8; i++) {
+  for (int i = 1; i < 8; i++)
+  {
     Vector3 transformed = Vector3Transform(corners[i], transform);
     world.min = Vector3Min(world.min, transformed);
     world.max = Vector3Max(world.max, transformed);
@@ -383,23 +422,26 @@ BoundingBox getUnitBoundingBox(Unit *unit) {
 }
 
 /**
- * @brief Allocates and initializes a UnitList with a given number of enemy
+ * @brief Creates and populates a UnitList with a specified number of enemy
  * units.
  *
- * Positions the units in a grid based on the column and row count.
+ * Units are arranged in a grid formation based on max columns and lines,
+ * centered around the origin.
  *
- * @param count Number of enemy units to spawn.
- * @param model Shared model used for all units.
- * @param max_col Maximum columns per row.
- * @param max_ln Maximum number of rows.
- * @param z_offset Z offset for spacing the grid vertically.
- * @return Pointer to the newly allocated UnitList, or NULL on allocation
- * failure.
+ * @param count Number of units to create.
+ * @param model Pointer to the ship model used for all units.
+ * @param max_col Maximum columns in the formation grid.
+ * @param max_ln Maximum lines (rows) in the formation grid.
+ * @param z_offset Vertical offset applied to all units along Z axis.
+ * @param textures Pointer to the GameTextures for explosion effects.
+ * @return Pointer to the allocated UnitList, or NULL on failure.
  */
 UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
-                      float z_offset, GameTextures *textures) {
+                      float z_offset, GameTextures *textures)
+{
   UnitList *units = malloc(sizeof(UnitList));
-  if (!units) {
+  if (!units)
+  {
     return NULL;
   }
   units->length = 0;
@@ -409,7 +451,8 @@ UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
   float unit_full_height = DEFAULT_UNIT_HEIGHT + UNIT_SPACE_VERTICAL;
 
   float mid_x = (unit_full_width * max_col) / 2.0f - unit_full_width / 2.0f;
-  for (int i = count - 1; i >= 0; i -= 1) {
+  for (int i = count - 1; i >= 0; i -= 1)
+  {
     insertToUnitList(units, newUnit(UNIT_TYPE_ENEMY, model, textures), max_col,
                      max_ln, mid_x, z_offset);
     TraceLog(LOG_INFO, "[Units] Added unit %i", i);
@@ -425,24 +468,31 @@ UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
  *
  * @param list Pointer to the UnitList to modify.
  */
-void removeUnits(UnitList *list) {
+void removeUnits(UnitList *list)
+{
   UnitNode *node = list->head;
-  while (node) {
+  while (node)
+  {
     UnitNode *next = node->next;
 
-    if (!node->self.render.visible) {
-      if (node == list->head) {
+    if (!node->self.render.visible)
+    {
+      if (node == list->head)
+      {
         list->head = node->next;
       }
 
-      if (node == list->tail) {
+      if (node == list->tail)
+      {
         list->tail = node->prev;
       }
 
-      if (node->prev) {
+      if (node->prev)
+      {
         node->prev->next = node->next;
       }
-      if (node->next) {
+      if (node->next)
+      {
         node->next->prev = node->prev;
       }
 
@@ -463,9 +513,11 @@ void removeUnits(UnitList *list) {
  *
  * @param list Pointer to the UnitList to destroy.
  */
-void destroyUnitList(UnitList *list) {
+void destroyUnitList(UnitList *list)
+{
   UnitNode *node = list->head;
-  while (node) {
+  while (node)
+  {
     UnitNode *next = node->next;
     destroyUnitNode(node);
     node = next;
@@ -486,15 +538,20 @@ void destroyUnitList(UnitList *list) {
  * @param z_offset Vertical placement offset along Z.
  */
 void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
-                      float mid_x, float z_offset) {
+                      float mid_x, float z_offset)
+{
   UnitNode *node =
       newUnitNode(list->tail, unit, max_col, max_ln, mid_x, z_offset);
-  if (!node) {
+  if (!node)
+  {
     return;
   }
-  if (list->length == 0) {
+  if (list->length == 0)
+  {
     list->head = list->tail = node;
-  } else {
+  }
+  else
+  {
     list->tail->next = node;
     node->prev = list->tail;
     list->tail = node;
@@ -503,18 +560,20 @@ void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
 }
 
 /**
- * @brief Renders all units in the list and removes invisible units after
- * drawing.
+ * @brief Draws all units in the list and removes any that are no longer
+ * visible.
  *
- * Iterates through each node in the UnitList, draws it, and cleans up destroyed
- * units.
- *
- * @param list Pointer to the UnitList.
+ * @param list Pointer to the UnitList to draw.
+ * @param camera Pointer to the active Camera3D for view/projection.
+ * @param sprites Pointer to the SpriteSheetList containing explosion models.
  */
-void drawUnits(UnitList *list, Camera3D *camera, SpriteSheetList *sprites) {
+void drawUnits(UnitList *list, Camera3D *camera, SpriteSheetList *sprites)
+{
   UnitNode *node = list->head;
-  for (int i = 0; i < list->length; i += 1) {
-    if (!node) {
+  for (int i = 0; i < list->length; i += 1)
+  {
+    if (!node)
+    {
       break;
     }
     drawUnit(&node->self, camera, sprites);
@@ -523,20 +582,36 @@ void drawUnits(UnitList *list, Camera3D *camera, SpriteSheetList *sprites) {
   removeUnits(list);
 }
 
-bool isUnitAbleToFire(UnitList *list, Unit *unit) {
-  if (!list || !unit) {
+/**
+ * @brief Determines if a unit is able to fire based on its position in the
+ * formation.
+ *
+ * A unit can fire if it is in front of all other units in its column.
+ *
+ * @param list Pointer to the UnitList containing all units.
+ * @param unit Pointer to the specific unit to check.
+ * @return true if the unit can fire, false otherwise.
+ */
+bool isUnitAbleToFire(UnitList *list, Unit *unit)
+{
+  if (!list || !unit)
+  {
     return false;
   }
-  if (unit->render.position.in_front) {
+  if (unit->render.position.in_front)
+  {
     return true;
   }
   UnitNode *node = list->head;
-  for (int i = 0; i < list->length; i += 1) {
-    if (!node) {
+  for (int i = 0; i < list->length; i += 1)
+  {
+    if (!node)
+    {
       break;
     }
     if (unit->render.position.col == node->self.render.position.col &&
-        unit->render.position.ln < node->self.render.position.ln) {
+        unit->render.position.ln < node->self.render.position.ln)
+    {
       return false;
     }
     node = node->next;
@@ -546,38 +621,46 @@ bool isUnitAbleToFire(UnitList *list, Unit *unit) {
 }
 
 /**
- * @brief Checks if any bullet in the list has collided with the given unit.
+ * @brief Checks for collisions between bullets and a single unit.
  *
- * On collision, bullet is deactivated and unit health/energy is reduced.
+ * If a bullet hits the unit, it reduces health and energy, marks the bullet
+ * as inactive, and updates the game statistics.
  *
- * @param unit Pointer to the target unit.
- * @param bullets Pointer to the bullet list.
+ * @param unit Pointer to the unit to check for hits.
+ * @param bullets Pointer to the BulletList containing all active bullets.
+ * @param stat Pointer to the GameStat structure to update on hits.
  */
-void checkBulletHitsUnit(Unit *unit, BulletList *bullets, GameStat *stat) {
+void checkBulletHitsUnit(Unit *unit, BulletList *bullets, GameStat *stat)
+{
   if (!unit || !bullets)
     return;
 
   BoundingBox unitBox = getUnitBoundingBox(unit);
 
   BulletNode *node = bullets->head;
-  while (node) {
+  while (node)
+  {
     Bullet *bullet = &node->self;
-    if (!bullet->alive || bullet->owner != BULLET_OWNER_PLAYER) {
+    if (!bullet->alive || bullet->owner != BULLET_OWNER_PLAYER)
+    {
       node = node->next;
       continue;
     }
 
     BoundingBox bulletBox = getBulletBoundingBox(bullet);
 
-    if (CheckCollisionBoxes(unitBox, bulletBox)) {
+    if (CheckCollisionBoxes(unitBox, bulletBox))
+    {
       bullet->alive = false;
-      if (unit->state.health > 0) {
+      if (unit->state.health > 0)
+      {
         unit->state.health =
             (unit->state.health > bullet->params.health)
                 ? (uint8_t)(unit->state.health - bullet->params.health)
                 : 0u;
       }
-      if (unit->state.energy > 0) {
+      if (unit->state.energy > 0)
+      {
         unit->state.energy =
             (unit->state.energy > bullet->params.energy)
                 ? (uint8_t)(unit->state.energy - bullet->params.energy)
@@ -593,30 +676,50 @@ void checkBulletHitsUnit(Unit *unit, BulletList *bullets, GameStat *stat) {
 }
 
 /**
- * @brief Applies bullet collision checks to all units in the list.
+ * @brief Checks for bullet collisions against all units in the list.
  *
- * @param units Pointer to the unit list.
- * @param bullets Pointer to the bullet list.
+ * Iterates through each unit and checks for hits with bullets. Updates game
+ * statistics accordingly and removes inactive bullets after processing.
+ *
+ * @param units Pointer to the UnitList containing all units.
+ * @param bullets Pointer to the BulletList containing all active bullets.
+ * @param stat Pointer to the GameStat structure to update on hits.
  */
 void checkBulletHitsUnits(UnitList *units, BulletList *bullets,
-                          GameStat *stat) {
-  if (!units || !bullets || !stat) {
+                          GameStat *stat)
+{
+  if (!units || !bullets || !stat)
+  {
     return;
   }
   UnitNode *node = units->head;
-  while (node) {
+  while (node)
+  {
     checkBulletHitsUnit(&node->self, bullets, stat);
     node = node->next;
   }
   removeBullets(bullets);
 }
 
+/**
+ * @brief Spawns a bullet from the unit towards a target position if enough
+ * time has elapsed since the last shot.
+ *
+ * @param bullets Pointer to the BulletList to add the new bullet to.
+ * @param unit Pointer to the Unit that is shooting.
+ * @param target_x X coordinate of the target position.
+ * @param target_z Z coordinate of the target position.
+ * @param level Pointer to the current Level for bullet parameters.
+ * @param textures Pointer to GameTextures for bullet appearance.
+ */
 void spawnUnitShoot(BulletList *bullets, Unit *unit, float target_x,
-                    float target_z, Level *level, GameTextures *textures) {
+                    float target_z, Level *level, GameTextures *textures)
+{
   double current_time = GetTime();
   double elapsed_last_bullet_spawn = current_time - unit->state.last_shoot;
 
-  if (elapsed_last_bullet_spawn > level->units.bullet_delay_spawn) {
+  if (elapsed_last_bullet_spawn > level->units.bullet_delay_spawn)
+  {
     Bullet bullet = newBulletAimedAt(
         newBulletPosition(unit->render.position.x, unit->render.position.y,
                           unit->render.position.z +

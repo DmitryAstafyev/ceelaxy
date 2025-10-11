@@ -22,69 +22,75 @@
 /**
  * @brief Enum representing the type of unit.
  */
-typedef enum UnitType {
-  UNIT_TYPE_SOLDER = 1, ///< The player-controlled unit.
-  UNIT_TYPE_ENEMY = 2   ///< Enemy AI-controlled unit.
+typedef enum UnitType
+{
+  UNIT_TYPE_SOLDER = 1, /// The player-controlled unit.
+  UNIT_TYPE_ENEMY = 2   /// Enemy AI-controlled unit.
 } UnitType;
 
 /**
  * @brief Holds state information for a unit, including health and energy.
  */
-typedef struct UnitState {
-  uint8_t health;      ///< Current health value.
-  uint8_t energy;      ///< Current energy or stamina.
-  uint8_t init_health; ///< Initianal health value.
-  uint8_t init_energy; ///< Initianal energy or stamina.
-  double hit_time;     ///< Timestamp of the last hit taken.
-  double last_shoot;   ///< Time of the last bullet spawn.
+typedef struct UnitState
+{
+  uint8_t health;      /// Current health value.
+  uint8_t energy;      /// Current energy or stamina.
+  uint8_t init_health; /// Initianal health value.
+  uint8_t init_energy; /// Initianal energy or stamina.
+  double hit_time;     /// Timestamp of the last hit taken.
+  double last_shoot;   /// Time of the last bullet spawn.
 } UnitState;
 
 /**
  * @brief Stores 3D position and grid mapping information for a unit.
  */
-typedef struct UnitPosition {
-  float x;          ///< X coordinate in world space.
-  float y;          ///< Y coordinate in world space.
-  float z;          ///< Z coordinate in world space.
-  float z_max_area; ///< Maximum area limit on the Z axis.
-  float z_offset;
-  uint16_t ln;  ///< Logical row index in grid or formation.
-  uint16_t col; ///< Logical column index in grid or formation.
+typedef struct UnitPosition
+{
+  float x;          /// X coordinate in world space.
+  float y;          /// Y coordinate in world space.
+  float z;          /// Z coordinate in world space.
+  float z_max_area; /// Maximum area limit on the Z axis.
+  float z_offset;   /// Offset applied on the Z axis for spacing or layering.
+  uint16_t ln;      /// Logical row index in grid or formation.
+  uint16_t col;     /// Logical column index in grid or formation.
   bool in_front;
 } UnitPosition;
 
 /**
  * @brief Describes the 2D size of a unit (used for collision or rendering).
  */
-typedef struct UnitSize {
-  uint16_t height; ///< Height of the unit.
-  uint16_t width;  ///< Width of the unit.
+typedef struct UnitSize
+{
+  uint16_t height; /// Height of the unit.
+  uint16_t width;  /// Width of the unit.
 } UnitSize;
 
 /**
  * @brief Combines rendering data and movement logic for a unit.
  */
-typedef struct UnitRender {
-  UnitPosition position; ///< Current 3D position and grid placement.
-  UnitSize size;         ///< Dimensions used for model scaling and collisions.
+typedef struct UnitRender
+{
+  UnitPosition position; /// Current 3D position and grid placement.
+  UnitSize size;         /// Dimensions used for model scaling and collisions.
   MovementAction
-      *action;         ///< Pointer to the active movement action (can be NULL).
-  uint32_t last_frame; ///< Last frame number for animation or update timing.
-  bool visible;        ///< Visibility flag for rendering.
+      *action;         /// Pointer to the active movement action (can be NULL).
+  uint32_t last_frame; /// Last frame number for animation or update timing.
+  bool visible;        /// Visibility flag for rendering.
 } UnitRender;
 
 /**
  * @brief Represents a complete in-game unit, including type, state, rendering,
  * and model.
  */
-typedef struct Unit {
-  UnitType type;     ///< Type of the unit (player or enemy).
-  UnitState state;   ///< Health and energy state.
-  UnitRender render; ///< Rendering and positioning data.
-  ShipModel *model;  ///< 3D model used to render this unit.
-  SpriteSheetState *explosion_effect;
-  BulletExplosion explosion_bullet;
-  SpriteSheetState *hit;
+typedef struct Unit
+{
+  UnitType type;                      /// Type of the unit (player or enemy).
+  UnitState state;                    /// Health and energy state.
+  UnitRender render;                  /// Rendering and positioning data.
+  ShipModel *model;                   /// 3D model used to render this unit.
+  SpriteSheetState *explosion_effect; /// Explosion animation state.
+  BulletExplosion explosion_bullet;   /// Explosion effect when hit.
+  SpriteSheetState *hit;              /// Hit animation state.
 } Unit;
 
 /**
@@ -113,11 +119,15 @@ UnitRender newUnitRender(UnitPosition position);
 UnitState newUnitState();
 
 /**
- * @brief Constructs a new Unit with the given type and model.
+ * @brief Constructs a new Unit with specified type and model.
  *
- * @param ty Unit type (e.g., player or enemy).
- * @param model Pointer to the model used for rendering the unit.
- * @return A fully initialized Unit structure.
+ * Initializes internal state, position, and render configuration using
+ * default values.
+ *
+ * @param ty Type of the unit (e.g., player or enemy).
+ * @param model Pointer to the ship model used for rendering this unit.
+ * @param textures Pointer to the game textures for effects.
+ * @return A fully constructed Unit structure.
  */
 Unit newUnit(UnitType ty, ShipModel *model, GameTextures *textures);
 
@@ -133,19 +143,21 @@ BoundingBox getUnitBoundingBox(Unit *unit);
 /**
  * @brief Doubly-linked list node for storing a single unit.
  */
-typedef struct UnitNode {
-  struct UnitNode *prev; ///< Pointer to the previous node.
-  struct UnitNode *next; ///< Pointer to the next node.
-  Unit self;             ///< The actual unit instance.
+typedef struct UnitNode
+{
+  struct UnitNode *prev; /// Pointer to the previous node.
+  struct UnitNode *next; /// Pointer to the next node.
+  Unit self;             /// The actual unit instance.
 } UnitNode;
 
 /**
  * @brief A list of UnitNodes, supporting dynamic collections of units.
  */
-typedef struct {
-  UnitNode *head;  ///< Pointer to the first node.
-  UnitNode *tail;  ///< Pointer to the last node.
-  uint16_t length; ///< Number of nodes in the list.
+typedef struct
+{
+  UnitNode *head;  /// Pointer to the first node.
+  UnitNode *tail;  /// Pointer to the last node.
+  uint16_t length; /// Number of nodes in the list.
 } UnitList;
 
 /**
@@ -163,21 +175,32 @@ UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
                       float mid_x, float z_offset);
 
 /**
- * @brief Renders a single unit using its model and transform data.
+ * @brief Renders the unit's model, explosion effects, and hit animations.
  *
- * @param unit Pointer to the unit to draw.
+ * Handles the drawing of the unit's 3D model, applying hit effects and
+ * explosion animations as necessary. Also manages movement updates and debug
+ * bounding box rendering.
+ *
+ * @param unit Pointer to the Unit to draw.
+ * @param camera Pointer to the active Camera3D for view/projection.
+ * @param sprites Pointer to the SpriteSheetList containing explosion models.
  */
 void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites);
 
 /**
- * @brief Creates a new UnitList and fills it with a specified number of units.
+ * @brief Creates and populates a UnitList with a specified number of enemy
+ * units.
  *
- * @param count Number of units to initialize.
- * @param model Pointer to the model used for all units.
- * @param max_col Maximum grid columns for layout.
- * @param max_ln Maximum grid lines for layout.
- * @param z_offset Z-axis spacing or offset for placement.
- * @return Pointer to the newly allocated UnitList.
+ * Units are arranged in a grid formation based on max columns and lines,
+ * centered around the origin.
+ *
+ * @param count Number of units to create.
+ * @param model Pointer to the ship model used for all units.
+ * @param max_col Maximum columns in the formation grid.
+ * @param max_ln Maximum lines (rows) in the formation grid.
+ * @param z_offset Vertical offset applied to all units along Z axis.
+ * @param textures Pointer to the GameTextures for explosion effects.
+ * @return Pointer to the allocated UnitList, or NULL on failure.
  */
 UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
                       float z_offset, GameTextures *textures);
@@ -216,6 +239,16 @@ void drawUnits(UnitList *list, Camera3D *camera, SpriteSheetList *sprites);
  */
 void removeUnits(UnitList *list);
 
+/**
+ * @brief Determines if a unit is able to fire based on its position in the
+ * formation.
+ *
+ * A unit can fire if it is in front of all other units in its column.
+ *
+ * @param list Pointer to the UnitList containing all units.
+ * @param unit Pointer to the specific unit to check.
+ * @return true if the unit can fire, false otherwise.
+ */
 bool isUnitAbleToFire(UnitList *list, Unit *unit);
 
 /**
@@ -228,6 +261,19 @@ bool isUnitAbleToFire(UnitList *list, Unit *unit);
  */
 void checkBulletHitsUnits(UnitList *units, BulletList *bullets, GameStat *stat);
 
+/**
+ * @brief Spawns a bullet from the unit aimed at the specified target.
+ *
+ * This function checks if the unit can shoot based on its cooldown and,
+ * if so, creates a new bullet directed at the target coordinates.
+ *
+ * @param bullets Pointer to the BulletList to insert the new bullet into.
+ * @param unit Pointer to the Unit that is shooting.
+ * @param target_x X coordinate of the target in world space.
+ * @param target_z Z coordinate of the target in world space.
+ * @param level Pointer to the current Level containing unit parameters.
+ * @param textures Pointer to the GameTextures for bullet creation.
+ */
 void spawnUnitShoot(BulletList *bullets, Unit *unit, float target_x,
                     float target_z, Level *level, GameTextures *textures);
 

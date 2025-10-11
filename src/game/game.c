@@ -34,57 +34,67 @@
  * @param width The width of the game window or viewport (currently unused).
  * @return Pointer to a fully initialized Game structure, or NULL on failure.
  */
-Game *newGame(int height, int width) {
+Game *newGame(int height, int width)
+{
   Game *game = malloc(sizeof(Game));
-  if (!game) {
+  if (!game)
+  {
     return NULL;
   }
   game->stat = newGameStat();
   // Load textures
   game->textures = createGameTexturesList();
-  if (!game->textures) {
+  if (!game->textures)
+  {
     destroyGame(game);
     return NULL;
   }
   // Load models
   game->models = newShipModelList();
-  if (!game->models || game->models->length == 0) {
+  if (!game->models || game->models->length == 0)
+  {
     destroyGame(game);
     return NULL;
   }
   ShipModel *enemy_model =
       findModelInList(game->models, MODEL_CAMO_STELLAR_JET);
-  if (!enemy_model) {
+  if (!enemy_model)
+  {
     destroyGame(game);
     return NULL;
   }
   // Create bullets storage
   game->bullets = newBulletList();
-  if (!game->bullets) {
+  if (!game->bullets)
+  {
     destroyGame(game);
     return NULL;
   }
 
   game->enemies = newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
-  if (!game->enemies) {
+  if (!game->enemies)
+  {
     destroyGame(game);
     return NULL;
   }
   // Load explosions
   game->sprites = loadSpriteSheetList();
-  if (!game->sprites) {
+  if (!game->sprites)
+  {
     destroyGame(game);
     return NULL;
   }
   // Create a player
   ShipModel *player_model = findModelInList(game->models, MODEL_TRANSTELLAR);
-  if (!player_model) {
+  if (!player_model)
+  {
     destroyGame(game);
     return NULL;
   }
   game->player = newPlayer(40.0f, 0.0f, -30.0f, 30.0f, player_model,
                            game->bullets, game->textures);
-  if (!game->player) {
+  if (!game->player)
+  {
     destroyGame(game);
     return NULL;
   }
@@ -118,8 +128,10 @@ Game *newGame(int height, int width) {
  *
  * @param game Pointer to the Game to destroy.
  */
-void destroyGame(Game *game) {
-  if (!game) {
+void destroyGame(Game *game)
+{
+  if (!game)
+  {
     return;
   }
   destroyUnitList(game->enemies);
@@ -132,16 +144,29 @@ void destroyGame(Game *game) {
   free(game);
 }
 
-bool nextGameLevel(Game *game) {
+/**
+ * @brief Advances the game to the next level, updating enemies and resetting
+ * player state.
+ *
+ * If the next level's enemy model cannot be found or the enemy list cannot
+ * be created, the function returns false and the game state remains unchanged.
+ *
+ * @param game Pointer to the current Game instance.
+ * @return true if the level was successfully advanced, false otherwise.
+ */
+bool nextGameLevel(Game *game)
+{
   game->level = goToNextLevel(game->level);
   ShipModel *enemy_model =
       findModelInListCycle(game->models, game->level.level);
-  if (!enemy_model) {
+  if (!enemy_model)
+  {
     return false;
   }
   UnitList *enemies =
       newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
-  if (!enemies) {
+  if (!enemies)
+  {
     return false;
   }
   game->enemies = enemies;
@@ -150,16 +175,29 @@ bool nextGameLevel(Game *game) {
   return true;
 }
 
-void dropGameLevel(Game *game) {
+/**
+ * @brief Resets the game to the first level, reinitializing enemies and
+ * player state.
+ *
+ * This function sets the game level to the first level, creates a new enemy
+ * list with the initial enemy model, and resets the player's health and energy.
+ * If any step fails, the function returns early without modifying the game state.
+ *
+ * @param game Pointer to the current Game instance.
+ */
+void dropGameLevel(Game *game)
+{
   game->level = getFirstLevel();
   ShipModel *enemy_model =
       findModelInList(game->models, MODEL_CAMO_STELLAR_JET);
-  if (!enemy_model) {
+  if (!enemy_model)
+  {
     return;
   }
   UnitList *enemies =
       newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
-  if (!enemies) {
+  if (!enemies)
+  {
     return;
   }
   game->enemies = enemies;
@@ -168,7 +206,14 @@ void dropGameLevel(Game *game) {
   game->stat = newGameStat();
 }
 
-void gameOverDraw() {
+/**
+ * @brief Renders the "Game Over" message centered on the screen.
+ *
+ * This function calculates the position to center the "Game Over" text
+ * based on the current screen dimensions and draws it with a shadow effect.
+ */
+void gameOverDraw()
+{
 
   const char *text = TextFormat("Game Over");
   int font = LEVEL_LABEL_FONT_SIZE;
@@ -181,6 +226,7 @@ void gameOverDraw() {
   DrawText(text, x + 2, y + 2, font, Fade(BLACK, 0.5f));
   DrawText(text, x, y, font, Fade(RAYWHITE, 1.0f));
 }
+
 /**
  * @brief Runs the main game loop until the window is closed.
  *
@@ -193,24 +239,31 @@ void gameOverDraw() {
  *
  * @param game Pointer to the initialized Game instance.
  */
-void runGame(Game *game) {
+void runGame(Game *game)
+{
   TraceLog(LOG_INFO, "[game] starting");
   double over_tm = GetTime();
   bool over = false;
-  while (!WindowShouldClose()) {
-    if (game->player->state.health <= 0 && !over) {
+  while (!WindowShouldClose())
+  {
+    if (game->player->state.health <= 0 && !over)
+    {
       over_tm = GetTime();
       over = true;
     }
-    if (over) {
-      if (GetTime() - over_tm > 5.0) {
+    if (over)
+    {
+      if (GetTime() - over_tm > 5.0)
+      {
         over = false;
         dropGameLevel(game);
       }
     }
-    if (!game->enemies->head) {
+    if (!game->enemies->head)
+    {
       TraceLog(LOG_INFO, "[game] next level!");
-      if (!nextGameLevel(game)) {
+      if (!nextGameLevel(game))
+      {
         return;
       }
     }
@@ -219,10 +272,12 @@ void runGame(Game *game) {
 
     BeginMode3D(game->camera);
 
-    if (is_debug_mode) {
+    if (is_debug_mode)
+    {
       DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, RED);
     }
-    if (!over) {
+    if (!over)
+    {
       checkBulletHitsUnits(game->enemies, game->bullets, &game->stat);
       checkBulletHitsPlayer(game->player, game->bullets, &game->stat);
       bulletsResolveMutualCollisions(game->bullets, false);
@@ -230,7 +285,8 @@ void runGame(Game *game) {
                         &game->level, 10.0, game->textures);
     }
     drawUnits(game->enemies, &game->camera, game->sprites);
-    if (!over) {
+    if (!over)
+    {
       drawPlayer(game->player, &game->level, game->textures, &game->camera,
                  game->sprites);
       drawBullets(game->bullets, &game->camera, &game->stat);
@@ -239,14 +295,16 @@ void runGame(Game *game) {
     parallaxRender(&game->parallax, &game->camera);
     EndMode3D();
 
-    if (!over) {
+    if (!over)
+    {
       drawPlayerStateBars(game->player, &game->camera);
     }
 
     drawUnitsStateBars(game->enemies, &game->camera);
     gameStatDraw(&game->stat);
     levelDraw(&game->level);
-    if (over) {
+    if (over)
+    {
       gameOverDraw();
     }
     EndDrawing();

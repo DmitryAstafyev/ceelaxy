@@ -3,7 +3,17 @@
 #include <raylib.h>
 #include <stdint.h>
 
-Level getFirstLevel() {
+/**
+ * @brief Initializes and returns the parameters for the first game level.
+ *
+ * Sets up enemy unit parameters and player parameters with initial values.
+ * The enemy unit model is set to a predefined constant. The level number is
+ * initialized to 0, and the label start time is set to the current time.
+ *
+ * @return A Level structure containing the initial level parameters.
+ */
+Level getFirstLevel()
+{
   Level level;
   LevelUnitsParameters units;
   units.bullet_acceleration = INIT_LEVEL_UNIT_BULLET_ACCELERATION;
@@ -30,7 +40,19 @@ Level getFirstLevel() {
   return level;
 }
 
-Level goToNextLevel(Level level) {
+/**
+ * @brief Advances the game to the next level, updating enemy and player parameters.
+ *
+ * This function increments the level number and adjusts various parameters for
+ * both enemy units and the player by a fixed step percentage. The label start
+ * time is updated to the current time. The adjustments make the game progressively
+ * more challenging.
+ *
+ * @param level The current Level structure to be updated.
+ * @return The updated Level structure with incremented level number and adjusted parameters.
+ */
+Level goToNextLevel(Level level)
+{
   level.level += 1;
   level.label_started_at = GetTime();
   level.units.bullet_acceleration *= (1.0 + LEVEL_PARAMS_STEP);
@@ -48,7 +70,18 @@ Level goToNextLevel(Level level) {
   return level;
 }
 
-void levelDraw(Level *level) {
+/**
+ * @brief Renders the level label on the screen with a fade-out effect.
+ *
+ * This function displays the current level number at the center of the screen.
+ * The label fades out over a predefined duration. If the elapsed time since
+ * the label started displaying exceeds the duration, the function returns
+ * without rendering anything.
+ *
+ * @param level Pointer to the Level structure containing the level number and label start time.
+ */
+void levelDraw(Level *level)
+{
   if (!level)
     return;
 

@@ -13,20 +13,23 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/// Maximum time (in seconds) during which a unit shows a "hit" reaction after
-/// being hit by a bullet.
+// Time in seconds to consider a bullet "recently hit" for collision purposes
 static const double BULLET_HIT_SEN_TIME = 0.1f;
 
+/**
+ * @brief Enumeration representing the owner of a bullet.
+ */
 typedef enum BulletOwner {
   BULLET_OWNER_PLAYER = 0,
   BULLET_OWNER_UNIT = 1
 } BulletOwner;
+
 /**
- * @brief Enumeration representing the direction of bullet movement.
+ * @brief Enumeration for bullet movement direction.
  */
 typedef enum {
-  BULLET_MOVEMENT_DIRECTION_UP = 1,  ///< Moves in negative Z direction.
-  BULLET_MOVEMENT_DIRECTION_DOWN = 2 ///< Moves in positive Z direction.
+  BULLET_MOVEMENT_DIRECTION_UP = 1,  /// Moves in negative Z direction.
+  BULLET_MOVEMENT_DIRECTION_DOWN = 2 /// Moves in positive Z direction.
 } BulletMovementDirection;
 
 /**
@@ -34,8 +37,8 @@ typedef enum {
  * energy.
  */
 typedef struct {
-  uint8_t health; ///< Damage or HP impact.
-  uint8_t energy; ///< Energy cost or impact (if used).
+  uint8_t health; /// Damage or HP impact.
+  uint8_t energy; /// Energy cost or impact (if used).
 } BulletParameters;
 
 /**
@@ -51,23 +54,23 @@ typedef struct {
  * Can represent cylindrical or capsule-like shapes for rendering or collision.
  */
 typedef struct {
-  float by_x;          ///< Width of the bullet.
-  float by_y;          ///< Height of the bullet.
-  float by_z;          ///< Depth of the bullet.
-  float radius_top;    ///< Optional top radius for shaping.
-  float radius_bottom; ///< Optional bottom radius for shaping.
-  float slices;        ///< Number of radial segments (used for mesh).
+  float by_x;          /// Width of the bullet.
+  float by_y;          /// Height of the bullet.
+  float by_z;          /// Depth of the bullet.
+  float radius_top;    /// Optional top radius for shaping.
+  float radius_bottom; /// Optional bottom radius for shaping.
+  float slices;        /// Number of radial segments (used for mesh).
 } BulletSize;
 
 /**
  * @brief Describes the motion state of a bullet.
  */
 typedef struct {
-  float acceleration; ///< Acceleration along the Z axis.
-  float speed;        ///< Current speed of the bullet.
-  float angle; ///< Orientation angle (used for rotation or visual effects).
-  uint8_t direction; ///< Movement direction (from BulletMovementDirection).
-  Vector3 dir;
+  float acceleration; /// Acceleration along the Z axis.
+  float speed;        /// Current speed of the bullet.
+  float angle;        /// Orientation angle (used for rotation or visual effects).
+  uint8_t direction;  /// Movement direction (from BulletMovementDirection).
+  Vector3 dir;        /// Normalized direction vector in XZ plane.
 } BulletMovement;
 
 /**
@@ -75,23 +78,23 @@ typedef struct {
  * properties.
  */
 typedef struct {
-  BulletMovement movement; ///< Movement-related state.
-  BulletPosition position; ///< 3D position.
-  BulletSize size;         ///< Shape and dimensions.
-  BulletParameters params; ///< Damage and energy parameters.
-  bool alive;              ///< Status flag: false if bullet is inactive.
-  BulletOwner owner;
-  TrailEmitter trail;
+  BulletMovement movement; /// Movement-related state.
+  BulletPosition position; /// 3D position.
+  BulletSize size;         /// Shape and dimensions.
+  BulletParameters params; /// Damage and energy parameters.
+  bool alive;              /// Status flag: false if bullet is inactive.
+  BulletOwner owner;       /// Owner of the bullet (player or unit).
+  TrailEmitter trail;      /// Visual trail effect emitter.
 } Bullet;
 
 /**
  * @brief Node in a doubly-linked list of bullets.
  */
 typedef struct BulletNode {
-  struct BulletNode *next; ///< Pointer to the next bullet in list.
-  struct BulletNode *prev; ///< Pointer to the previous bullet in list.
-  Bullet self;             ///< The actual bullet data.
-  size_t idx;              ///< Unique identifier or spawn index.
+  struct BulletNode *next; /// Pointer to the next bullet in list.
+  struct BulletNode *prev; /// Pointer to the previous bullet in list.
+  Bullet self;             /// The actual bullet data.
+  size_t idx;              /// Unique identifier or spawn index.
 } BulletNode;
 
 /**
@@ -100,20 +103,20 @@ typedef struct BulletNode {
  * Bullets leaving this frame may be considered out of play.
  */
 typedef struct BulletAreaFrame {
-  float top;    ///< Top Z boundary (usually for player bullets).
-  float bottom; ///< Bottom Z boundary (usually for enemy bullets).
+  float top;    /// Top Z boundary (usually for player bullets).
+  float bottom; /// Bottom Z boundary (usually for enemy bullets).
 } BulletAreaFrame;
 
 /**
  * @brief Represents the entire collection of active bullets in the scene.
  */
 typedef struct {
-  BulletNode *head;      ///< First bullet in the list.
-  BulletNode *tail;      ///< Last bullet in the list.
-  uint16_t length;       ///< Number of active bullets.
-  size_t idx;            ///< Incremental ID for newly spawned bullets.
-  double last_spawn;     ///< Time of the last bullet spawn.
-  BulletAreaFrame frame; ///< Movement frame boundaries for bullets.
+  BulletNode *head;      /// First bullet in the list.
+  BulletNode *tail;      /// Last bullet in the list.
+  uint16_t length;       /// Number of active bullets.
+  size_t idx;            /// Incremental ID for newly spawned bullets.
+  double last_spawn;     /// Time of the last bullet spawn.
+  BulletAreaFrame frame; /// Movement frame boundaries for bullets.
 } BulletList;
 
 /**
@@ -201,8 +204,25 @@ BoundingBox getBulletBoundingBox(Bullet *bullet);
  */
 void destroyBulletList(BulletList *list);
 
+/**
+ * @brief Updates all bullets in the list, moving them and handling their
+ * lifecycle.
+ *
+ * Bullets that go out of bounds or are marked as inactive will be removed.
+ *
+ * @param list Pointer to the BulletList.
+ * @param delta Time elapsed since last update (in seconds).
+ */
 void removeBullets(BulletList *list);
 
+/**
+ * @brief Updates the position and state of a bullet based on its movement
+ * parameters.
+ *
+ * @param bullet Pointer to the Bullet to update.
+ * @param frame Pointer to the BulletAreaFrame defining valid area.
+ * @param stat Pointer to GameStat for tracking hits/misses.
+ */
 void bulletsResolveMutualCollisions(BulletList *list, bool same_owner_collides);
 
 #endif

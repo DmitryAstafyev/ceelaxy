@@ -5,11 +5,15 @@
 #include "rlgl.h"
 #include <math.h>
 
-static inline float frand(float a, float b) {
+// Simple random float in [a, b]
+static inline float frand(float a, float b)
+{
   return a + (b - a) * (float)GetRandomValue(0, 10000) / 10000.0f;
 }
 
-static inline Vector3 randInSphere(float vmin, float vmax) {
+// Random vector in sphere shell [vmin..vmax]
+static inline Vector3 randInSphere(float vmin, float vmax)
+{
   float th = frand(0, 2 * PI);
   float ct = frand(-1, 1);
   float st = sqrtf(1 - ct * ct);
@@ -17,8 +21,21 @@ static inline Vector3 randInSphere(float vmin, float vmax) {
   return (Vector3){r * st * cosf(th), r * ct, r * st * sinf(th)};
 }
 
+/**
+ * @brief Creates and initializes a new BulletExplosion instance.
+ *
+ * This function sets up a BulletExplosion with default parameters for
+ * gravity, damping, back drift, and particle carry factors. The provided
+ * textures for fire, smoke, and glow are assigned to the explosion.
+ *
+ * @param fire Texture for fire particles.
+ * @param smoke Texture for smoke particles.
+ * @param glow Texture for glow halo (optional).
+ * @return A fully initialized BulletExplosion object.
+ */
 BulletExplosion newBulletExplosion(Texture2D fire, Texture2D smoke,
-                                   Texture2D glow) {
+                                   Texture2D glow)
+{
   BulletExplosion e = {0};
   e.active = false;
   e.count = 0;
@@ -38,8 +55,20 @@ BulletExplosion newBulletExplosion(Texture2D fire, Texture2D smoke,
   return e;
 }
 
+/**
+ * @brief Spawns a burst of explosion particles at the specified origin.
+ *
+ * This function initializes a set of explosion particles with random
+ * velocities, lifespans, sizes, and colors based on the defined particle
+ * types (fire, smoke, sparks).
+ *
+ * @param e Pointer to the BulletExplosion instance.
+ * @param origin The 3D position where the explosion should occur.
+ * @param cam Pointer to the active Camera3D for orientation.
+ */
 void bulletExplosionSpawnAt(BulletExplosion *e, Vector3 origin,
-                            const Camera3D *cam) {
+                            const Camera3D *cam)
+{
   e->active = true;
   e->spawn_origin = origin;
   e->last_origin = origin;
@@ -49,7 +78,8 @@ void bulletExplosionSpawnAt(BulletExplosion *e, Vector3 origin,
 
   // FIRE
   int nFire = 100;
-  for (int i = 0; i < nFire && e->count < EXP_MAX; ++i) {
+  for (int i = 0; i < nFire && e->count < EXP_MAX; ++i)
+  {
     ExpParticle *q = &e->p[e->count++];
     q->kind = EXP_FIRE;
     q->pos = origin;
@@ -63,7 +93,8 @@ void bulletExplosionSpawnAt(BulletExplosion *e, Vector3 origin,
 
   // SMOKE
   int nSmoke = 80;
-  for (int i = 0; i < nSmoke && e->count < EXP_MAX; ++i) {
+  for (int i = 0; i < nSmoke && e->count < EXP_MAX; ++i)
+  {
     ExpParticle *q = &e->p[e->count++];
     q->kind = EXP_SMOKE;
     q->pos = origin;
@@ -77,7 +108,8 @@ void bulletExplosionSpawnAt(BulletExplosion *e, Vector3 origin,
 
   // SPARKS
   int nSpark = 60;
-  for (int i = 0; i < nSpark && e->count < EXP_MAX; ++i) {
+  for (int i = 0; i < nSpark && e->count < EXP_MAX; ++i)
+  {
     ExpParticle *q = &e->p[e->count++];
     q->kind = EXP_SPARK;
     q->pos = origin;
@@ -91,8 +123,21 @@ void bulletExplosionSpawnAt(BulletExplosion *e, Vector3 origin,
   }
 }
 
+/**
+ * @brief Updates the state of all active explosion particles.
+ *
+ * This function advances the simulation of each particle by applying
+ * gravity, damping, back drift, and movement based on the elapsed time.
+ * It also updates particle lifetimes and colors, removing expired particles.
+ *
+ * @param e Pointer to the BulletExplosion instance.
+ * @param origin The current 3D position of the explosion source (for carry).
+ * @param dt Time elapsed since the last update (in seconds).
+ * @param cam Pointer to the active Camera3D for orientation.
+ */
 void bulletExplosionUpdate(BulletExplosion *e, Vector3 origin, float dt,
-                           const Camera3D *cam) {
+                           const Camera3D *cam)
+{
   if (!e || !e->active)
     return;
 
@@ -105,7 +150,8 @@ void bulletExplosionUpdate(BulletExplosion *e, Vector3 origin, float dt,
   e->last_origin = origin;
 
   int w = 0;
-  for (int r = 0; r < e->count; ++r) {
+  for (int r = 0; r < e->count; ++r)
+  {
     ExpParticle *q = &e->p[r];
 
     // gravity + damping + scene back drift
@@ -128,14 +174,18 @@ void bulletExplosionUpdate(BulletExplosion *e, Vector3 origin, float dt,
 
     // lifetime / color
     q->life -= dt;
-    if (q->life > 0) {
+    if (q->life > 0)
+    {
       float t = 1.0f - (q->life / q->ttl); // 0..1
-      if (q->kind == EXP_FIRE || q->kind == EXP_SPARK) {
+      if (q->kind == EXP_FIRE || q->kind == EXP_SPARK)
+      {
         float hue = 50.0f + (5.0f - 50.0f) * t;
         Color c = ColorFromHSV(hue, 0.95f, 1.0f);
         unsigned char a = (unsigned char)(255.0f * powf(1.0f - t, 0.4f));
         q->color = (Color){c.r, c.g, c.b, a};
-      } else {
+      }
+      else
+      {
         unsigned char a = (unsigned char)(200.0f * (1.0f - t));
         int g = (int)(160 + 20 * t);
         q->color =
@@ -149,7 +199,18 @@ void bulletExplosionUpdate(BulletExplosion *e, Vector3 origin, float dt,
     e->active = false;
 }
 
-void bulletExplosionDraw(BulletExplosion *e, Camera3D cam) {
+/**
+ * @brief Renders all active explosion particles using the specified camera.
+ *
+ * This function draws each particle as a billboarded quad using the
+ * appropriate texture based on its type (fire, smoke, spark). The blending
+ * mode is set to alpha for smoke and additive for fire/sparks and glow.
+ *
+ * @param e Pointer to the BulletExplosion instance.
+ * @param cam The Camera3D used for rendering the scene.
+ */
+void bulletExplosionDraw(BulletExplosion *e, Camera3D cam)
+{
   if (!e || e->count == 0)
     return;
 
@@ -162,7 +223,8 @@ void bulletExplosionDraw(BulletExplosion *e, Camera3D cam) {
   // smoke first (alpha)
   BeginBlendMode(BLEND_ALPHA);
   for (int i = 0; i < e->count; ++i)
-    if (e->p[i].kind == EXP_SMOKE) {
+    if (e->p[i].kind == EXP_SMOKE)
+    {
       ExpParticle *q = &e->p[i];
       Vector2 size = (Vector2){q->size, q->size};
       Vector2 org = (Vector2){q->size * 0.5f, q->size * 0.5f};
@@ -174,13 +236,15 @@ void bulletExplosionDraw(BulletExplosion *e, Camera3D cam) {
   // fire/sparks + halo (additive)
   BeginBlendMode(BLEND_ADDITIVE);
   for (int i = 0; i < e->count; ++i)
-    if (e->p[i].kind != EXP_SMOKE) {
+    if (e->p[i].kind != EXP_SMOKE)
+    {
       ExpParticle *q = &e->p[i];
       Vector2 size = (Vector2){q->size, q->size};
       Vector2 org = (Vector2){q->size * 0.5f, q->size * 0.5f};
       DrawBillboardPro(cam, e->texFire, sFire, q->pos, up, size, org, q->rot,
                        q->color);
-      if (e->texGlow.id) {
+      if (e->texGlow.id)
+      {
         float gs = q->size * 1.6f;
         Vector2 gsz = (Vector2){gs, gs};
         Vector2 gor = (Vector2){gs * 0.5f, gs * 0.5f};

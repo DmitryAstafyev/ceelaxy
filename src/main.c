@@ -6,11 +6,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   // Check debug flag --debug
   checkDebugFlag(argc, argv);
 
-  if (is_debug_mode) {
+  if (is_debug_mode)
+  {
     TraceLog(LOG_INFO, "[DEBUG] Debug mode is ON");
   }
 
@@ -22,7 +24,8 @@ int main(int argc, char *argv[]) {
 
   Game *game = newGame(1200, 1600);
 
-  if (!game) {
+  if (!game)
+  {
     return 1;
   }
 

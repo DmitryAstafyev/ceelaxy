@@ -8,7 +8,9 @@
 
 #include <stdint.h>
 
+// Default movement speed limits
 static float MAX_SPEED_MOVEMENT_ACTION = 0.05f;
+// Minimum movement speed to consider as active movement
 static float MIN_SPEED_MOVEMENT_ACTION = 0.01f;
 
 /**
@@ -16,14 +18,15 @@ static float MIN_SPEED_MOVEMENT_ACTION = 0.01f;
  *
  * Can be combined using bitwise OR to represent compound directions.
  */
-typedef enum MovementDirection {
-  MOVEMENT_DIRECTION_NONE = 0x00,    ///< No movement.
-  MOVEMENT_DIRECTION_LEFT = 0x01,    ///< Movement to the left (-X).
-  MOVEMENT_DIRECTION_RIGHT = 0x02,   ///< Movement to the right (+X).
-  MOVEMENT_DIRECTION_UP = 0x04,      ///< Movement upward (+Y).
-  MOVEMENT_DIRECTION_DOWN = 0x08,    ///< Movement downward (-Y).
-  MOVEMENT_DIRECTION_FORWARD = 0x10, ///< Movement forward (-Z).
-  MOVEMENT_DIRECTION_BACKWARD = 0x20 ///< Movement backward (+Z).
+typedef enum MovementDirection
+{
+  MOVEMENT_DIRECTION_NONE = 0x00,    /// No movement.
+  MOVEMENT_DIRECTION_LEFT = 0x01,    /// Movement to the left (-X).
+  MOVEMENT_DIRECTION_RIGHT = 0x02,   /// Movement to the right (+X).
+  MOVEMENT_DIRECTION_UP = 0x04,      /// Movement upward (+Y).
+  MOVEMENT_DIRECTION_DOWN = 0x08,    /// Movement downward (-Y).
+  MOVEMENT_DIRECTION_FORWARD = 0x10, /// Movement forward (-Z).
+  MOVEMENT_DIRECTION_BACKWARD = 0x20 /// Movement backward (+Z).
 } MovementDirection;
 
 /**
@@ -32,25 +35,26 @@ typedef enum MovementDirection {
  * Includes direction, movement speed per axis, rotation angles, bounds,
  * and accumulated displacement for animations or physics effects.
  */
-typedef struct MovementAction {
-  uint8_t direction;  ///< Movement direction as bitmask (MovementDirection).
-  float step_x;       ///< Movement speed or step size along X axis.
-  float step_y;       ///< Movement speed or step size along Y axis.
-  float step_z;       ///< Movement speed or step size along Z axis.
-  float rotate_x;     ///< Rotation around X axis (degrees).
-  float rotate_y;     ///< Rotation around Y axis (degrees).
-  float rotate_z;     ///< Rotation around Z axis (degrees).
-  float max_rotate_x; ///< Max rotation allowed on X axis.
-  float max_rotate_y; ///< Max rotation allowed on Y axis.
-  float max_rotate_z; ///< Max rotation allowed on Z axis.
-  float max_angle;    ///< Max general rotation angle.
-  float angle;        ///< Current general rotation angle.
-  float max_x;        ///< Max position delta along X.
-  float max_y;        ///< Max position delta along Y.
-  float max_z;        ///< Max position delta along Z.
-  float x;            ///< Accumulated offset along X axis.
-  float y;            ///< Accumulated offset along Y axis.
-  float z;            ///< Accumulated offset along Z axis.
+typedef struct MovementAction
+{
+  uint8_t direction;  /// Movement direction as bitmask (MovementDirection).
+  float step_x;       /// Movement speed or step size along X axis.
+  float step_y;       /// Movement speed or step size along Y axis.
+  float step_z;       /// Movement speed or step size along Z axis.
+  float rotate_x;     /// Rotation around X axis (degrees).
+  float rotate_y;     /// Rotation around Y axis (degrees).
+  float rotate_z;     /// Rotation around Z axis (degrees).
+  float max_rotate_x; /// Max rotation allowed on X axis.
+  float max_rotate_y; /// Max rotation allowed on Y axis.
+  float max_rotate_z; /// Max rotation allowed on Z axis.
+  float max_angle;    /// Max general rotation angle.
+  float angle;        /// Current general rotation angle.
+  float max_x;        /// Max position delta along X.
+  float max_y;        /// Max position delta along Y.
+  float max_z;        /// Max position delta along Z.
+  float x;            /// Accumulated offset along X axis.
+  float y;            /// Accumulated offset along Y axis.
+  float z;            /// Accumulated offset along Z axis.
 } MovementAction;
 
 /**

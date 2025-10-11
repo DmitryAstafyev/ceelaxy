@@ -1,3 +1,6 @@
+// trail.c
+// Implements a simple particle trail emitter for visual effects.
+
 #include "trail.h"
 #include "raylib.h"
 #include "rlgl.h"
@@ -5,10 +8,22 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+// Simple random float in [a, b]
 static inline float frand(float a, float b) {
   return a + (b - a) * ((float)GetRandomValue(0, 10000) / 10000.0f);
 }
 
+/**
+ * @brief Creates and initializes a new TrailEmitter instance.
+ *
+ * This function sets up a TrailEmitter with default parameters for
+ * spawning, size, growth, damping, speed, and color. The provided texture
+ * and blending mode are applied to the emitter.
+ *
+ * @param tex The texture to use for trail particles.
+ * @param additive If true, uses additive blending; otherwise, uses alpha blending.
+ * @return A fully initialized TrailEmitter object.
+ */
 TrailEmitter newTrailEmitter(Texture2D tex, bool additive) {
   TrailEmitter emitter = {0};
   emitter.tex = tex;
@@ -22,6 +37,18 @@ TrailEmitter newTrailEmitter(Texture2D tex, bool additive) {
   return emitter;
 }
 
+/**
+ * @brief Emits new trail particles from the emitter at the specified origin and direction.
+ *
+ * This function spawns new particles based on the emitter's spawn rate and
+ * the elapsed time. Each particle is initialized with random jitter, size,
+ * rotation, lifespan, and color.
+ *
+ * @param emitter Pointer to the TrailEmitter instance.
+ * @param origin The 3D position from which to emit particles.
+ * @param dir The direction vector for particle emission.
+ * @param dt Time elapsed since the last update (in seconds).
+ */
 void trailEmit(TrailEmitter *emitter, Vector3 origin, Vector3 dir, float dt) {
   emitter->accum += emitter->spawnRate * dt;
   while (emitter->accum >= 1.0f && emitter->count < TRAIL_MAX) {
@@ -44,6 +71,16 @@ void trailEmit(TrailEmitter *emitter, Vector3 origin, Vector3 dir, float dt) {
   }
 }
 
+/**
+ * @brief Updates the state of all active trail particles in the emitter.
+ *
+ * This function moves each particle according to its velocity, applies
+ * damping, increases its size, and decreases its lifespan. Particles that
+ * have expired (life <= 0) are removed from the emitter.
+ *
+ * @param e Pointer to the TrailEmitter instance.
+ * @param dt Time elapsed since the last update (in seconds).
+ */
 void trailUpdate(TrailEmitter *e, float dt) {
   int w = 0;
   for (int r = 0; r < e->count; ++r) {
@@ -61,6 +98,15 @@ void trailUpdate(TrailEmitter *e, float dt) {
   e->count = w;
 }
 
+/**
+ * @brief Renders all active trail particles using the specified camera.
+ *
+ * This function draws each particle as a billboarded quad using the emitter's
+ * texture. The blending mode is set based on the emitter's configuration.
+ *
+ * @param e Pointer to the TrailEmitter instance.
+ * @param cam The Camera3D used for rendering the scene.
+ */
 void trailDraw(TrailEmitter *e, Camera3D cam) {
   if (e->count == 0)
     return;

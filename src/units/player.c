@@ -50,7 +50,8 @@ static const float STEP_ROTATE_Y = 0.0f;
 static const float STEP_ROTATE_Z = 2.0f;
 
 PlayerPosition newPlayerPosition(float max_x, float max_y, float max_z,
-                                 float offset_z) {
+                                 float offset_z)
+{
   PlayerPosition position;
   position.x = 0.0f;
   position.y = 0.0f;
@@ -62,7 +63,8 @@ PlayerPosition newPlayerPosition(float max_x, float max_y, float max_z,
   return position;
 };
 
-PlayerVisualState newPlayerVisualState(float offset_z) {
+PlayerVisualState newPlayerVisualState(float offset_z)
+{
   PlayerVisualState state;
   state.max_rotate_x = MAX_ROTATE_X;
   state.max_rotate_y = MAX_ROTATE_Y;
@@ -78,7 +80,8 @@ PlayerVisualState newPlayerVisualState(float offset_z) {
   return state;
 };
 
-PlayerMovement newPlayerMovement() {
+PlayerMovement newPlayerMovement()
+{
   PlayerMovement movement;
   movement.last_key_press = GetTime();
   movement.acceleration = 0;
@@ -88,7 +91,8 @@ PlayerMovement newPlayerMovement() {
 }
 
 PlayerRender newPlayerRender(float max_x, float max_y, float max_z,
-                             float offset_z) {
+                             float offset_z)
+{
   PlayerRender render;
   render.position = newPlayerPosition(max_x, max_y, max_z, offset_z);
   render.size = newUnitSize();
@@ -96,29 +100,51 @@ PlayerRender newPlayerRender(float max_x, float max_y, float max_z,
   render.movement = newPlayerMovement();
   return render;
 }
-
+/**
+ * @brief Allocates and initializes a new Player instance.
+ *
+ * This function creates a new Player object, setting up its position,
+ * movement parameters, visual state, model reference, and bullet list.
+ * It also initializes the explosion effect for when the player is hit.
+ *
+ * @param max_x Maximum X boundary for player movement.
+ * @param max_y Maximum Y boundary for player movement.
+ * @param max_z Maximum Z boundary for player movement.
+ * @param offset_z Z offset applied to the player's position for rendering or
+ * bullet logic.
+ * @param model Pointer to the ShipModel used for rendering the player.
+ * @param bullets Pointer to the global BulletList used for firing bullets.
+ * @param textures Pointer to the GameTextures containing necessary textures.
+ * @return Pointer to the newly created Player instance, or NULL on failure.
+ */
 Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
                   ShipModel *model, BulletList *bullets,
-                  GameTextures *textures) {
-  if (!model) {
+                  GameTextures *textures)
+{
+  if (!model)
+  {
     return NULL;
   }
   Player *player = malloc(sizeof(Player));
-  if (!player) {
+  if (!player)
+  {
     return NULL;
   }
   GameTexture *tex_fire_soft = getGameTextureById(textures, TEX_ID_FIRE_SOFT);
-  if (tex_fire_soft == NULL) {
+  if (tex_fire_soft == NULL)
+  {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_FIRE_SOFT);
     exit(1);
   }
   GameTexture *tex_smoke_soft = getGameTextureById(textures, TEX_ID_SMOKE_SOFT);
-  if (tex_smoke_soft == NULL) {
+  if (tex_smoke_soft == NULL)
+  {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_SMOKE_SOFT);
     exit(1);
   }
   GameTexture *tex_glow = getGameTextureById(textures, TEX_ID_GLOW);
-  if (tex_glow == NULL) {
+  if (tex_glow == NULL)
+  {
     TraceLog(LOG_ERROR, "Fail to find texture: %i", TEX_ID_GLOW);
     exit(1);
   }
@@ -133,7 +159,9 @@ Player *newPlayer(float max_x, float max_y, float max_z, float offset_z,
   return player;
 }
 
-bool directionChanged(Player *player) {
+// Returns true if the movement direction has changed since the last frame.
+bool directionChanged(Player *player)
+{
   return (IsKeyDown(KEY_LEFT) &&
           player->render.movement.direction_x_key != KEY_LEFT) ||
          (IsKeyDown(KEY_RIGHT) &&
@@ -144,8 +172,21 @@ bool directionChanged(Player *player) {
           player->render.movement.direction_z_key != KEY_DOWN);
 }
 
-void updatePlayer(Player *player, Level *level, GameTextures *textures) {
-  if (!player) {
+/**
+ * @brief Updates the player's position, movement, and shooting based on input.
+ *
+ * This function processes keyboard input to move the player within defined
+ * boundaries, applies acceleration and rotation effects, and handles bullet
+ * firing with a cooldown based on the current level parameters.
+ *
+ * @param player Pointer to the Player instance to update.
+ * @param level Pointer to the current Level containing player parameters.
+ * @param textures Pointer to the GameTextures for bullet creation.
+ */
+void updatePlayer(Player *player, Level *level, GameTextures *textures)
+{
+  if (!player)
+  {
     return;
   }
 
@@ -158,7 +199,8 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
   double elapsed_last_bullet_spawn = current_time - bullets->last_spawn;
 
   if (IsKeyDown(KEY_SPACE) &&
-      elapsed_last_bullet_spawn > level->player.bullet_delay_spawn) {
+      elapsed_last_bullet_spawn > level->player.bullet_delay_spawn)
+  {
     Bullet bullet =
         newBullet(BULLET_MOVEMENT_DIRECTION_UP,
                   newBulletPosition(position->x, position->y,
@@ -172,18 +214,27 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
     bullets->last_spawn = current_time;
   }
   if (!(IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_UP) ||
-        IsKeyDown(KEY_DOWN))) {
-    if (state->rotate_x != 0) {
-      if (state->rotate_x < 0) {
+        IsKeyDown(KEY_DOWN)))
+  {
+    if (state->rotate_x != 0)
+    {
+      if (state->rotate_x < 0)
+      {
         state->rotate_x += state->rotate_step_x;
-      } else {
+      }
+      else
+      {
         state->rotate_x -= state->rotate_step_x;
       }
     }
-    if (state->rotate_z != 0) {
-      if (state->rotate_z < 0) {
+    if (state->rotate_z != 0)
+    {
+      if (state->rotate_z < 0)
+      {
         state->rotate_z += state->rotate_step_z;
-      } else {
+      }
+      else
+      {
         state->rotate_z -= state->rotate_step_z;
       }
     }
@@ -193,18 +244,23 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
   movement->last_key_press = current_time;
   float energy_factor =
       ((float)player->state.energy / player->state.init_energy);
-  if (elapsed > ACCELERATION_DEALY || directionChanged(player)) {
+  if (elapsed > ACCELERATION_DEALY || directionChanged(player))
+  {
     movement->acceleration = ACCELERATION_INIT;
-  } else {
+  }
+  else
+  {
     movement->acceleration +=
         ACCELERATION_MIN + ACCELERATION_STEP * energy_factor;
   }
 
-  if (movement->acceleration > ACCELERATION_MAX) {
+  if (movement->acceleration > ACCELERATION_MAX)
+  {
     movement->acceleration = ACCELERATION_MAX;
   }
 
-  if (IsKeyDown(KEY_LEFT)) {
+  if (IsKeyDown(KEY_LEFT))
+  {
     position->x -= movement->acceleration;
     movement->direction_x_key = KEY_LEFT;
     state->rotate_z -= state->rotate_step_z;
@@ -212,7 +268,8 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
                           ? -state->max_rotate_z
                           : state->rotate_z;
   }
-  if (IsKeyDown(KEY_RIGHT)) {
+  if (IsKeyDown(KEY_RIGHT))
+  {
     position->x += movement->acceleration;
     movement->direction_x_key = KEY_RIGHT;
     state->rotate_z += state->rotate_step_z;
@@ -222,7 +279,8 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
   }
   position->x =
       copysignf(fminf(fabsf(position->x), fabsf(position->max_x)), position->x);
-  if (IsKeyDown(KEY_UP)) {
+  if (IsKeyDown(KEY_UP))
+  {
     position->z -= movement->acceleration;
     movement->direction_z_key = KEY_UP;
     state->rotate_x += state->rotate_step_x;
@@ -230,7 +288,8 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
                           ? state->max_rotate_x
                           : state->rotate_x;
   }
-  if (IsKeyDown(KEY_DOWN)) {
+  if (IsKeyDown(KEY_DOWN))
+  {
     position->z += movement->acceleration;
     movement->direction_z_key = KEY_DOWN;
     state->rotate_x -= state->rotate_step_x;
@@ -243,7 +302,20 @@ void updatePlayer(Player *player, Level *level, GameTextures *textures) {
                                                 : position->z;
 }
 
-BoundingBox getPlayerBoundingBox(Player *player) {
+/**
+ * @brief Computes the world-space bounding box of the player, accounting for
+ * rotation.
+ *
+ * This function calculates the axis-aligned bounding box (AABB) that
+ * encapsulates the player's model in world space, taking into account its
+ * current position and rotation. This is useful for collision detection and
+ * rendering debug information.
+ *
+ * @param player Pointer to the Player instance.
+ * @return BoundingBox representing the player's world-space AABB.
+ */
+BoundingBox getPlayerBoundingBox(Player *player)
+{
   const ShipBoundingBox *box = &player->model->box;
   const PlayerRender *render = &player->render;
 
@@ -255,8 +327,14 @@ BoundingBox getPlayerBoundingBox(Player *player) {
   const float hz = box->by_z * 0.5f;
 
   Vector3 corners[8] = {
-      {-hx, -hy, -hz}, {-hx, -hy, hz}, {-hx, hy, -hz}, {-hx, hy, hz},
-      {hx, -hy, -hz},  {hx, -hy, hz},  {hx, hy, -hz},  {hx, hy, hz},
+      {-hx, -hy, -hz},
+      {-hx, -hy, hz},
+      {-hx, hy, -hz},
+      {-hx, hy, hz},
+      {hx, -hy, -hz},
+      {hx, -hy, hz},
+      {hx, hy, -hz},
+      {hx, hy, hz},
   };
 
   float rx = render->state.rotate_x;
@@ -268,7 +346,8 @@ BoundingBox getPlayerBoundingBox(Player *player) {
   Vector3 p0 = Vector3Add(Vector3Transform(corners[0], R), pos);
   BoundingBox world = {.min = p0, .max = p0};
 
-  for (int i = 1; i < 8; ++i) {
+  for (int i = 1; i < 8; ++i)
+  {
     Vector3 pw = Vector3Add(Vector3Transform(corners[i], R), pos);
     world.min = Vector3Min(world.min, pw);
     world.max = Vector3Max(world.max, pw);
@@ -277,8 +356,23 @@ BoundingBox getPlayerBoundingBox(Player *player) {
   return world;
 }
 
+/**
+ * @brief Renders the player model, hit effects, and explosion effects.
+ *
+ * This function updates the player's state, applies hit effects if the
+ * player was recently hit, and draws the player's 3D model with appropriate
+ * transformations. It also handles rendering of explosion effects and debug
+ * bounding boxes if enabled.
+ *
+ * @param player Pointer to the Player instance to render.
+ * @param level Pointer to the current Level containing player parameters.
+ * @param textures Pointer to the GameTextures for rendering effects.
+ * @param camera Pointer to the active Camera3D for view/projection.
+ * @param sprites Pointer to the SpriteSheetList for hit animations.
+ */
 void drawPlayer(Player *player, Level *level, GameTextures *textures,
-                Camera3D *camera, SpriteSheetList *sprites) {
+                Camera3D *camera, SpriteSheetList *sprites)
+{
   if (!player)
     return;
   updatePlayer(player, level, textures);
@@ -291,9 +385,11 @@ void drawPlayer(Player *player, Level *level, GameTextures *textures,
   Vector3 pos = {player->render.position.x, player->render.position.y,
                  player->render.position.z + player->render.position.offset_z};
 
-  if (hit) {
+  if (hit)
+  {
     setShipModelColor(player->model, RED);
-    if (!player->hit) {
+    if (!player->hit)
+    {
       player->hit = newSpriteSheetState(&sprites->tail->self, 1, 3.0f, 0.1f);
     }
     dropSpriteSheetState(player->hit);
@@ -317,11 +413,14 @@ void drawPlayer(Player *player, Level *level, GameTextures *textures,
   Model model = player->model->model;
   model.transform = result;
   DrawModel(model, (Vector3){0, 0, 0}, 1.0f, WHITE);
-  if (hit) {
+  if (hit)
+  {
     setShipModelColor(player->model, WHITE);
   }
-  if (is_debug_mode) {
-    if (is_debug_mode && player->model->box_model) {
+  if (is_debug_mode)
+  {
+    if (is_debug_mode && player->model->box_model)
+    {
       Model box_model = *player->model->box_model;
       box_model.transform = result;
       DrawModel(box_model, (Vector3){0, 0, 0}, 1.0f, RED);
@@ -329,14 +428,38 @@ void drawPlayer(Player *player, Level *level, GameTextures *textures,
   }
 }
 
-void destroyPlayer(Player *player) {
-  if (!player) {
+/**
+ * @brief Frees the memory allocated for a Player instance.
+ *
+ * This function releases the memory used by the Player object. It does not
+ * free any associated resources like models or textures, which should be
+ * managed separately.
+ *
+ * @param player Pointer to the Player instance to destroy.
+ */
+void destroyPlayer(Player *player)
+{
+  if (!player)
+  {
     return;
   }
   free(player);
 }
 
-bool isPlayerOnFireLine(Unit *enemy, Player *player, float factor) {
+/**
+ * @brief Checks if the player is within the firing line of an enemy unit.
+ *
+ * This function determines if the player's X position falls within a
+ * specified range (factor) of the enemy's X position, indicating that the
+ * enemy can fire at the player.
+ *
+ * @param enemy Pointer to the enemy Unit.
+ * @param player Pointer to the Player instance.
+ * @param factor The horizontal range around the enemy's X position.
+ * @return true if the player is within the firing line, false otherwise.
+ */
+bool isPlayerOnFireLine(Unit *enemy, Player *player, float factor)
+{
   if (!enemy || !player)
     return false;
 
@@ -345,15 +468,35 @@ bool isPlayerOnFireLine(Unit *enemy, Player *player, float factor) {
   return player->render.position.x > l_x && player->render.position.x < r_x;
 }
 
+/**
+ * @brief Iterates through enemy units and makes them fire at the player if
+ * aligned.
+ *
+ * This function checks each enemy unit in the provided list to see if the
+ * player is within its firing line. If so, and if the unit is able to fire
+ * based on its cooldown, it spawns a bullet aimed at the player's current
+ * position.
+ *
+ * @param list Pointer to the UnitList containing enemy units.
+ * @param camera Pointer to the active Camera3D for view/projection.
+ * @param player Pointer to the Player instance.
+ * @param level Pointer to the current Level containing unit parameters.
+ * @param factor The horizontal range around each enemy's X position for firing.
+ * @param textures Pointer to the GameTextures for bullet creation.
+ */
 void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
-                       Level *level, float factor, GameTextures *textures) {
+                       Level *level, float factor, GameTextures *textures)
+{
   UnitNode *node = list->head;
-  for (int i = 0; i < list->length; i += 1) {
-    if (!node) {
+  for (int i = 0; i < list->length; i += 1)
+  {
+    if (!node)
+    {
       break;
     }
     if (isPlayerOnFireLine(&node->self, player, factor) &&
-        isUnitAbleToFire(list, &node->self)) {
+        isUnitAbleToFire(list, &node->self))
+    {
       spawnUnitShoot(player->bullets, &node->self, player->render.position.x,
                      player->render.position.z +
                          player->render.position.offset_z,
@@ -363,33 +506,54 @@ void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
   }
 }
 
+/**
+ * @brief Checks for collisions between player and enemy bullets, applying
+ * damage if hit.
+ *
+ * This function iterates through the global bullet list, checking for
+ * collisions with the player's bounding box. If a collision is detected,
+ * the bullet is marked as inactive, and the player's health and energy are
+ * reduced based on the bullet's parameters. The function also updates the
+ * game statistics to record the hit.
+ *
+ * @param player Pointer to the Player instance.
+ * @param bullets Pointer to the global BulletList containing all bullets.
+ * @param stat Pointer to the GameStat for recording hits.
+ */
 void checkBulletHitsPlayer(Player *player, BulletList *bullets,
-                           GameStat *stat) {
-  if (!player || !bullets || !stat) {
+                           GameStat *stat)
+{
+  if (!player || !bullets || !stat)
+  {
     return;
   }
 
   BoundingBox playerBox = getPlayerBoundingBox(player);
 
   BulletNode *node = bullets->head;
-  while (node) {
+  while (node)
+  {
     Bullet *bullet = &node->self;
-    if (!bullet->alive || bullet->owner != BULLET_OWNER_UNIT) {
+    if (!bullet->alive || bullet->owner != BULLET_OWNER_UNIT)
+    {
       node = node->next;
       continue;
     }
 
     BoundingBox bulletBox = getBulletBoundingBox(bullet);
 
-    if (CheckCollisionBoxes(playerBox, bulletBox)) {
+    if (CheckCollisionBoxes(playerBox, bulletBox))
+    {
       bullet->alive = false;
-      if (player->state.health > 0) {
+      if (player->state.health > 0)
+      {
         player->state.health =
             (player->state.health > bullet->params.health)
                 ? (uint8_t)(player->state.health - bullet->params.health)
                 : 0u;
       }
-      if (player->state.energy > 0) {
+      if (player->state.energy > 0)
+      {
         player->state.energy =
             (player->state.energy > bullet->params.energy)
                 ? (uint8_t)(player->state.energy - bullet->params.energy)

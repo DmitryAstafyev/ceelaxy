@@ -8,51 +8,56 @@
 /**
  * @brief Represents a sprite sheet.
  */
-typedef struct {
-  Texture2D texture;   /**< Sprite sheet texture. */
-  float frame_width;   /**< Width of a single frame in pixels. */
-  float frame_height;  /**< Height of a single frame in pixels. */
-  int frames_per_line; /**< Number of frames in each horizontal line. */
-  int num_lines;       /**< Total number of lines (rows) in the sheet. */
+typedef struct
+{
+  Texture2D texture;   /// Texture containing the sprite sheet.
+  float frame_width;   /// Width of each frame in the sheet.
+  float frame_height;  /// Height of each frame in the sheet.
+  int frames_per_line; /// Number of frames in each row.
+  int num_lines;       /// Number of rows in the sheet.
 } SpriteSheet;
 
 /**
  * @brief Wrapper for a pointer to an explosion model.
  */
-typedef struct {
-  SpriteSheet *model; /**< Pointer to the associated explosion model. */
+typedef struct
+{
+  SpriteSheet *model; /// Pointer to the explosion model.
 } SpriteSheetInstance;
 
 /**
  * @brief Node in a doubly linked list containing an explosion model.
  */
-typedef struct SpriteSheetNode {
-  struct SpriteSheetNode *next; /**< Pointer to the next node. */
-  struct SpriteSheetNode *prev; /**< Pointer to the previous node. */
-  SpriteSheet self;             /**< Explosion model stored in this node. */
+typedef struct SpriteSheetNode
+{
+  struct SpriteSheetNode *next; /// Pointer to the next node in the list.
+  struct SpriteSheetNode *prev; /// Pointer to the previous node in the list.
+  SpriteSheet self;             /// The actual explosion model data.
 } SpriteSheetNode;
 
 /**
  * @brief Doubly linked list of explosion models.
  */
-typedef struct {
-  SpriteSheetNode *head; /**< Pointer to the first node in the list. */
-  SpriteSheetNode *tail; /**< Pointer to the last node in the list. */
-  uint16_t length;       /**< Total number of nodes in the list. */
+typedef struct
+{
+  SpriteSheetNode *head; /// Pointer to the first node in the list.
+  SpriteSheetNode *tail; /// Pointer to the last node in the list.
+  uint16_t length;       /// Number of models in the list.
 } SpriteSheetList;
 
 /**
  * @brief Represents the animation state of an explosion instance.
  */
-typedef struct {
-  int frame;   /**< Current animation frame (column index). */
-  int line;    /**< Current animation line (row index). */
-  int counter; /**< Frame delay counter for controlling animation speed. */
-  bool active; /**< Whether the explosion is currently active. */
-  int repeats;
-  float opacity;
-  float size;
-  SpriteSheet *model; /**< Pointer to the model used for animation. */
+typedef struct
+{
+  int frame;          /// Current animation frame (column index).
+  int line;           /// Current animation line (row index).
+  int counter;        /// Frame counter for timing.
+  bool active;        /// Whether the animation is currently active.
+  int repeats;        /// How many times to repeat the animation (-1 = infinite)
+  float opacity;      /// Current opacity (0.0 to 1.0)
+  float size;         /// Current size (scale factor)
+  SpriteSheet *model; /// Pointer to the explosion model.
 } SpriteSheetState;
 
 /**
@@ -115,6 +120,14 @@ SpriteSheetList *loadSpriteSheetList();
  */
 void destroySpriteSheetList(SpriteSheetList *models);
 
+/**
+ * @brief Creates and initializes a new SpriteSheet from a file.
+ *
+ * @param path Path to the image file.
+ * @param frames_per_line Number of frames in each row of the sprite sheet.
+ * @param num_lines Number of lines (rows) in the sprite sheet.
+ * @return A fully initialized SpriteSheet object.
+ */
 SpriteSheet newSpriteSheet(const char *path, uint16_t frames_per_line,
                            uint16_t num_lines);
 

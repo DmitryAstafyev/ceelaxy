@@ -8,10 +8,22 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-void drawUnitsStateBars(UnitList *list, Camera3D *camera) {
+/**
+ * @brief Draws health and energy bars above all units in the provided list.
+ *
+ * Each unit's health and energy are represented as colored bars positioned
+ * above the unit in 3D space, oriented to face the camera.
+ *
+ * @param list Pointer to the UnitList containing units to draw bars for.
+ * @param camera Pointer to the active Camera3D for view/projection.
+ */
+void drawUnitsStateBars(UnitList *list, Camera3D *camera)
+{
   UnitNode *node = list->head;
-  for (int i = 0; i < list->length; i += 1) {
-    if (!node) {
+  for (int i = 0; i < list->length; i += 1)
+  {
+    if (!node)
+    {
       break;
     }
     drawUnitStateBars(&node->self, camera);
@@ -19,9 +31,21 @@ void drawUnitsStateBars(UnitList *list, Camera3D *camera) {
   }
 }
 
+/**
+ * @brief Helper function to draw health and energy bars above a bounding box.
+ *
+ * The bars are positioned above the bounding box in 3D space and oriented
+ * to face the camera. Health is shown in red, energy in blue.
+ *
+ * @param bounding_box The bounding box above which to draw the bars.
+ * @param state Pointer to the UnitState containing health and energy info.
+ * @param camera Pointer to the active Camera3D for view/projection.
+ */
 void drawStateBars(BoundingBox bounding_box, UnitState *state,
-                   Camera3D *camera) {
-  if (state == NULL || camera == NULL) {
+                   Camera3D *camera)
+{
+  if (state == NULL || camera == NULL)
+  {
     return;
   }
 
@@ -47,8 +71,19 @@ void drawStateBars(BoundingBox bounding_box, UnitState *state,
                 STATE_BAR_HEIGHT, BLUE);
 }
 
-void drawUnitStateBars(Unit *unit, Camera3D *camera) {
-  if (unit == NULL || camera == NULL) {
+/**
+ * @brief Draws health and energy bars above a single unit.
+ *
+ * The bars are positioned above the unit in 3D space and oriented to face
+ * the camera. Health is shown in green, energy in blue.
+ *
+ * @param unit Pointer to the Unit for which to draw the bars.
+ * @param camera Pointer to the active Camera3D for view/projection.
+ */
+void drawUnitStateBars(Unit *unit, Camera3D *camera)
+{
+  if (unit == NULL || camera == NULL)
+  {
     return;
   }
 
@@ -57,7 +92,8 @@ void drawUnitStateBars(Unit *unit, Camera3D *camera) {
   bool hit = current > STATE_BAR_HIT_SEN_TIME &&
              current - unit->state.hit_time < STATE_BAR_HIT_SEN_TIME;
 
-  if (!hit) {
+  if (!hit)
+  {
     return;
   }
 
@@ -65,8 +101,10 @@ void drawUnitStateBars(Unit *unit, Camera3D *camera) {
   drawStateBars(bounding_box, &unit->state, camera);
 }
 
-void drawPlayerStateBars(Player *player, Camera3D *camera) {
-  if (player == NULL || camera == NULL) {
+void drawPlayerStateBars(Player *player, Camera3D *camera)
+{
+  if (player == NULL || camera == NULL)
+  {
     return;
   }
 
@@ -75,7 +113,8 @@ void drawPlayerStateBars(Player *player, Camera3D *camera) {
   bool hit = current > STATE_BAR_HIT_SEN_TIME &&
              current - player->state.hit_time < STATE_BAR_HIT_SEN_TIME;
 
-  if (!hit) {
+  if (!hit)
+  {
     return;
   }
 

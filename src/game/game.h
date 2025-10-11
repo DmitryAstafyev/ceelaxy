@@ -25,18 +25,19 @@
  * Contains references to player, enemies, projectiles, models, and the 3D
  * rendering context.
  */
-typedef struct Game {
-  UnitList *enemies;   ///< Linked list of enemy units.
-  Player *player;      ///< Pointer to the player instance.
-  BulletList *bullets; ///< Shared bullet registry for both player and enemies.
-  ShipModelList *models; ///< List of loaded 3D models used by the game.
-  GameTextures *textures;
-  SpriteSheetList *sprites; /// < List of loaded sprites textures/models
-  Camera3D camera;          ///< Active 3D camera used for rendering the scene.
-  Light light;              ///< Scene lighting setup for shading.
-  GameStat stat;
-  Level level;
-  ParallaxField parallax;
+typedef struct Game
+{
+  UnitList *enemies;        /// Linked list of enemy units.
+  Player *player;           /// Pointer to the player instance.
+  BulletList *bullets;      /// Shared bullet registry for both player and enemies.
+  ShipModelList *models;    /// List of loaded 3D models used by the game.
+  GameTextures *textures;   /// Pointer to loaded game textures.
+  SpriteSheetList *sprites; /// List of loaded sprites textures/models
+  Camera3D camera;          /// Active 3D camera used for rendering the scene.
+  Light light;              /// Scene lighting setup for shading.
+  GameStat stat;            /// Game statistics (hits, misses, score, etc).
+  Level level;              /// Current game level and parameters.
+  ParallaxField parallax;   /// Parallax starfield background effect.
 } Game;
 
 /**
