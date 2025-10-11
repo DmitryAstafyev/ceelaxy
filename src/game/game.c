@@ -30,11 +30,9 @@
  * Also sets up the 3D camera and lighting. If any step fails, previously
  * allocated resources are freed and NULL is returned.
  *
- * @param height The height of the game window or viewport (currently unused).
- * @param width The width of the game window or viewport (currently unused).
  * @return Pointer to a fully initialized Game structure, or NULL on failure.
  */
-Game *newGame(int height, int width)
+Game *newGame()
 {
   Game *game = malloc(sizeof(Game));
   if (!game)
@@ -71,7 +69,7 @@ Game *newGame(int height, int width)
     return NULL;
   }
 
-  game->enemies = newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
+  game->enemies = newUnitList(20, enemy_model, 10, 40.0f, game->textures);
   if (!game->enemies)
   {
     destroyGame(game);
@@ -164,7 +162,7 @@ bool nextGameLevel(Game *game)
     return false;
   }
   UnitList *enemies =
-      newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
+      newUnitList(20, enemy_model, 10, 40.0f, game->textures);
   if (!enemies)
   {
     return false;
@@ -195,7 +193,7 @@ void dropGameLevel(Game *game)
     return;
   }
   UnitList *enemies =
-      newUnitList(20, enemy_model, 10, 3, 40.0f, game->textures);
+      newUnitList(20, enemy_model, 10, 40.0f, game->textures);
   if (!enemies)
   {
     return;
@@ -281,7 +279,7 @@ void runGame(Game *game)
       checkBulletHitsUnits(game->enemies, game->bullets, &game->stat);
       checkBulletHitsPlayer(game->player, game->bullets, &game->stat);
       bulletsResolveMutualCollisions(game->bullets, false);
-      selectUnitsToFire(game->enemies, &game->camera, game->player,
+      selectUnitsToFire(game->enemies, game->player,
                         &game->level, 10.0, game->textures);
     }
     drawUnits(game->enemies, &game->camera, game->sprites);

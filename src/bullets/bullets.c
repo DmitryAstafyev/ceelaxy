@@ -127,7 +127,7 @@ BulletSize newBulletSize(float by_x, float by_y, float by_z)
  * @param energy The initial energy value for the bullet.
  * @return A BulletParameters structure initialized with the given health and energy.
  */
-BulletParameters newBulletParameters(uint8_t health, uint8_t energy)
+BulletParameters newBulletParameters(float health, float energy)
 {
   BulletParameters params;
   params.energy = energy;

@@ -3,10 +3,10 @@
 #include "raylib.h"
 #include "rlgl.h"
 
-static unsigned int TEX_ID_FIRE_SOFT = 0;
-static unsigned int TEX_ID_FIRE_STREAK = 1;
-static unsigned int TEX_ID_GLOW = 2;
-static unsigned int TEX_ID_SMOKE_SOFT = 3;
+#define TEX_ID_FIRE_SOFT 0
+#define TEX_ID_FIRE_STREAK 1
+#define TEX_ID_GLOW 2
+#define TEX_ID_SMOKE_SOFT 3
 
 /**
  * @brief Node in a doubly linked list containing a texture and its ID.
@@ -52,4 +52,4 @@ GameTextures *createGameTexturesList(void);
  *
  * @param list Pointer to the GameTextures list to destroy.
  */
-GameTexture *getGameTextureById(GameTextures *list, unsigned int id);
+GameTexture *getGameTextureById(GameTextures *list, int id);

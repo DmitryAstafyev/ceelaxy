@@ -45,11 +45,9 @@ typedef struct Game
  *
  * Sets up player, enemies, models, bullets, camera, and lighting.
  *
- * @param height Screen or viewport height in pixels.
- * @param width Screen or viewport width in pixels.
  * @return Pointer to a fully initialized Game structure, or NULL on failure.
  */
-Game *newGame(int height, int width);
+Game *newGame();
 
 /**
  * @brief Releases all memory and resources associated with the Game.

@@ -19,7 +19,8 @@ static const double BULLET_HIT_SEN_TIME = 0.1f;
 /**
  * @brief Enumeration representing the owner of a bullet.
  */
-typedef enum BulletOwner {
+typedef enum BulletOwner
+{
   BULLET_OWNER_PLAYER = 0,
   BULLET_OWNER_UNIT = 1
 } BulletOwner;
@@ -27,7 +28,8 @@ typedef enum BulletOwner {
 /**
  * @brief Enumeration for bullet movement direction.
  */
-typedef enum {
+typedef enum
+{
   BULLET_MOVEMENT_DIRECTION_UP = 1,  /// Moves in negative Z direction.
   BULLET_MOVEMENT_DIRECTION_DOWN = 2 /// Moves in positive Z direction.
 } BulletMovementDirection;
@@ -36,15 +38,17 @@ typedef enum {
  * @brief Stores logical parameters for a bullet, such as damage (health) and
  * energy.
  */
-typedef struct {
-  uint8_t health; /// Damage or HP impact.
-  uint8_t energy; /// Energy cost or impact (if used).
+typedef struct
+{
+  float health; /// Damage or HP impact.
+  float energy; /// Energy cost or impact (if used).
 } BulletParameters;
 
 /**
  * @brief Represents the 3D position of a bullet in the world.
  */
-typedef struct {
+typedef struct
+{
   float x, y, z;
 } BulletPosition;
 
@@ -53,19 +57,21 @@ typedef struct {
  *
  * Can represent cylindrical or capsule-like shapes for rendering or collision.
  */
-typedef struct {
+typedef struct
+{
   float by_x;          /// Width of the bullet.
   float by_y;          /// Height of the bullet.
   float by_z;          /// Depth of the bullet.
   float radius_top;    /// Optional top radius for shaping.
   float radius_bottom; /// Optional bottom radius for shaping.
-  float slices;        /// Number of radial segments (used for mesh).
+  int slices;          /// Number of radial segments (used for mesh).
 } BulletSize;
 
 /**
  * @brief Describes the motion state of a bullet.
  */
-typedef struct {
+typedef struct
+{
   float acceleration; /// Acceleration along the Z axis.
   float speed;        /// Current speed of the bullet.
   float angle;        /// Orientation angle (used for rotation or visual effects).
@@ -77,7 +83,8 @@ typedef struct {
  * @brief Represents a single bullet instance with its full state and
  * properties.
  */
-typedef struct {
+typedef struct
+{
   BulletMovement movement; /// Movement-related state.
   BulletPosition position; /// 3D position.
   BulletSize size;         /// Shape and dimensions.
@@ -90,7 +97,8 @@ typedef struct {
 /**
  * @brief Node in a doubly-linked list of bullets.
  */
-typedef struct BulletNode {
+typedef struct BulletNode
+{
   struct BulletNode *next; /// Pointer to the next bullet in list.
   struct BulletNode *prev; /// Pointer to the previous bullet in list.
   Bullet self;             /// The actual bullet data.
@@ -102,7 +110,8 @@ typedef struct BulletNode {
  *
  * Bullets leaving this frame may be considered out of play.
  */
-typedef struct BulletAreaFrame {
+typedef struct BulletAreaFrame
+{
   float top;    /// Top Z boundary (usually for player bullets).
   float bottom; /// Bottom Z boundary (usually for enemy bullets).
 } BulletAreaFrame;
@@ -110,7 +119,8 @@ typedef struct BulletAreaFrame {
 /**
  * @brief Represents the entire collection of active bullets in the scene.
  */
-typedef struct {
+typedef struct
+{
   BulletNode *head;      /// First bullet in the list.
   BulletNode *tail;      /// Last bullet in the list.
   uint16_t length;       /// Number of active bullets.
@@ -146,7 +156,7 @@ BulletSize newBulletSize(float by_x, float by_y, float by_z);
  * @param energy Energy value or cost.
  * @return Initialized BulletParameters.
  */
-BulletParameters newBulletParameters(uint8_t health, uint8_t energy);
+BulletParameters newBulletParameters(float health, float energy);
 
 /**
  * @brief Creates and initializes a new Bullet object.

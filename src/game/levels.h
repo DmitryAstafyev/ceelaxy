@@ -7,36 +7,36 @@
 #define LEVEL_LABEL_DURATION 5.0
 
 // Initial level parameters for enemy units
-static const float INIT_LEVEL_UNIT_BULLET_ACCELERATION = 0.005f;
+#define INIT_LEVEL_UNIT_BULLET_ACCELERATION 0.005f
 // Initial speed of enemy bullets
-static const float INIT_LEVEL_UNIT_BULLET_INIT_SPEED = 0.8f;
+#define INIT_LEVEL_UNIT_BULLET_INIT_SPEED 0.8f
 // Delay between enemy bullet spawns
-static const float INIT_LEVEL_UNIT_BULLET_DELAY = 1.2f;
+#define INIT_LEVEL_UNIT_BULLET_DELAY 1.2f
 // Number of enemy units in the level
-static const float INIT_LEVEL_UNIT_DAMAGE_LIFE = 5.0f;
+#define INIT_LEVEL_UNIT_DAMAGE_LIFE 5.0f
 // Damage dealt by enemy units
-static const float INIT_LEVEL_UNIT_DAMAGE_ENERGY = 10.0f;
+#define INIT_LEVEL_UNIT_DAMAGE_ENERGY 10.0f
 // Energy cost or impact of enemy units
 static const ModelId INIT_LEVEL_UNIT_MODEL = MODEL_INTERSTELLAR_RUNNER;
 
 // Initial level parameters for the player
-static const float INIT_LEVEL_PLAYER_BULLET_ACCELERATION = 0.01f;
+#define INIT_LEVEL_PLAYER_BULLET_ACCELERATION 0.01f
 // Initial acceleration of player bullets
-static const float INIT_LEVEL_PLAYER_BULLET_INIT_SPEED = 2.0f;
+#define INIT_LEVEL_PLAYER_BULLET_INIT_SPEED 2.0f
 // Initial speed of player bullets
-static const float INIT_LEVEL_PLAYER_BULLET_DELAY = 0.2f;
+#define INIT_LEVEL_PLAYER_BULLET_DELAY 0.2f
 // Delay between player bullet spawns
-static const float INIT_LEVEL_PLAYER_DAMAGE_LIFE = 20.0f;
+#define INIT_LEVEL_PLAYER_DAMAGE_LIFE 20.0f
 // Damage dealt by player bullets
-static const float INIT_LEVEL_PLAYER_DAMAGE_ENERGY = 10.0f;
+#define INIT_LEVEL_PLAYER_DAMAGE_ENERGY 10.0f
 
 // Incremental step for level parameter adjustments
-static const float LEVEL_PARAMS_STEP = 0.05f;
+#define LEVEL_PARAMS_STEP 0.05f
 // Total number of levels defined
-static const unsigned int LEVELS_COUNT = 10;
+#define LEVELS_COUNT 10
 
 // Font size for level labels
-static int LEVEL_LABEL_FONT_SIZE = 32;
+#define LEVEL_LABEL_FONT_SIZE 32
 
 /**
  * @brief Parameters defining enemy units for a specific level.

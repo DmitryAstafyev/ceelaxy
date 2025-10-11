@@ -22,22 +22,22 @@
 #include <stdlib.h>
 
 /// Default width (in world units) assigned to all units.
-const float DEFAULT_UNIT_WIDTH = 6.0;
+#define DEFAULT_UNIT_WIDTH 6.0f
 
 /// Default height (in world units) assigned to all units.
-const float DEFAULT_UNIT_HEIGHT = 6.0;
+#define DEFAULT_UNIT_HEIGHT 6.0f
 
 /// Vertical spacing between units when placed in formation.
-const float UNIT_SPACE_VERTICAL = 6.0;
+#define UNIT_SPACE_VERTICAL 6.0f
 
 /// Horizontal spacing between units when placed in formation.
-const float UNIT_SPACE_HORIZONTAL = 3.0;
+#define UNIT_SPACE_HORIZONTAL 3.0f
 
 /// Default health value for any newly created unit.
-const uint8_t DEFAULT_UNIT_HEALTH = 100;
+#define DEFAULT_UNIT_HEALTH  100
 
 /// Default energy value for any newly created unit.
-const uint8_t DEFAULT_UNIT_ENERGY = 100;
+#define DEFAULT_UNIT_ENERGY  100
 
 /**
  * @brief Initializes and returns a UnitSize structure with default dimensions.
@@ -50,7 +50,7 @@ UnitSize newUnitSize()
   size.width = DEFAULT_UNIT_WIDTH;
   size.height = DEFAULT_UNIT_HEIGHT;
   return size;
-};
+}
 
 /**
  * @brief Initializes and returns a UnitPosition structure with origin
@@ -70,7 +70,7 @@ UnitPosition newUnitPosition()
   position.ln = 0;
   position.col = 0;
   return position;
-};
+}
 
 /**
  * @brief Creates a UnitRender structure with default visibility, size, and
@@ -159,12 +159,11 @@ Unit newUnit(UnitType ty, ShipModel *model, GameTextures *textures)
  * @param prev Pointer to the previous node in the list, or NULL if first.
  * @param unit The Unit instance to store.
  * @param max_col Maximum number of columns in the grid.
- * @param max_ln Maximum number of rows (lines) in the grid.
  * @param mid_x Horizontal center for centering the grid.
  * @param z_offset Offset to apply to the Z position of the unit.
  * @return Pointer to the allocated UnitNode, or NULL on failure.
  */
-UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
+UnitNode *newUnitNode(UnitNode *prev, Unit unit, uint16_t max_col,
                       float mid_x, float z_offset)
 {
   UnitNode *node = malloc(sizeof(UnitNode));
@@ -172,7 +171,7 @@ UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
   {
     return NULL;
   }
-  int prev_col, prev_ln;
+  uint16_t prev_ln;
   if (prev)
   {
     unit.render.position.col = prev->self.render.position.col + 1;
@@ -249,7 +248,8 @@ void updateDestroyedUnitFall(Unit *unit, float deltaTime)
 
   position->z -= 50.0f * deltaTime;
 
-  action->x = 2.5f * sinf(GetTime() * 5.0f);
+  float time = (float) GetTime(); 
+  action->x = 2.5f * sinf(time * 5.0f);
 
   action->rotate_x = 0.0f;
   action->rotate_y = 10.0f;
@@ -431,12 +431,11 @@ BoundingBox getUnitBoundingBox(Unit *unit)
  * @param count Number of units to create.
  * @param model Pointer to the ship model used for all units.
  * @param max_col Maximum columns in the formation grid.
- * @param max_ln Maximum lines (rows) in the formation grid.
  * @param z_offset Vertical offset applied to all units along Z axis.
  * @param textures Pointer to the GameTextures for explosion effects.
  * @return Pointer to the allocated UnitList, or NULL on failure.
  */
-UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
+UnitList *newUnitList(int count, ShipModel *model, uint16_t max_col,
                       float z_offset, GameTextures *textures)
 {
   UnitList *units = malloc(sizeof(UnitList));
@@ -448,13 +447,12 @@ UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
   units->head = NULL;
   units->tail = NULL;
   float unit_full_width = DEFAULT_UNIT_WIDTH + UNIT_SPACE_HORIZONTAL;
-  float unit_full_height = DEFAULT_UNIT_HEIGHT + UNIT_SPACE_VERTICAL;
 
   float mid_x = (unit_full_width * max_col) / 2.0f - unit_full_width / 2.0f;
   for (int i = count - 1; i >= 0; i -= 1)
   {
     insertToUnitList(units, newUnit(UNIT_TYPE_ENEMY, model, textures), max_col,
-                     max_ln, mid_x, z_offset);
+                     mid_x, z_offset);
     TraceLog(LOG_INFO, "[Units] Added unit %i", i);
   }
   return units;
@@ -533,15 +531,14 @@ void destroyUnitList(UnitList *list)
  * @param list Pointer to the list.
  * @param unit Unit instance to insert.
  * @param max_col Grid column limit.
- * @param max_ln Grid row limit.
  * @param mid_x Center offset for positioning units horizontally.
  * @param z_offset Vertical placement offset along Z.
  */
-void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
+void insertToUnitList(UnitList *list, Unit unit, uint16_t max_col,
                       float mid_x, float z_offset)
 {
   UnitNode *node =
-      newUnitNode(list->tail, unit, max_col, max_ln, mid_x, z_offset);
+      newUnitNode(list->tail, unit, max_col, mid_x, z_offset);
   if (!node)
   {
     return;

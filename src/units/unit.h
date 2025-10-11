@@ -166,12 +166,11 @@ typedef struct
  * @param prev Pointer to the previous node.
  * @param unit The unit instance to store in this node.
  * @param max_col Maximum column index (used for positioning).
- * @param max_ln Maximum line index (used for positioning).
  * @param mid_x Horizontal center of the field.
  * @param z_offset Offset along Z axis for spacing or layering.
  * @return Pointer to the newly allocated UnitNode.
  */
-UnitNode *newUnitNode(UnitNode *prev, Unit unit, int max_col, int max_ln,
+UnitNode *newUnitNode(UnitNode *prev, Unit unit, uint16_t max_col,
                       float mid_x, float z_offset);
 
 /**
@@ -197,12 +196,11 @@ void drawUnit(Unit *unit, Camera3D *camera, SpriteSheetList *sprites);
  * @param count Number of units to create.
  * @param model Pointer to the ship model used for all units.
  * @param max_col Maximum columns in the formation grid.
- * @param max_ln Maximum lines (rows) in the formation grid.
  * @param z_offset Vertical offset applied to all units along Z axis.
  * @param textures Pointer to the GameTextures for explosion effects.
  * @return Pointer to the allocated UnitList, or NULL on failure.
  */
-UnitList *newUnitList(int count, ShipModel *model, int max_col, int max_ln,
+UnitList *newUnitList(int count, ShipModel *model, uint16_t max_col,
                       float z_offset, GameTextures *textures);
 
 /**
@@ -218,11 +216,10 @@ void destroyUnitList(UnitList *list);
  * @param list Pointer to the list to insert into.
  * @param unit Unit to be inserted.
  * @param max_col Grid column limit (used for positioning).
- * @param max_ln Grid line limit.
  * @param mid_x Center X position used for horizontal centering.
  * @param z_offset Z-axis placement offset.
  */
-void insertToUnitList(UnitList *list, Unit unit, int max_col, int max_ln,
+void insertToUnitList(UnitList *list, Unit unit, uint16_t max_col,
                       float mid_x, float z_offset);
 
 /**

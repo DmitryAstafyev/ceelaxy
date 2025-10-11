@@ -6,11 +6,11 @@
 #include <stdint.h>
 
 // Time in seconds to consider a unit "recently hit" for rendering purposes
-static const double STATE_BAR_HIT_SEN_TIME = 1.0f;
+#define STATE_BAR_HIT_SEN_TIME 1.0f
 // Height of the state bar in world units
-static const double STATE_BAR_HEIGHT = 2.0f;
+#define STATE_BAR_HEIGHT 2
 // Vertical offset above the unit to position the state bar
-static const double STATE_BAR_Y_OFFSET = 12.0f;
+#define STATE_BAR_Y_OFFSET 12
 
 /**
  * @brief Draws health and energy bars above all units in the provided list.

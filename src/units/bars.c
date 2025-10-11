@@ -61,13 +61,13 @@ void drawStateBars(BoundingBox bounding_box, UnitState *state,
   Vector2 screenRight = GetWorldToScreen(worldRight, *camera);
   float bar_width_px = fabsf(screenRight.x - screenLeft.x);
 
-  float x = screenTop.x - bar_width_px / 2.0f;
-  float y = screenTop.y - STATE_BAR_Y_OFFSET;
+  int x = (int)(screenTop.x - bar_width_px / 2.0f);
+  int y = (int)(screenTop.y - STATE_BAR_Y_OFFSET);
 
   float health_rate = (float)state->health / (float)state->init_health;
   float energy_rate = (float)state->energy / (float)state->init_energy;
-  DrawRectangle(x, y, bar_width_px * health_rate, STATE_BAR_HEIGHT, RED);
-  DrawRectangle(x, y - STATE_BAR_HEIGHT - 1, bar_width_px * energy_rate,
+  DrawRectangle(x, y, (int)(bar_width_px * health_rate), STATE_BAR_HEIGHT, RED);
+  DrawRectangle(x, y - STATE_BAR_HEIGHT - 1, (int)(bar_width_px * energy_rate),
                 STATE_BAR_HEIGHT, BLUE);
 }
 

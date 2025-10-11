@@ -137,12 +137,12 @@ void iterateMovementAction(MovementAction *action, float slow_factor)
       action->x = action->max_x * (action->x > 0 ? 1 : -1);
       if (action->direction & MOVEMENT_DIRECTION_LEFT)
       {
-        action->direction &= ~MOVEMENT_DIRECTION_LEFT;
+        action->direction &= (uint8_t)~(uint8_t)MOVEMENT_DIRECTION_LEFT;
         action->direction |= MOVEMENT_DIRECTION_RIGHT;
       }
       else
       {
-        action->direction &= ~MOVEMENT_DIRECTION_RIGHT;
+        action->direction &= (uint8_t)~(uint8_t)MOVEMENT_DIRECTION_RIGHT;
         action->direction |= MOVEMENT_DIRECTION_LEFT;
       }
       randSpeedMovementAction(action, slow_factor);
@@ -167,12 +167,12 @@ void iterateMovementAction(MovementAction *action, float slow_factor)
       action->y = action->max_y * (action->y > 0 ? 1 : -1);
       if (action->direction & MOVEMENT_DIRECTION_UP)
       {
-        action->direction &= ~MOVEMENT_DIRECTION_UP;
+        action->direction &= (uint8_t)~(uint8_t)MOVEMENT_DIRECTION_UP;
         action->direction |= MOVEMENT_DIRECTION_DOWN;
       }
       else
       {
-        action->direction &= ~MOVEMENT_DIRECTION_DOWN;
+        action->direction &= (uint8_t)~(uint8_t)MOVEMENT_DIRECTION_DOWN;
         action->direction |= MOVEMENT_DIRECTION_UP;
       }
       randSpeedMovementAction(action, slow_factor);
@@ -190,12 +190,12 @@ void iterateMovementAction(MovementAction *action, float slow_factor)
       action->z = action->max_z * (action->z > 0 ? 1 : -1);
       if (action->direction & MOVEMENT_DIRECTION_FORWARD)
       {
-        action->direction &= ~MOVEMENT_DIRECTION_FORWARD;
+        action->direction &= (uint8_t)~(uint8_t)MOVEMENT_DIRECTION_FORWARD;
         action->direction |= MOVEMENT_DIRECTION_BACKWARD;
       }
       else
       {
-        action->direction &= ~MOVEMENT_DIRECTION_BACKWARD;
+        action->direction &= (uint8_t)~(uint8_t)MOVEMENT_DIRECTION_BACKWARD;
         action->direction |= MOVEMENT_DIRECTION_FORWARD;
       }
       randSpeedMovementAction(action, slow_factor);

@@ -134,8 +134,8 @@ void drawSpriteSheetState(SpriteSheetState *state, Camera3D camera,
   if (!state->active)
     return;
 
-  Rectangle frame_rec = {state->model->frame_width * state->frame,
-                         state->model->frame_height * state->line,
+  Rectangle frame_rec = {state->model->frame_width * (float)state->frame,
+                         state->model->frame_height * (float)state->line,
                          state->model->frame_width, state->model->frame_height};
 
   float aspect =

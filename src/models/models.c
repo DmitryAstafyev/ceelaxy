@@ -96,10 +96,9 @@ static void centerModelByTransform(Model *m) {
  * and wraps the result in a ShipModel struct.
  *
  * @param filename Name of the model (without path or extension).
- * @param shader Pointer to the shared shader used by this model.
  * @return ShipModel* Allocated model instance, or NULL on failure.
  */
-ShipModel *loadShipModel(const char *filename, ModelId id, Shader *shader) {
+ShipModel *loadShipModel(const char *filename, ModelId id) {
   char *path_obj = getFilesPath(filename, MODEL_OBJ_EXT);
   if (!path_obj) {
     fprintf(stderr, "[ModelLoader] Fail load model: %s", filename);
@@ -193,13 +192,11 @@ void destroyShipModel(ShipModel *ship) {
  * Wraps a loaded ShipModel in a doubly-linked list node.
  *
  * @param model_name Name of the model to load.
- * @param shader Pointer to the shared shader.
  * @param prev Pointer to the previous node in the list (can be NULL).
  * @return ShipModelNode* Allocated node or NULL on failure.
  */
-ShipModelNode *newShipModelNode(const char *model_name, ModelId id,
-                                Shader *shader, ShipModelNode *prev) {
-  ShipModel *model = loadShipModel(model_name, id, shader);
+ShipModelNode *newShipModelNode(const char *model_name, ModelId id,ShipModelNode *prev) {
+  ShipModel *model = loadShipModel(model_name, id);
   if (!model) {
     return NULL;
   }
@@ -266,7 +263,7 @@ ShipModelList *newShipModelList() {
   for (int id = 0; id < MODEL_ID_COUNT; id++) {
     const char *name = getModelNameById(id);
     TraceLog(LOG_INFO, "[Models] Loading model %s", name);
-    ShipModelNode *node = newShipModelNode(name, id, &shader, models->tail);
+    ShipModelNode *node = newShipModelNode(name, id, models->tail);
     if (!node) {
       destroyShipModelList(models);
       return NULL;

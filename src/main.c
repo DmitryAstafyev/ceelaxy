@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
     TraceLog(LOG_INFO, "[DEBUG] Debug mode is ON");
   }
 
-  srand(time(NULL));
+  uint32_t seed = (uint32_t) time(NULL); 
+  srand(seed);
   TraceLog(LOG_INFO, "Starting");
 
   InitWindow(1600, 1200, "Ceelaxy");

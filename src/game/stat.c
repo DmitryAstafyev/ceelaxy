@@ -11,7 +11,7 @@
  */
 GameStat newGameStat()
 {
-  GameStat stat = {};
+  GameStat stat;
   stat.score = 0;
   stat.hits = 0;
   stat.misses = 0;
@@ -37,7 +37,7 @@ void gameStatDraw(GameStat *stat)
   int w2 = MeasureText(missText, GAME_STAT_FONT_SIZE);
   int w3 = MeasureText(scoreText, GAME_STAT_FONT_SIZE);
   int maxw = (w > w2) ? ((w > w3) ? w : w3) : ((w2 > w3) ? w2 : w3);
-  int boxW = maxw + GAME_STAT_PADDING * 2;
+  int boxW = maxw + (int)GAME_STAT_PADDING * 2;
   int boxH = GAME_STAT_FONT_SIZE * 2 + GAME_STAT_PADDING * 3;
 
   DrawRectangle(20 - GAME_STAT_PADDING, 20 - GAME_STAT_PADDING, boxW, boxH,
@@ -60,7 +60,7 @@ void gameStatDraw(GameStat *stat)
 void addHitIntoGameStat(GameStat *stat)
 {
   stat->hits += 1;
-  stat->score += GAME_STAT_HIT_COST;
+  stat->score += (int)GAME_STAT_HIT_COST;
 }
 
 /**
@@ -73,7 +73,7 @@ void addHitIntoGameStat(GameStat *stat)
 void addMissIntoGameStat(GameStat *stat)
 {
   stat->misses += 1;
-  stat->score -= GAME_STAT_MISS_COST;
+  stat->score -= (int)GAME_STAT_MISS_COST;
 }
 
 /**
@@ -85,5 +85,5 @@ void addMissIntoGameStat(GameStat *stat)
  */
 void addShootIntoGameStat(GameStat *stat)
 {
-  stat->score -= GAME_STAT_SHOOT_COST;
+  stat->score -= (int)GAME_STAT_SHOOT_COST;
 }

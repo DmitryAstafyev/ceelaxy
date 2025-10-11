@@ -158,13 +158,12 @@ void destroyPlayer(Player *player);
  * position.
  *
  * @param list Pointer to the UnitList containing enemy units.
- * @param camera Pointer to the active Camera3D for view/projection.
  * @param player Pointer to the Player instance.
  * @param level Pointer to the current Level containing unit parameters.
  * @param factor The horizontal range around each enemy's X position for firing.
  * @param textures Pointer to the GameTextures for bullet creation.
  */
-void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
+void selectUnitsToFire(UnitList *list, Player *player,
                        Level *level, float factor, GameTextures *textures);
 
 /**

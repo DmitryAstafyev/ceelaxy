@@ -18,36 +18,36 @@
 #include <wchar.h>
 
 /// Minimum delay (in seconds) between direction changes to reset acceleration.
-static const float ACCELERATION_DEALY = 0.2f;
+#define ACCELERATION_DEALY 0.2f
 
 /// Initial acceleration value when direction is changed.
-static const float ACCELERATION_INIT = 0.1f;
+#define ACCELERATION_INIT 0.1f
 
-static const float ACCELERATION_MIN = 0.01f;
+#define ACCELERATION_MIN 0.01f
 
 /// Acceleration increment when holding a direction key.
-static const float ACCELERATION_STEP = 0.05f;
+#define ACCELERATION_STEP 0.05f
 
 /// Maximum acceleration value allowed.
-static const float ACCELERATION_MAX = 1.0f;
+#define ACCELERATION_MAX 1.0f
 
 /// Maximum rotation angle along the X axis during movement.
-static const float MAX_ROTATE_X = 15.0f;
+#define MAX_ROTATE_X 15.0f
 
 /// Maximum rotation angle along the Y axis (unused).
-static const float MAX_ROTATE_Y = 0.0f;
+#define MAX_ROTATE_Y 0.0f
 
 /// Maximum rotation angle along the Z axis during movement.
-static const float MAX_ROTATE_Z = 35.0f;
+#define MAX_ROTATE_Z 35.0f
 
 /// Step of rotation applied per frame along the X axis.
-static const float STEP_ROTATE_X = 1.0f;
+#define STEP_ROTATE_X 1.0f
 
 /// Step of rotation along the Y axis (unused).
-static const float STEP_ROTATE_Y = 0.0f;
+#define STEP_ROTATE_Y 0.0f
 
 /// Step of rotation applied per frame along the Z axis.
-static const float STEP_ROTATE_Z = 2.0f;
+#define STEP_ROTATE_Z 2.0f
 
 PlayerPosition newPlayerPosition(float max_x, float max_y, float max_z,
                                  float offset_z)
@@ -61,9 +61,16 @@ PlayerPosition newPlayerPosition(float max_x, float max_y, float max_z,
   position.max_z = max_z;
   position.offset_z = offset_z;
   return position;
-};
+}
 
-PlayerVisualState newPlayerVisualState(float offset_z)
+/**
+ * @brief Initializes and returns a PlayerVisualState structure with default
+ * rotation and tilt parameters.
+ *
+ * @return A PlayerVisualState structure with predefined rotation limits and
+ * step values.
+ */
+PlayerVisualState newPlayerVisualState()
 {
   PlayerVisualState state;
   state.max_rotate_x = MAX_ROTATE_X;
@@ -78,7 +85,7 @@ PlayerVisualState newPlayerVisualState(float offset_z)
   state.max_angle = 15.0f;
   state.angle = 0.0f;
   return state;
-};
+}
 
 PlayerMovement newPlayerMovement()
 {
@@ -478,13 +485,12 @@ bool isPlayerOnFireLine(Unit *enemy, Player *player, float factor)
  * position.
  *
  * @param list Pointer to the UnitList containing enemy units.
- * @param camera Pointer to the active Camera3D for view/projection.
  * @param player Pointer to the Player instance.
  * @param level Pointer to the current Level containing unit parameters.
  * @param factor The horizontal range around each enemy's X position for firing.
  * @param textures Pointer to the GameTextures for bullet creation.
  */
-void selectUnitsToFire(UnitList *list, Camera3D *camera, Player *player,
+void selectUnitsToFire(UnitList *list, Player *player,
                        Level *level, float factor, GameTextures *textures)
 {
   UnitNode *node = list->head;

@@ -125,7 +125,7 @@ GameTextures *createGameTexturesList(void)
   list->home = NULL;
   list->tail = NULL;
 
-  for (unsigned int i = 0; i < (int)(sizeof(TEX_PATHS) / sizeof(TEX_PATHS[0]));
+  for (int i = 0; i < (int)(sizeof(TEX_PATHS) / sizeof(TEX_PATHS[0]));
        ++i)
   {
     if (!addGameTextureIntoList(list, TEX_PATHS[i], i))
@@ -144,7 +144,7 @@ GameTextures *createGameTexturesList(void)
  * @param id The unique identifier of the texture to retrieve.
  * @return Pointer to the GameTexture node with the specified ID, or NULL if not found.
  */
-GameTexture *getGameTextureById(GameTextures *list, unsigned int id)
+GameTexture *getGameTextureById(GameTextures *list, int id)
 {
   if (list == NULL)
   {

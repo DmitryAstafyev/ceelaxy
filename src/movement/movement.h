@@ -8,10 +8,10 @@
 
 #include <stdint.h>
 
-// Default movement speed limits
-static float MAX_SPEED_MOVEMENT_ACTION = 0.05f;
+// Maximum movement speed to consider as active movement  
+#define MAX_SPEED_MOVEMENT_ACTION 0.05f
 // Minimum movement speed to consider as active movement
-static float MIN_SPEED_MOVEMENT_ACTION = 0.01f;
+#define MIN_SPEED_MOVEMENT_ACTION 0.01f
 
 /**
  * @brief Bitmask enum defining movement directions in 3D space.

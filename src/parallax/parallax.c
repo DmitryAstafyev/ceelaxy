@@ -57,7 +57,7 @@ static inline Vector2 playerXZ(const Player *pl)
 }
 
 // Update smoothed player velocity, return the influence vector.
-static void randomizeParticle(ParallaxField *f, ParallaxParticle *pp,
+static void randomizeParticle(ParallaxField *field, ParallaxParticle *pp,
                               unsigned int *rng, const Camera3D *cam,
                               bool ahead, Vector2 dirXZ)
 {
@@ -84,8 +84,8 @@ static void randomizeParticle(ParallaxField *f, ParallaxParticle *pp,
 
   // Spawn within an overscanned XZ rectangle around the camera.
   Vector3 cpos = cam->position;
-  float hx = f->halfExtentXZ.x, hz = f->halfExtentXZ.y;
-  float mx = hx + f->respawnMargin, mz = hz + f->respawnMargin;
+  float hx = field->halfExtentXZ.x, hz = field->halfExtentXZ.y;
+  float mx = hx + field->respawnMargin, mz = hz + field->respawnMargin;
 
   if (ahead && (dirXZ.x != 0 || dirXZ.y != 0))
   {
@@ -100,9 +100,9 @@ static void randomizeParticle(ParallaxField *f, ParallaxParticle *pp,
   }
 
   // Fixed Y: starfield plane under the scene.
-  const float yPlane = (pp->layer < 0.35f)   ? f->yFar
-                       : (pp->layer < 0.70f) ? f->yMid
-                                             : f->yNear;
+  const float yPlane = (pp->layer < 0.35f)   ? field->yFar
+                       : (pp->layer < 0.70f) ? field->yMid
+                                             : field->yNear;
   pp->pos.y = yPlane;
 }
 
@@ -118,36 +118,43 @@ static void randomizeParticle(ParallaxField *f, ParallaxParticle *pp,
 ParallaxField parallaxInit(int particleCount, Vector2 halfExtentXZ,
                            unsigned int seed)
 {
-  ParallaxField f = (ParallaxField){0};
+  ParallaxField field = (ParallaxField){0};
 
-  f.count = particleCount;
-  f.halfExtentXZ = halfExtentXZ;
+  field.count = particleCount;
+  field.halfExtentXZ = halfExtentXZ;
 
   // Top-down: put stars "under" the scene on a fixed Y plane.
-  f.yFar = -2.0f;
-  f.yMid = -2.0f;
-  f.yNear = -2.0f;
-  f.respawnMargin = 24.0f; // softer wrap edges
+  field.yFar = -2.0f;
+  field.yMid = -2.0f;
+  field.yNear = -2.0f;
+  field.respawnMargin = 24.0f; // softer wrap edges
 
-  f.dotTex = makeDotTexture();
+  field.dotTex = makeDotTexture();
 
   // Default motion tuning
-  f.baseForwardSpeedZ = +28.0f; // constant forward flow (+Z)
-  f.playerInfluence = 0.25f;    // tamed player coupling
-  f.refVelForStreaks = 40.0f;   // |scroll| mapped to full streaks
-  f.speedScale = 1.0f;
+  field.baseForwardSpeedZ = +28.0f; // constant forward flow (+Z)
+  field.playerInfluence = 0.25f;    // tamed player coupling
+  field.refVelForStreaks = 40.0f;   // |scroll| mapped to full streaks
+  field.speedScale = 1.0f;
 
   // Player velocity filtering and clamp
-  f.velSmoothing = 0.15f;    // 0=no filter, 1=very slow
-  f.maxInfluenceVel = 22.0f; // clamp player contribution
+  field.velSmoothing = 0.15f;    // 0=no filter, 1=very slow
+  field.maxInfluenceVel = 22.0f; // clamp player contribution
 
-  f.hasPrevPlayerPos = false;
-  f.prevPlayerXZ = (Vector2){0, 0};
-  f.smoothedVelXZ = (Vector2){0, 0};
-  f.time = 0.0f;
+  field.hasPrevPlayerPos = false;
+  field.prevPlayerXZ = (Vector2){0, 0};
+  field.smoothedVelXZ = (Vector2){0, 0};
+  field.time = 0.0f;
 
-  f.p = (ParallaxParticle *)MemAlloc(sizeof(ParallaxParticle) *
-                                     (size_t)particleCount);
+  size_t count = (size_t)particleCount;
+  size_t bytes = count * sizeof(ParallaxParticle);
+
+  if (bytes > UINT_MAX)
+  {
+    bytes = UINT_MAX;
+  }
+
+  field.p = (ParallaxParticle *)MemAlloc((unsigned int)bytes);
 
   Camera3D fakeCam = {0};
   fakeCam.position = (Vector3){0, 0, 0};
@@ -155,106 +162,106 @@ ParallaxField parallaxInit(int particleCount, Vector2 halfExtentXZ,
   unsigned int rng = seed ? seed : 0xCAFEBABE;
   for (int i = 0; i < particleCount; ++i)
   {
-    randomizeParticle(&f, &f.p[i], &rng, &fakeCam, false, (Vector2){0, 0});
+    randomizeParticle(&field, &field.p[i], &rng, &fakeCam, false, (Vector2){0, 0});
   }
 
-  return f;
+  return field;
 }
 
 /** Advances the parallax field state for the current frame.
  *
- * @param f Pointer to the ParallaxField to update.
+ * @param field Pointer to the ParallaxField to update.
  * @param cam Pointer to the active Camera3D for view/projection.
  * @param player Pointer to the Player for velocity influence (can be NULL).
  */
-void destroyParallax(ParallaxField *f)
+void destroyParallax(ParallaxField *field)
 {
-  if (!f)
+  if (!field)
     return;
-  if (f->dotTex.id)
-    UnloadTexture(f->dotTex);
-  if (f->p)
+  if (field->dotTex.id)
+    UnloadTexture(field->dotTex);
+  if (field->p)
   {
-    MemFree(f->p);
-    f->p = NULL;
+    MemFree(field->p);
+    field->p = NULL;
   }
-  f->count = 0;
+  field->count = 0;
 }
 
 /** Renders the parallax field as a background effect.
  *
- * @param f Pointer to the ParallaxField to render.
+ * @param field Pointer to the ParallaxField to render.
  * @param cam Pointer to the active Camera3D for view/projection.
  */
-void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
+void parallaxUpdate(ParallaxField *field, const Camera3D *cam,
                     const Player *player)
 {
-  if (!f || !cam || !player)
+  if (!field || !cam || !player)
     return;
 
   const float dt = GetFrameTime();
-  f->time += dt;
+  field->time += dt;
 
   // Raw player velocity in XZ
   const Vector2 curr = playerXZ(player);
   Vector2 pvel = (Vector2){0, 0};
-  if (!f->hasPrevPlayerPos)
+  if (!field->hasPrevPlayerPos)
   {
-    f->prevPlayerXZ = curr;
-    f->hasPrevPlayerPos = true;
+    field->prevPlayerXZ = curr;
+    field->hasPrevPlayerPos = true;
   }
   else if (dt > 0.0f)
   {
-    pvel.x = (curr.x - f->prevPlayerXZ.x) / dt;
-    pvel.y = (curr.y - f->prevPlayerXZ.y) / dt;
-    f->prevPlayerXZ = curr;
+    pvel.x = (curr.x - field->prevPlayerXZ.x) / dt;
+    pvel.y = (curr.y - field->prevPlayerXZ.y) / dt;
+    field->prevPlayerXZ = curr;
   }
 
   // Low-pass filter + clamp to tame player influence
-  float a = Clamp(f->velSmoothing, 0.0f, 1.0f);
-  f->smoothedVelXZ.x = Lerp(pvel.x, f->smoothedVelXZ.x, a);
-  f->smoothedVelXZ.y = Lerp(pvel.y, f->smoothedVelXZ.y, a);
+  float a = Clamp(field->velSmoothing, 0.0f, 1.0f);
+  field->smoothedVelXZ.x = Lerp(pvel.x, field->smoothedVelXZ.x, a);
+  field->smoothedVelXZ.y = Lerp(pvel.y, field->smoothedVelXZ.y, a);
 
-  float len = Vector2Length(f->smoothedVelXZ);
-  if (len > f->maxInfluenceVel && len > 0.0f)
+  float len = Vector2Length(field->smoothedVelXZ);
+  if (len > field->maxInfluenceVel && len > 0.0f)
   {
-    f->smoothedVelXZ = Vector2Scale(f->smoothedVelXZ, f->maxInfluenceVel / len);
+    field->smoothedVelXZ = Vector2Scale(field->smoothedVelXZ, field->maxInfluenceVel / len);
   }
 
   // Scroll vector: forward flow + opposite-to-player motion
-  Vector2 scroll = (Vector2){0.0f, f->baseForwardSpeedZ};
-  scroll.x += -f->playerInfluence * f->smoothedVelXZ.x;
-  scroll.y += -f->playerInfluence * f->smoothedVelXZ.y;
+  Vector2 scroll = (Vector2){0.0f, field->baseForwardSpeedZ};
+  scroll.x += -field->playerInfluence * field->smoothedVelXZ.x;
+  scroll.y += -field->playerInfluence * field->smoothedVelXZ.y;
 
   float speedMag = Vector2Length(scroll);
   Vector2 dirXZ = (speedMag > 0.0001f) ? Vector2Scale(scroll, 1.0f / speedMag)
                                        : (Vector2){0.0f, 1.0f}; // forward +Z
 
   // Per-particle update
-  const float hx = f->halfExtentXZ.x, hz = f->halfExtentXZ.y;
-  const float mx = hx + f->respawnMargin, mz = hz + f->respawnMargin;
+  const float hx = field->halfExtentXZ.x, hz = field->halfExtentXZ.y;
+  const float mx = hx + field->respawnMargin, mz = hz + field->respawnMargin;
   const Vector3 cpos = cam->position;
 
-  const float ref = (f->refVelForStreaks > 0.0f) ? f->refVelForStreaks : 40.0f;
+  const float ref = (field->refVelForStreaks > 0.0f) ? field->refVelForStreaks : 40.0f;
   const float vel01 = clamp01(speedMag / ref);
 
   static float tAccum = 0.0f;
   tAccum += dt;
 
-  for (int i = 0; i < f->count; ++i)
+  for (int i = 0; i < field->count; ++i)
   {
-    ParallaxParticle *pp = &f->p[i];
+    ParallaxParticle *pp = &field->p[i];
 
     // Fixed Y on the starfield plane (under the scene)
-    const float planeY = (pp->layer < 0.35f)   ? f->yFar
-                         : (pp->layer < 0.70f) ? f->yMid
-                                               : f->yNear;
+    const float planeY = (pp->layer < 0.35f)   ? field->yFar
+                         : (pp->layer < 0.70f) ? field->yMid
+                                               : field->yNear;
     pp->pos.y = planeY;
 
     // Move in XZ with depth factor
     const float layerFactor = 0.15f + 0.85f * pp->layer;
     const Vector2 v =
-        Vector2Scale(dirXZ, pp->baseSpeed * f->speedScale * layerFactor);
+        Vector2Scale(dirXZ, pp->baseSpeed * field->speedScale * layerFactor);
     pp->pos.x += v.x * dt;
     pp->pos.z += v.y * dt;
 
@@ -309,12 +316,12 @@ void parallaxUpdate(ParallaxField *f, const Camera3D *cam,
 
 /** Renders the parallax field as a background effect.
  *
- * @param f Pointer to the ParallaxField to render.
+ * @param field Pointer to the ParallaxField to render.
  * @param cam Pointer to the active Camera3D for view/projection.
  */
-void parallaxRender(const ParallaxField *f, const Camera3D *cam)
+void parallaxRender(const ParallaxField *field, const Camera3D *cam)
 {
-  if (!f || !cam)
+  if (!field || !cam)
     return;
 
   // Alpha blending for maximum visibility; switch to BLEND_ADDITIVE for glow.
@@ -323,18 +330,18 @@ void parallaxRender(const ParallaxField *f, const Camera3D *cam)
   // World up works well for top-down too.
   const Vector3 upBill = (Vector3){0, 1, 0};
 
-  for (int i = 0; i < f->count; ++i)
+  for (int i = 0; i < field->count; ++i)
   {
-    const ParallaxParticle *pp = &f->p[i];
+    const ParallaxParticle *pp = &field->p[i];
 
     const float base = pp->size;
     const Vector2 size = (Vector2){base, base * (1.0f + pp->streak * 6.0f)};
     const Rectangle src =
-        (Rectangle){0, 0, (float)f->dotTex.width, (float)f->dotTex.height};
+        (Rectangle){0, 0, (float)field->dotTex.width, (float)field->dotTex.height};
     const Color tint = colorWithAlpha(pp->tint, pp->alpha);
 
     // rotation = 0; we rely on 'upBill' only.
-    DrawBillboardPro(*cam, f->dotTex, src, pp->pos, upBill, size,
+    DrawBillboardPro(*cam, field->dotTex, src, pp->pos, upBill, size,
                      (Vector2){0.5f, 0.5f}, 0.0f, tint);
   }
 
