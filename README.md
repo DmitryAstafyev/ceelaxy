@@ -1,7 +1,5 @@
 # CEELAXY
 
-#### Video Demo: 
-
 ## Overview
 
 The project is a game inspired by the classic 8-bit game *Galaxy*. This is an educational project aimed at exploring the `C` programming language and the core principles of pointer management and memory allocation/control.
@@ -195,6 +193,16 @@ brew install raylib pkg-config
 ```
 ./make all
 ./ceelaxy
+```
+
+### Change resolution
+
+Use `--resolution` or `-r` to change resoltion. User can define resolution by `width` only; `height` will be calculated automatically.
+
+To run game in `1600 x 1200` px.
+
+```
+./ceelaxy -r 1600
 ```
 
 ## Debug mode
