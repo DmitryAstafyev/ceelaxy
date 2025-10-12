@@ -1,8 +1,14 @@
+// ================================================
+// AI usage note: This module was developed based on AI-generated (ChatGPT) code.
+// The author made additional changes and performed partial refactoring.
+// ================================================
+
 #include "rlights.h"
 #include <stdio.h>
 
-Light CreateLight(int type, Vector3 position, Vector3 target, Color color, Shader shader) {
-    Light light = { 0 };
+Light CreateLight(int type, Vector3 position, Vector3 target, Color color, Shader shader)
+{
+    Light light = {0};
 
     light.enabled = true;
     light.type = type;
@@ -30,17 +36,17 @@ Light CreateLight(int type, Vector3 position, Vector3 target, Color color, Shade
     return light;
 }
 
-void UpdateLightValues(Shader shader, Light light) {
+void UpdateLightValues(Shader shader, Light light)
+{
     SetShaderValue(shader, light.enabledLoc, &light.enabled, SHADER_UNIFORM_INT);
     SetShaderValue(shader, light.typeLoc, &light.type, SHADER_UNIFORM_INT);
     SetShaderValue(shader, light.positionLoc, &light.position.x, SHADER_UNIFORM_VEC3);
     SetShaderValue(shader, light.targetLoc, &light.target.x, SHADER_UNIFORM_VEC3);
 
     float color[4] = {
-        (float)light.color.r/255.0f,
-        (float)light.color.g/255.0f,
-        (float)light.color.b/255.0f,
-        (float)light.color.a/255.0f
-    };
+        (float)light.color.r / 255.0f,
+        (float)light.color.g / 255.0f,
+        (float)light.color.b / 255.0f,
+        (float)light.color.a / 255.0f};
     SetShaderValue(shader, light.colorLoc, color, SHADER_UNIFORM_VEC4);
 }

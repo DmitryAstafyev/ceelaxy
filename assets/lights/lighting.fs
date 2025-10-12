@@ -1,4 +1,7 @@
-
+// ================================================
+// AI usage note: This module was developed based on AI-generated (ChatGPT) code.
+// The author made additional changes and performed partial refactoring.
+// ================================================
 #version 330
 
 in vec3 fragPosition;

@@ -1,4 +1,9 @@
 // parallax.c
+// ================================================
+// AI usage note: This module was developed based on AI-generated (ChatGPT) code.
+// The author made additional changes and performed partial refactoring.
+// ================================================
+
 #include "parallax.h"
 #include "../units/player.h"
 

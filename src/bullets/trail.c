@@ -1,5 +1,9 @@
 // trail.c
 // Implements a simple particle trail emitter for visual effects.
+// ================================================
+// AI usage note: This module was developed based on AI-generated (ChatGPT) code.
+// The author made additional changes and performed partial refactoring.
+// ================================================
 
 #include "trail.h"
 #include "raylib.h"
@@ -9,7 +13,8 @@
 #include <stddef.h>
 
 // Simple random float in [a, b]
-static inline float frand(float a, float b) {
+static inline float frand(float a, float b)
+{
   return a + (b - a) * ((float)GetRandomValue(0, 10000) / 10000.0f);
 }
 
@@ -24,7 +29,8 @@ static inline float frand(float a, float b) {
  * @param additive If true, uses additive blending; otherwise, uses alpha blending.
  * @return A fully initialized TrailEmitter object.
  */
-TrailEmitter newTrailEmitter(Texture2D tex, bool additive) {
+TrailEmitter newTrailEmitter(Texture2D tex, bool additive)
+{
   TrailEmitter emitter = {0};
   emitter.tex = tex;
   emitter.additive = additive;
@@ -49,9 +55,11 @@ TrailEmitter newTrailEmitter(Texture2D tex, bool additive) {
  * @param dir The direction vector for particle emission.
  * @param dt Time elapsed since the last update (in seconds).
  */
-void trailEmit(TrailEmitter *emitter, Vector3 origin, Vector3 dir, float dt) {
+void trailEmit(TrailEmitter *emitter, Vector3 origin, Vector3 dir, float dt)
+{
   emitter->accum += emitter->spawnRate * dt;
-  while (emitter->accum >= 1.0f && emitter->count < TRAIL_MAX) {
+  while (emitter->accum >= 1.0f && emitter->count < TRAIL_MAX)
+  {
 
     TrailParticle *q = &emitter->p[emitter->count++];
 
@@ -81,15 +89,18 @@ void trailEmit(TrailEmitter *emitter, Vector3 origin, Vector3 dir, float dt) {
  * @param e Pointer to the TrailEmitter instance.
  * @param dt Time elapsed since the last update (in seconds).
  */
-void trailUpdate(TrailEmitter *e, float dt) {
+void trailUpdate(TrailEmitter *e, float dt)
+{
   int w = 0;
-  for (int r = 0; r < e->count; ++r) {
+  for (int r = 0; r < e->count; ++r)
+  {
     TrailParticle *q = &e->p[r];
     q->pos = Vector3Add(q->pos, Vector3Scale(q->vel, dt));
     q->vel = Vector3Scale(q->vel, e->damping);
     q->size += e->grow * dt;
     q->life -= dt;
-    if (q->life > 0) {
+    if (q->life > 0)
+    {
       float t = q->life / q->ttl;
       q->color.a = (unsigned char)(220 * t);
       e->p[w++] = *q;
@@ -107,7 +118,8 @@ void trailUpdate(TrailEmitter *e, float dt) {
  * @param e Pointer to the TrailEmitter instance.
  * @param cam The Camera3D used for rendering the scene.
  */
-void trailDraw(TrailEmitter *e, Camera3D cam) {
+void trailDraw(TrailEmitter *e, Camera3D cam)
+{
   if (e->count == 0)
     return;
   BeginBlendMode(e->additive ? BLEND_ADDITIVE : BLEND_ALPHA);
@@ -115,7 +127,8 @@ void trailDraw(TrailEmitter *e, Camera3D cam) {
   Rectangle src = {0, 0, (float)e->tex.width, (float)e->tex.height};
   Vector3 up = {0, 1, 0};
 
-  for (int i = 0; i < e->count; ++i) {
+  for (int i = 0; i < e->count; ++i)
+  {
     TrailParticle *q = &e->p[i];
     Vector2 size = {q->size, q->size};
     Vector2 origin = {q->size * 0.5f, q->size * 0.5f};
