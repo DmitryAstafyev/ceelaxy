@@ -215,7 +215,7 @@ Debug mode can be enabled using the `--debug` flag. When enabled, model bounding
 ## Copyrights and Resources
 
 Spaceship models were sourced from open assets: https://maxparata.itch.io/voxel-spaceships.  
-Sprites and textures were also not created by the author and were taken from open sources.
+Sprites and textures were also not created by the author and were taken from open sources (for example, https://opengameart.org/content/explosion-particles-sprite-atlas and others from https://opengameart.org). 
 
 ## AI Cooperation
 
