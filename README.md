@@ -109,7 +109,7 @@ typedef struct Game
 * Enemy `Unit` objects and the `Player` do **not** embed ship models; they only keep **references** to them. A dedicated `ShipModelList` module owns all loaded models and is also responsible for memory cleanup (unloading models).
 * Enemy `Unit` objects and the `Player` do **not** store bullet data; they only **spawn** bullets. Actual bullet state is stored in `BulletList`, which is also responsible for trajectory updates, hit detection, and destroying bullet instances on impact or when they leave the scene bounds. *Note*: collision resolution uses an `owner` field on each `Bullet` (who spawned it).
 * Each `Bullet` includes a `TrailEmitter` that handles the rendering and simulation of the projectile’s exhaust trail.
-* The explosion renderer `BulletExplosion` is **attached to `Unit` and `Player`, not to individual `Bullet`s**. Since there can be many bullets, recreating `BulletExplosion` for every new bullet would be wasteful. It’s more efficient to pre-create a `BulletExplosion` for entities that can explode (enemy ships and the player).
+* The explosion renderer `BulletExplosion` is attached to `Unit` and `Player`, **not** to individual `Bullet`s. Since there can be many bullets, recreating `BulletExplosion` for every new bullet would be wasteful. It’s more efficient to pre-create a `BulletExplosion` for entities that can explode (enemy ships and the player).
 
 ### Gameplay Mechanics
 
